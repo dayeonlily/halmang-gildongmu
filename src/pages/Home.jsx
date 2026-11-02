@@ -25,10 +25,10 @@ function TodayWeather() {
   return (
     <div>
       <div className="d-flex flex-wrap gap-3 align-items-center mb-2">
-        <div className="display-font" style={{ fontSize: '2.4rem', lineHeight: 1 }}>{skyIcon(jeju.rows[0])} {jeju.rows[0]?.temp}°</div>
-        <div className="small"><b>제주시</b> {jeju.rows[0]?.sky} · 강수확률 {sm.pop}%<br /><b>서귀포시</b> {seogwipo.rows[0]?.temp}° · 강수확률 {seogwipo.summary.pop}%</div>
+        <div className="display-font" style={{ fontSize: '3rem', lineHeight: 1 }}>{skyIcon(jeju.rows[0])} {jeju.rows[0]?.temp}°</div>
+        <div style={{ fontSize: '1.05rem' }}><b>제주시</b> {jeju.rows[0]?.sky} · 강수확률 {sm.pop}%<br /><b>서귀포시</b> {seogwipo.rows[0]?.temp}° · 강수확률 {seogwipo.summary.pop}%</div>
       </div>
-      <div className={`small fw-bold mb-2 ${sm.wet || sm.hot || sm.cold || sm.windy ? 'text-danger' : 'text-success'}`}><i className="bi bi-lightbulb me-1" />{sm.advice}</div>
+      <div className={`fw-bold mb-2 ${sm.wet || sm.hot || sm.cold || sm.windy ? 'text-danger' : 'text-success'}`}><i className="bi bi-lightbulb me-1" />{sm.advice}</div>
       <div className="hour-strip">
         {jeju.rows.map((r) => <div key={r.time} className="hour-chip"><small>{hourOf(r.time)}</small><span>{skyIcon(r)}</span><b>{r.temp}°</b><small>{r.pop}%</small></div>)}
       </div>
@@ -114,7 +114,7 @@ export default function Home() {
         <Col lg={7}>
           <div className="soft-card p-3 p-md-4 h-100">
             <div className="small text-muted">{today}</div>
-            <h1 className="mb-3" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)' }}>{name}, <span className="text-primary">오늘 제주</span>는 이래요</h1>
+            <h1 className="home-hello mb-3">{name}, <span className="text-primary">오늘 제주</span>는 이래요</h1>
             <TodayWeather />
             <div className="quick-grid mt-3">
               <Tile to="/explore" icon="compass" title="길동무 찾기" sub="맞춤 추천" />
@@ -132,8 +132,8 @@ export default function Home() {
 
       {/* ② 오늘 가기 좋은 곳 TOP 3 */}
       <div className="d-flex align-items-end justify-content-between mb-2">
-        <h2 className="fs-4 m-0">🌟 오늘 우리 가족이 가기 좋은 곳</h2>
-        <Link to="/explore" className="small">더 보기</Link>
+        <h2 className="home-section">오늘 우리 가족이 가기 좋은 곳</h2>
+        <Link to="/explore" className="fw-bold">더 보기 <i className="bi bi-chevron-right" /></Link>
       </div>
       <Row xs={1} md={3} className="g-3 mb-4">
         {!spots && !spotErr && [0, 1, 2].map((i) => <Col key={i}><div className="soft-card p-3 text-muted small" style={{ minHeight: 170 }}><i className="bi bi-hourglass-split me-1" />추천을 고르는 중...</div></Col>)}
@@ -143,7 +143,7 @@ export default function Home() {
             <div className="soft-card spot-card h-100 overflow-hidden">
               {s.image ? <img className="spot-img" src={s.image} alt={s.title} loading="lazy" style={{ height: 120 }} /> : <div className="spot-img" style={{ height: 120 }}><i className="bi bi-image" /></div>}
               <div className="p-3">
-                <div className="d-flex justify-content-between gap-2"><div className="fw-bold">{s.title}</div><ScorePill score={s.scores.total} /></div>
+                <div className="d-flex justify-content-between gap-2"><div className="fw-bold fs-6">{s.title}</div><ScorePill score={s.scores.total} /></div>
                 <div className="small text-muted text-truncate mb-2">{s.addr}</div>
                 <div className="d-flex flex-wrap gap-1 mb-2">
                   <Badge bg={s.indoor ? 'info' : 'success'}>{s.indoor ? '실내' : '야외'}</Badge>
@@ -176,7 +176,7 @@ export default function Home() {
                 </div>
               ))
             )}
-            <Button as={Link} to="/basket" size="sm" variant="outline-primary" className="mt-2">일정 짜러 가기</Button>
+            <Button as={Link} to="/basket" variant="outline-primary" className="mt-2">일정 짜러 가기</Button>
           </div>
         </Col>
         <Col md={6} lg={4}>

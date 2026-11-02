@@ -185,3 +185,26 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .story-controls { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: .6rem; }
 .story-controls .btn { border-radius: 1rem; font-weight: 700; }
 @media (max-width: 575px) { .story-controls { grid-template-columns: 1fr 1fr; } .story-controls .btn:last-child { grid-column: 1 / -1; } .story-caption { padding: .8rem; } }
+
+/* ── 가시성: 글자는 크게, 흐린 글씨는 진하게, 구획은 또렷하게 ── */
+html { font-size: 17px; }
+small, .small { font-size: .92rem; }
+.text-muted { color: #65513d !important; }
+.soft-card { border: 1.5px solid #ead7b8; box-shadow: 0 3px 14px rgba(120, 80, 20, .1); }
+.soft-card h3, .soft-card .fs-5 { font-weight: 800; color: #3d2a17; }
+.chip { font-size: .88rem; }
+.btn-sm { font-size: .95rem; padding: .4rem .8rem; }
+.quick-grid { gap: .8rem; }
+.quick-tile { padding: 1.1rem .4rem 1rem; border: 2px solid #f6dcae; background: #fff6e4; }
+.quick-tile i { font-size: 2.1rem; }
+.quick-tile b { font-size: 1.08rem; color: #3d2a17; }
+.quick-tile small { font-size: .88rem; color: #65513d; }
+.home-section { display: flex; align-items: center; gap: .6rem; font-size: 1.45rem; font-weight: 800; color: #3d2a17; margin: 0; }
+.home-section::before { content: ''; width: 6px; height: 1.5em; border-radius: 4px; background: var(--hm-orange); }
+.home-hello { font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 800; line-height: 1.25; }
+.hour-chip { font-size: .95rem; }
+@media (max-width: 575.98px) {
+  .quick-grid { grid-template-columns: repeat(2, 1fr); }
+  .quick-tile { flex-direction: row; justify-content: flex-start; text-align: left; gap: .8rem; padding: .9rem 1rem; }
+  .quick-tile i { font-size: 1.9rem; }
+}
