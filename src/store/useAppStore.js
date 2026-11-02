@@ -6,6 +6,8 @@ import { askHalmang } from '../api/client'
 // 후기 표(trip_reviews)를 아직 안 만들었을 때 나는 오류인지 (SQL 을 실행하기 전에는 조용히 넘어간다)
 const isMissingTable = (e) => e?.code === 'PGRST205' || e?.code === '42P01' || (/trip_reviews/.test(e?.message ?? '') && /schema cache|does not exist/.test(e?.message ?? ''))
 
+const readLegacyStamps = () => { try { return JSON.parse(localStorage.getItem('halmang-history-stamps')) ?? [] } catch { return [] } }
+
 const needSupabase = (get) => {
   if (supabase) return false
   get().toast('Supabase 설정(.env.local)이 필요해요', 'warning')
@@ -56,7 +58,10 @@ export const useAppStore = create(
       },
       signOut: async () => { await supabase?.auth.signOut() },
 
-      loadAll: async () => { await Promise.all([get().loadProfile(), get().loadBasket(), get().loadStamps(), get().loadReviews()]) },
+      loadAll: async () => {
+        await Promise.all([get().loadProfile(), get().loadBasket(), get().loadStamps(), get().loadReviews()])
+        get().mergeLocalStamps()
+      },
 
       // ③ 가족 프로필
       profile: null,
@@ -116,6 +121,21 @@ export const useAppStore = create(
         const { data, error } = await supabase.from('mission_stamps').select('mission_id')
         if (error) return get().toast(error.message, 'danger')
         set({ stamps: data.map((r) => r.mission_id) })
+      },
+      // 로그인하지 않고 모은 역사 도장: 이 기기에 저장해 두었다가, 로그인하면 계정으로 합친다
+      localStamps: readLegacyStamps(),
+      toggleLocalStamp: (id) => {
+        const cur = get().localStamps
+        set({ localStamps: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] })
+      },
+      mergeLocalStamps: async () => {
+        const local = get().localStamps
+        if (!local.length || !get().user || !supabase) return
+        const { error } = await supabase.from('mission_stamps').upsert(local.map((mission_id) => ({ mission_id })), { onConflict: 'user_id,mission_id', ignoreDuplicates: true })
+        if (error) return // 실패해도 이 기기의 도장은 그대로 남겨 두고, 다음 로그인 때 다시 시도
+        set({ localStamps: [], stamps: [...new Set([...get().stamps, ...local])] })
+        try { localStorage.removeItem('halmang-history-stamps') } catch { /* 무시 */ }
+        get().toast(`이 기기에서 모은 도장 ${local.length}개를 계정으로 옮겼어요`)
       },
       toggleStamp: async (missionId) => {
         if (!get().user) return get().toast('로그인하면 스탬프가 저장돼요', 'warning')
@@ -186,15 +206,13 @@ export const useAppStore = create(
         }
       },
 
-      // ⑧ 아이와 함께 모드 (새로고침해도 유지)
-      kidsMode: false,
-      setKidsMode: (kidsMode) => set({ kidsMode }),
+      // ⑧ 아이 연령대 (새로고침해도 유지)
       ageBand: 'preschool',
       setAgeBand: (ageBand) => set({ ageBand }),
     }),
     {
       name: 'halmang-gildongmu',
-      partialize: (s) => ({ kidsMode: s.kidsMode, ageBand: s.ageBand }),
+      partialize: (s) => ({ ageBand: s.ageBand, localStamps: s.localStamps }),
     },
   ),
 )

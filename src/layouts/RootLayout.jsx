@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Container, Form, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
+import { Badge, Button, Container, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { NAV_ITEMS } from '../router'
 import { useAppStore } from '../store/useAppStore'
@@ -32,18 +32,8 @@ function Account() {
   )
 }
 
-function KidsSwitch() {
-  const kidsMode = useAppStore((s) => s.kidsMode)
-  const setKidsMode = useAppStore((s) => s.setKidsMode)
-  return (
-    <Form.Check type="switch" id="kids-switch" label="아이와 함께 모드" checked={kidsMode}
-      onChange={(e) => setKidsMode(e.target.checked)} className="mb-3" />
-  )
-}
-
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
-  const kidsMode = useAppStore((s) => s.kidsMode)
   const initAuth = useAppStore((s) => s.initAuth)
   const basket = useAppStore((s) => s.basket.length)
   const user = useAppStore((s) => s.user)
@@ -52,7 +42,6 @@ export default function RootLayout() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => { initAuth() }, [initAuth])
-  useEffect(() => { document.body.classList.toggle('kids', kidsMode) }, [kidsMode])
 
   // 로그인 전 첫 화면(/)과 로그인·회원가입(/login)은 메뉴 없이 그 화면만 보여 준다
   if (pathname === '/login' || (pathname === '/' && (!authReady || !user))) {
@@ -75,7 +64,6 @@ export default function RootLayout() {
         <Link to="/" className="brand"><img src="/favicon.svg" alt="" />할망 길동무</Link>
         <NavList />
         <div className="rail-foot">
-          <KidsSwitch />
           <Account />
           <div className="mt-3 opacity-50" style={{ fontSize: '.72rem' }}>데이터: 한국관광공사 · 기상청 (공공데이터포털)</div>
         </div>
@@ -90,7 +78,7 @@ export default function RootLayout() {
         <Offcanvas.Header closeButton closeVariant="white"><Offcanvas.Title className="display-font">메뉴</Offcanvas.Title></Offcanvas.Header>
         <Offcanvas.Body className="d-flex flex-column">
           <NavList onPick={() => setOpen(false)} />
-          <div className="mt-auto pt-3"><KidsSwitch /><Account /></div>
+          <div className="mt-auto pt-3"><Account /></div>
         </Offcanvas.Body>
       </Offcanvas>
       <nav className="tabbar">

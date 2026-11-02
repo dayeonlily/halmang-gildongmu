@@ -2,33 +2,16 @@ import { useState } from 'react'
 import { Badge, Button, Col, ProgressBar, Row, Tab, Tabs } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
-import { ERAS, HISTORY_TABS, coursesFor, eraOf, stampIdOf } from '../../shared/history'
+import StampBook from '../components/StampBook'
+import { useHistoryStamps } from '../lib/historyStamps'
+import { ERAS, HISTORY_COURSES, HISTORY_TABS, coursesFor, eraOf, stampIdOf } from '../../shared/history'
 import { useAppStore } from '../store/useAppStore'
-
-// ── 스탬프 저장: 로그인하면 계정(Supabase mission_stamps)에, 아니면 이 기기(localStorage)에 ──
-const LS = 'halmang-history-stamps'
-const readLocal = () => { try { return JSON.parse(localStorage.getItem(LS)) ?? [] } catch { return [] } }
-
-function useHistoryStamps() {
-  const user = useAppStore((s) => s.user)
-  const dbStamps = useAppStore((s) => s.stamps)
-  const toggleDb = useAppStore((s) => s.toggleStamp)
-  const [local, setLocal] = useState(readLocal)
-  const stamps = user ? dbStamps : local
-  function toggle(id) {
-    if (user) return toggleDb(id)
-    const next = local.includes(id) ? local.filter((x) => x !== id) : [...local, id]
-    setLocal(next)
-    try { localStorage.setItem(LS, JSON.stringify(next)) } catch { /* 저장 실패는 무시 */ }
-  }
-  return { stamps, toggle, guest: !user }
-}
 
 // ── 코스 카드 ─────────────────────────────────────────────
 function CourseCard({ c, done, onStamp }) {
   const era = eraOf(c.era)
   return (
-    <div className={`soft-card h-card ${done ? 'stamped' : ''}`} style={{ '--era': era.color }}>
+    <div id={`card-${c.id}`} className={`soft-card h-card ${done ? 'stamped' : ''}`} style={{ '--era': era.color }}>
       <div className="d-flex align-items-center gap-2 flex-wrap">
         <span className="era-tag" style={{ background: era.color }}>{era.emoji} {era.label}</span>
         <span className="small text-muted"><i className="bi bi-geo-alt me-1" />{c.area}</span>
@@ -107,14 +90,31 @@ function TourPanel({ tab }) {
 
 export default function HistoryTour() {
   const ageBand = useAppStore((s) => s.ageBand)
+  const { stamps } = useHistoryStamps()
   const [tab, setTab] = useState(ageBand === 'upper' ? 'upper' : 'young') // 아이와 함께에서 고른 연령에 맞춰 시작
+  const [book, setBook] = useState(false)
+  const total = Object.values(HISTORY_COURSES).flat().filter((c) => stamps.includes(stampIdOf(c))).length
+
+  // 도장첩에서 도장을 누르면 그 카드가 있는 탭으로 가서 카드 위치로 스크롤
+  function pick(card) {
+    const t = HISTORY_TABS.find((x) => HISTORY_COURSES[x.key].some((c) => c.id === card.id))
+    setBook(false)
+    if (t) setTab(t.key)
+    setTimeout(() => document.getElementById(`card-${card.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)
+  }
+
   return (
     <>
-      <PageTitle icon="hourglass-split" title="제주 역사 스탬프 투어" sub="선사시대부터 오늘까지, 시간 여행을 하며 도장을 모아요" />
+      <PageTitle icon="hourglass-split" title="제주 역사 스탬프 투어" sub="선사시대부터 오늘까지, 시간 여행을 하며 도장을 모아요">
+        <Button variant="outline-primary" className="rounded-pill" onClick={() => setBook(true)}>
+          <i className="bi bi-journal-bookmark me-1" />내 도장첩 <Badge bg="primary" pill>{total}</Badge>
+        </Button>
+      </PageTitle>
       <Tabs activeKey={tab} onSelect={(k) => setTab(k)} className="mb-3" fill>
         {HISTORY_TABS.map((t) => <Tab key={t.key} eventKey={t.key} title={t.short}><TourPanel tab={t.key} /></Tab>)}
       </Tabs>
       <p className="small text-muted mb-0"><i className="bi bi-info-circle me-1" />운영시간·관람 범위는 장소마다 달라요. 방문 전에 확인해 주세요. 연도와 설명은 현장 안내판·박물관 설명으로 한 번 더 확인해 보세요.</p>
+      {book && <StampBook stamps={stamps} onHide={() => setBook(false)} onPick={pick} />}
     </>
   )
 }
