@@ -136,10 +136,8 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .h-card:hover { box-shadow: 0 6px 18px rgba(120, 80, 20, .14); }
 .h-card.stamped { background: #fbfff7; }
 .h-mission { background: var(--hm-orange-soft); border-radius: 1rem; padding: .7rem .9rem; }
-.stamp-mark { position: absolute; top: .7rem; right: .7rem; width: 74px; height: 74px; border-radius: 50%; border: 3px dashed var(--era); color: var(--era); background: rgba(255,255,255,.75); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; transform: rotate(-14deg); animation: stampIn .5s cubic-bezier(.2, 1.7, .4, 1) both; pointer-events: none; }
-.stamp-mark span { font-size: 1.5rem; }
-.stamp-mark b { font-size: .62rem; margin-top: 2px; }
-@keyframes stampIn { 0% { transform: rotate(-30deg) scale(2.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: rotate(-14deg) scale(1); opacity: 1; } }
+.stamp-mark { position: absolute; top: .5rem; right: .5rem; line-height: 0; transform: rotate(-12deg); animation: stampIn .5s cubic-bezier(.2, 1.7, .4, 1) both; pointer-events: none; }
+@keyframes stampIn { 0% { transform: rotate(-30deg) scale(2.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: rotate(-12deg) scale(1); opacity: 1; } }
 .era-strip { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: thin; }
 .era-step { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; min-width: 76px; background: #fff; border: 2px solid #f0e2cd; border-radius: 1rem; padding: .35rem .8rem; color: #5b4a3a; font-weight: 600; cursor: pointer; }
 .era-step small { font-weight: 400; color: #8a7b6c; }
@@ -151,11 +149,12 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .stamp-tile { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .1rem; padding: .7rem .4rem .55rem; background: #faf6ee; border: 2px dashed #e0d3bd; border-radius: 1rem; color: #a99a86; cursor: pointer; transition: transform .15s, box-shadow .15s; }
 .stamp-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(120, 80, 20, .12); }
 .stamp-circle { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 1.7rem; border: 3px dashed #d8cbb6; background: #fff; filter: grayscale(1); opacity: .55; }
+.stamp-circle.sq { border-radius: .8rem; }
+.stamp-face { display: block; line-height: 0; transform: rotate(-8deg); }
 .stamp-name { font-weight: 700; font-size: .78rem; }
 .stamp-place { font-size: .68rem; line-height: 1.2; color: #a99a86; word-break: keep-all; }
 .stamp-age { position: absolute; top: .3rem; right: .35rem; font-size: .7rem; }
 .stamp-tile.got { background: #fff; border-style: solid; border-color: var(--era); color: #4a3a2c; }
-.stamp-tile.got .stamp-circle { filter: none; opacity: 1; border-color: var(--era); transform: rotate(-8deg); }
 .stamp-tile.got .stamp-place { color: #7a6a58; }
 
 /* ── 홈 대시보드 ── */

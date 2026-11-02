@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Modal, ProgressBar } from 'react-bootstrap'
+import Stamp from './Stamp'
 import { ERAS, HISTORY_COURSES, HISTORY_TABS, eraOf, nextTitle, stampIdOf, titleFor } from '../../shared/history'
 
 // 도장첩: 모은 도장은 시대 색으로 선명하게, 아직 안 모은 도장은 흐리게 보여 준다.
@@ -46,7 +47,7 @@ export default function StampBook({ stamps, onHide, onPick }) {
                 {items.map((c) => (
                   <button type="button" key={c.id} className={`stamp-tile ${has(c) ? 'got' : ''}`} style={{ '--era': eraOf(c.era).color }} onClick={() => onPick(c)}
                     aria-label={`${c.place} ${has(c) ? '도장 찍음' : '아직 안 찍음'}`}>
-                    <span className="stamp-circle">{has(c) ? c.theme.emoji : <i className="bi bi-question-lg" />}</span>
+                    {has(c) ? <span className="stamp-face"><Stamp tab={c.tab} c={c} era={eraOf(c.era)} size={64} /></span> : <span className={`stamp-circle ${c.tab === 'upper' ? 'sq' : ''}`}><i className="bi bi-question-lg" /></span>}
                     <span className="stamp-name">{has(c) ? c.theme.name : '???'}</span>
                     <span className="stamp-place">{c.place}</span>
                     <span className="stamp-age">{HISTORY_TABS.find((t) => t.key === c.tab).short.split(' ')[0]}</span>

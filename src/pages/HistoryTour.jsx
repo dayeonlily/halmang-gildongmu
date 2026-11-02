@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { Badge, Button, Col, ProgressBar, Row, Tab, Tabs } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
+import Stamp from '../components/Stamp'
 import StampBook from '../components/StampBook'
 import { useHistoryStamps } from '../lib/historyStamps'
 import { ERAS, HISTORY_COURSES, HISTORY_TABS, coursesFor, eraOf, stampIdOf } from '../../shared/history'
 import { useAppStore } from '../store/useAppStore'
 
 // ── 코스 카드 ─────────────────────────────────────────────
-function CourseCard({ c, done, onStamp }) {
+function CourseCard({ c, done, onStamp, tab }) {
   const era = eraOf(c.era)
   return (
     <div id={`card-${c.id}`} className={`soft-card h-card ${done ? 'stamped' : ''}`} style={{ '--era': era.color }}>
@@ -36,7 +37,7 @@ function CourseCard({ c, done, onStamp }) {
       </div>
 
       {/* 찍으면 쾅! 하고 나타나는 도장 */}
-      {done && <div className="stamp-mark" aria-hidden="true"><span>{c.theme.emoji}</span><b>참 잘했어요</b></div>}
+      {done && <div className="stamp-mark" aria-hidden="true"><Stamp tab={tab} c={c} era={era} /></div>}
     </div>
   )
 }
@@ -82,7 +83,7 @@ function TourPanel({ tab }) {
       </div>
 
       <Row xs={1} md={2} xl={3} className="g-3">
-        {list.map((c) => <Col key={c.id}><CourseCard c={c} done={has(c)} onStamp={() => toggle(stampIdOf(c))} /></Col>)}
+        {list.map((c) => <Col key={c.id}><CourseCard tab={tab} c={c} done={has(c)} onStamp={() => toggle(stampIdOf(c))} /></Col>)}
       </Row>
     </>
   )
