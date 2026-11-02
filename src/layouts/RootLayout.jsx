@@ -54,8 +54,8 @@ export default function RootLayout() {
   useEffect(() => { initAuth() }, [initAuth])
   useEffect(() => { document.body.classList.toggle('kids', kidsMode) }, [kidsMode])
 
-  // 로그인 전 첫 화면(/)은 메뉴 없이 전체 화면 인트로로 보여 준다
-  if (pathname === '/' && (!authReady || !user)) {
+  // 로그인 전 첫 화면(/)과 로그인·회원가입(/login)은 메뉴 없이 그 화면만 보여 준다
+  if (pathname === '/login' || (pathname === '/' && (!authReady || !user))) {
     return (
       <>
         <Outlet />

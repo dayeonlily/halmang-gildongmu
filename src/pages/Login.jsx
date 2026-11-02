@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Card, Form, Nav } from 'react-bootstrap'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
+import Waves from '../components/Waves'
 import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
 
@@ -34,7 +35,9 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 440 }} className="mx-auto">
+    <div className="intro auth-screen">
+      <Link to="/" className="auth-back"><i className="bi bi-chevron-left" />처음으로</Link>
+      <div className="auth-box">
       <PageTitle icon="person-heart" title={mode === 'in' ? '다시 만나서 반가워요' : '할망 길동무 가족 되기'} sub="이메일로 간단히 시작해요" />
       {!isSupabaseReady && <Alert variant="warning">Supabase 설정(.env.local)이 없어서 로그인할 수 없어요. 관리자에게 문의하세요.</Alert>}
       <Card className="soft-card border-0">
@@ -54,6 +57,8 @@ export default function Login() {
           </Form>
         </Card.Body>
       </Card>
+      </div>
+      <Waves />
     </div>
   )
 }
