@@ -9,7 +9,7 @@ const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', 
 // 장소 목록 검색. accessibleOnly=true 면 무장애 여행정보에 등록된 장소만.
 // 반환: { items, total }  (total = 조건에 맞는 전체 건수 → "더보기" 판단용)
 async function searchOne({ keyword = '', contentTypeId = '', page = 1, rows = 12, accessibleOnly = false } = {}) {
-  const params = { ...COMMON, numOfRows: String(rows), pageNo: String(page), arrange: 'O' } // O = 제목순(대표이미지 있는 것)
+  const params = { ...COMMON, numOfRows: String(rows), pageNo: String(page), arrange: 'Q' } // Q = 최근 수정순(대표이미지 있는 것) — 제목순이면 가나다 앞쪽 장소만 보여서
   if (contentTypeId) params.contentTypeId = String(contentTypeId)
   if (keyword) params.keyword = keyword
   const base = accessibleOnly ? BASE_WITH : BASE
@@ -22,12 +22,22 @@ async function searchOne({ keyword = '', contentTypeId = '', page = 1, rows = 12
   return { items, total: Number(body?.totalCount ?? items.length) }
 }
 
-// 문화시설(14)만 이용요금 필드가 있어 "무료/유료" 가격 기준에 사용
-export async function getUseFee({ id, type }) {
-  if (String(type) !== '14') return null
-  const body = await dataGo(`${BASE}/detailIntro2`, { ...COMMON, contentId: String(id), contentTypeId: '14' })
-  const fee = toArray(body?.items?.item)[0]?.usefee ?? ''
-  return String(fee).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+// 장소 소개 정보(detailIntro2): 요금·주차·유모차 대여·체험 연령·숙소 방/부대시설 등 장소마다 다른 값
+// (지역 코드는 붙이지 않는다 — 붙이면 빈 응답이 온다). 종류마다 필드 이름 뒤에 culture/leports/food/lodging 이 붙어서 한데 모은다.
+const SUFFIX = ['', 'culture', 'leports', 'food', 'lodging', 'shopping']
+const pick = (d, base) => { for (const s of SUFFIX) { const v = d[base + s]; if (v) return v } return '' }
+const text = (v) => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+const yesNo = (v) => { const s = text(v); return !s ? '' : /^(가능|있음|유|무료|예)/.test(s) ? 'yes' : /^(불가|없음|무|안)/.test(s) ? 'no' : '' }
+export async function getIntro({ id, type }) {
+  const body = await dataGo(`${BASE}/detailIntro2`, { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', contentId: String(id), contentTypeId: String(type) })
+  const d = toArray(body?.items?.item)[0] ?? {}
+  return {
+    fee: text(d.usefee || d.usefeeleports),
+    parking: yesNo(pick(d, 'parking')), carriage: yesNo(pick(d, 'chkbabycarriage')),
+    expage: text(d.expagerange || d.expagerangeleports), exp: text(d.expguide),
+    kidsfac: yesNo(d.kidsfacility), room: text(d.roomtype), sub: text(d.subfacility),
+    menu: text(`${d.firstmenu ?? ''} ${d.treatmenu ?? ''}`), rest: text(pick(d, 'restdate')),
+  }
 }
 
 // 검색어를 쉼표로 이어 쓰면(예: "숲길,둘레길,곶자왈") 각각 검색해 번갈아 섞어 돌려준다 → 테마 검색

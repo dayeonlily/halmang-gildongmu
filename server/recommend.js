@@ -1,73 +1,195 @@
-// 세 API를 묶어 "접근성 · 안전 · 가격" 점수로 스팟을 추천한다 (각 0~100 → 가중 합산)
-import { searchTour, getUseFee } from './tour.js'
+// 세 API를 묶어 "우리 가족 맞춤 점수"를 매긴다 (각 0~100 → 가중 합산)
+//   접근성 30 · 아이 맞춤 25 · 날씨 안전 20 · 비용 15 · 테마 일치 10(테마를 골랐을 때) · 가까움 15(머무는 곳을 골랐을 때)
+// 점수는 가족 설정(아이 나이·유모차/휠체어/수유·예산)과 지금 누른 테마에 따라 달라진다.
+import { searchTour, getIntro } from './tour.js'
 import { getAccess } from './access.js'
 import { getWeather, placeByLat } from './weather.js'
 
 const INDOOR = new Set(['14', '38', '39']) // 문화시설·쇼핑·음식점
 const BUDGET_LIMIT = { free: 0, low: 10000, mid: 30000, any: Infinity }
+export const WEIGHTS = { access: 30, kids: 25, safety: 20, price: 15, theme: 10, near: 15 }
 
-function accessScore(a, needs) {
-  if (!a?.registered) return { score: 25, notes: ['무장애 정보 미등록'] }
+// ① 접근성: 선택한 필요(유모차·휠체어·수유)는 크게, 나머지 시설은 작게 → 시설이 많이 갖춰질수록 점수가 달라진다
+function accessScore(a, needs, intro = {}) {
+  if (!a?.registered) {
+    // 무장애 정보가 없어도 소개 정보의 유모차 대여·주차로 조금씩 구분한다
+    const notes = []
+    let score = 25
+    if (intro.carriage === 'yes') { score += 18; notes.push('유모차 대여') }
+    else if (intro.carriage === 'no' && needs.includes('stroller')) score -= 8
+    if (intro.parking === 'yes') { score += 8; notes.push('주차 가능') }
+    else if (intro.parking === 'no' && (needs.includes('wheelchair') || needs.includes('stroller'))) score -= 5
+    if (!notes.length) notes.push('무장애 정보 미등록')
+    return { score: Math.max(5, score), notes }
+  }
   const f = a.flags, notes = []
   let score = 30, max = 30
-  const want = (cond, key, w, label) => {
-    if (!cond) return
+  const want = (key, need, big, small, label) => {
+    const w = need ? big : small
+    if (!w) return
     max += w
-    if (f[key]) { score += w; notes.push(label) }
+    if (f[key]) { score += w; if (label) notes.push(label) }
   }
-  const stroller = needs.includes('stroller'), wheel = needs.includes('wheelchair')
-  want(stroller, 'stroller', 25, '유모차 가능')
-  want(wheel, 'wheelchair', 25, '휠체어 가능')
-  want(stroller || wheel, 'elevator', 10, '엘리베이터')
-  want(stroller || wheel, 'exit', 5, '출입구 단차 정보')
-  want(needs.includes('nursing'), 'lactation', 20, '수유실')
-  want(true, 'restroom', 10, '장애인 화장실')
-  want(true, 'parking', 10, '장애인 주차')
+  const stroller = needs.includes('stroller'), wheel = needs.includes('wheelchair'), nursing = needs.includes('nursing')
+  want('stroller', stroller, 25, 8, '유모차 가능')
+  want('wheelchair', wheel, 25, 6, '휠체어 가능')
+  want('elevator', stroller || wheel, 10, 6, '엘리베이터')
+  want('exit', stroller || wheel, 5, 3, '출입구 단차 정보')
+  want('lactation', nursing, 20, 8, '수유실')
+  want('restroom', true, 10, 10, '장애인 화장실')
+  want('parking', true, 10, 10, '장애인 주차')
   return { score: Math.round((score / max) * 100), notes }
 }
 
-function safetyScore(p, w) {
+// ② 아이 맞춤: 아이 나이대에 따라 같은 장소도 점수가 다르다
+const KID = /키즈|어린이|아이|체험|놀이|동물|목장|농장|공원|박물관|과학|아쿠아|테마파크|승마|썰매|미술관/
+const ANIMAL_PARK = /동물|목장|농장|공원|해변|해수욕|아쿠아/
+const TOUGH = /오름|올레|등반|한라산|트레킹|폭포|동굴|둘레길/
+const CULTURE = /박물관|역사|유적|기념관|민속|문화|전시|항일|4·3|해녀/
+const KID_FOOD = /돈가스|돈까스|우동|국수|피자|파스타|김밥|죽|순두부|오므라이스|함박|스테이크|볶음밥|치킨|계란|감귤|아이스크림|빵/
+const SPICY_RAW = /회|횟|물회|육회|매운|마라|낙지|곱창|술|막걸리|이자카야|포차|훠궈/
+const FAMILY_ROOM = /키즈|패밀리|온돌|수영장|풀|가족|스위트/
+function kidsScore(p, a, ageBand, indoor, intro = {}) {
+  const text = `${p.title} ${p.addr ?? ''}`
+  const f = a?.flags ?? {}, notes = []
+  let s = 50
+  // 소개 정보에서 아이와 관련된 값: 체험 가능 연령·체험 안내·어린이 놀이방·유모차 대여·가족 객실
+  if (/전\s*연령|누구|어린이|유아|아동|가족|연령\s*무관/.test(intro.expage)) { s += 10; notes.push('전 연령 체험') }
+  if (intro.exp) s += 6
+  if (intro.kidsfac === 'yes') { s += 14; notes.push('어린이 놀이방') }
+  if (intro.carriage === 'yes' && (ageBand === 'infant' || ageBand === 'toddler')) s += 8
+  if (p.type === '39') {
+    if (KID_FOOD.test(intro.menu)) { s += 12; notes.push('아이가 먹기 좋은 메뉴') }
+    if (SPICY_RAW.test(intro.menu + p.title) && (ageBand === 'infant' || ageBand === 'toddler')) { s -= 12; notes.push('날것·매운 메뉴 위주') }
+    if (/카페|디저트|베이커리/.test(p.title + intro.menu) && ageBand !== 'upper') s += 4
+  }
+  if (p.type === '32' && FAMILY_ROOM.test(`${intro.room} ${intro.sub}`)) { s += 12; notes.push('가족 객실·부대시설') }
+  const kid = KID.test(text), tough = TOUGH.test(text)
+  if (ageBand === 'infant') {
+    if (indoor) { s += 12; notes.push('실내라 영아에게 편해요') }
+    if (f.lactation) { s += 14; notes.push('수유실 있음') }
+    if (f.babychair) { s += 8; notes.push('유아 의자') }
+    if (f.stroller) s += 14
+    if (a?.family) s += 6
+    if (tough) { s -= 18; notes.push('걷기·오르막 부담') }
+    if (kid) s += 6
+  } else if (ageBand === 'toddler') {
+    if (indoor) s += 6
+    if (f.lactation) s += 6
+    if (f.stroller) s += 10
+    if (tough) { s -= 12; notes.push('걸음마기엔 오르막 부담') }
+    if (kid) { s += 14; notes.push('아이 놀이·체험') }
+    if (ANIMAL_PARK.test(text)) s += 6
+  } else if (ageBand === 'lower') {
+    if (kid) { s += 16; notes.push('아이 놀이·체험') }
+    if (p.type === '28') { s += 10; notes.push('체험 활동') }
+    if (ANIMAL_PARK.test(text)) s += 6
+    if (/오름/.test(text)) s += 4
+  } else if (ageBand === 'upper') {
+    if (p.type === '28') { s += 12; notes.push('체험 활동') }
+    if (p.type === '14') s += 10
+    if (CULTURE.test(text)) { s += 8; notes.push('역사·문화 배움') }
+    if (tough) { s += 8; notes.push('걷는 재미') }
+    if (/키즈|유아/.test(text)) s -= 10
+  } else { // 유아(기본)
+    if (kid) { s += 18; notes.push('아이 놀이·체험') }
+    if (p.type === '28') s += 8
+    if (/해변|해수욕|숲|공원/.test(text)) s += 8
+    if (tough) s -= 4
+  }
+  return { score: Math.max(0, Math.min(100, Math.round(s))), notes }
+}
+
+// 오늘(한국 시간) 정기 휴무인가: "매주 화요일" 같은 주간 휴무만 읽는다 ("첫째 주 월요일" 같은 건 판단하지 않음)
+const DAYS = ['일', '월', '화', '수', '목', '금', '토']
+const todayChar = () => DAYS[new Date(Date.now() + 9 * 3600e3).getUTCDay()]
+function closedToday(rest) {
+  if (!rest || /연중무휴|무휴/.test(rest)) return false
+  const m = rest.match(/매주\s*([^※()]{0,14})/)
+  return Boolean(m && new RegExp(`${todayChar()}(요일|,|·|/|\\s|$)`).test(`${m[1]} `))
+}
+
+// ③ 날씨·운영 안전
+function safetyScore(p, w, intro = {}) {
   const indoor = INDOOR.has(p.type)
   let s = 80
   if (w.wet) s += indoor ? 15 : -45
   if (w.hot) s += indoor ? 10 : -25
   if (w.cold) s += indoor ? 10 : -20
   if (w.windy && !indoor) s -= 15
-  return { score: Math.max(0, Math.min(100, s)), indoor }
+  if (!indoor && TOUGH.test(p.title) && (w.wet || w.windy)) s -= 10
+  // 같은 날씨여도 강수확률·쾌적한 기온(약 15~25도)에서 벗어난 만큼 야외는 조금씩 깎는다
+  if (!indoor) { s -= Math.round((w.pop ?? 0) * 0.15); if (w.temp != null) s -= Math.round(Math.max(0, Math.abs(w.temp - 20) - 5) * 0.8) }
+  else if ((w.pop ?? 0) >= 30 || (w.temp != null && Math.abs(w.temp - 20) > 10)) s += 3
+  const closed = closedToday(intro.rest)
+  if (closed) s = Math.min(s, 10)
+  return { score: Math.max(0, Math.min(100, s)), indoor, closed }
 }
 
-function priceScore(fee, budget) {
-  if (fee == null || fee === '') return { score: 60, label: '요금 정보 없음', won: null }
+// ④ 비용: 예산 안이면 높게, 넘으면 낮게. 예산 상관없음이어도 값이 낮을수록 높게 매겨 구분한다
+const NATURE_FREE = /오름|올레|숲|곶자왈|해변|해수욕|해안|공원|폭포|둘레길|산책로|전망대/
+function priceScore(fee, budget, p) {
+  if (fee == null || fee === '') {
+    if (p.type === '12' && NATURE_FREE.test(p.title)) return { score: 80, label: '자연 장소(대개 무료)', won: null }
+    const t = `${p.title} ${p.menu ?? ''}`
+    if (p.type === '39' && /횟집|한우|스시|초밥|오마카세|코스|정식|스테이크|전복|갈치조림|고등어회|랍스터/.test(t)) return { score: 40, label: '비싼 편(추정)', won: null }
+    if (p.type === '39' && /국수|분식|김밥|해장국|순대|백반|토스트|빵집|베이커리|칼국수|순두부|돈가스/.test(t)) return { score: 78, label: '가성비 좋은 편(추정)', won: null }
+    if (p.type === '32' && /호텔|리조트|풀빌라/.test(t)) return { score: 35, label: '숙박비 높은 편(추정)', won: null }
+    if (p.type === '32' && /게스트하우스|민박|캠핑|도미토리/.test(t)) return { score: 75, label: '숙박비 낮은 편(추정)', won: null }
+    return { score: 60, label: '요금 정보 없음', won: null }
+  }
   if (/무료/.test(fee) && !/유료|\d{3,}/.test(fee.replace(/무료/g, ''))) return { score: 100, label: '무료', won: 0 }
   const nums = [...fee.matchAll(/(\d{1,3}(?:,\d{3})+|\d{3,6})\s*원/g)].map((m) => Number(m[1].replace(/,/g, '')))
   if (!nums.length) return { score: 60, label: fee.slice(0, 24), won: null }
   const won = Math.min(...nums), limit = BUDGET_LIMIT[budget] ?? Infinity
-  const score = limit === Infinity ? 80 : won <= limit ? 90 : Math.max(10, 90 - Math.round(((won - limit) / (limit || 10000)) * 40))
-  return { score, label: `${won.toLocaleString()}원~`, won }
+  const score = limit === Infinity
+    ? Math.max(50, 92 - Math.round(won / 1200))
+    : won <= limit ? Math.round(95 - (won / (limit || 1)) * 12) : Math.max(10, 80 - Math.round(((won - limit) / (limit || 10000)) * 45))
+  return { score: Math.max(0, Math.min(100, score)), label: `${won.toLocaleString()}원~`, won }
 }
 
-export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', page = 1, limit = 12, accessibleOnly = false } = {}) {
+// ⑤ 테마 일치: 고른 테마·검색어가 장소 이름·주소에 들어 있는가
+function themeScore(p, keyword) {
+  const kws = String(keyword ?? '').split(',').map((k) => k.trim()).filter(Boolean)
+  if (!kws.length) return null
+  if (kws.some((k) => p.title.includes(k))) return 100
+  if (kws.some((k) => (p.addr ?? '').includes(k))) return 70
+  return 45
+}
+
+const rad = (d) => (d * Math.PI) / 180
+const distKm = (a, b) => { const x = rad(b.lat - a.lat), y = rad(b.lng - a.lng); const h = Math.sin(x / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(y / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)) }
+// ⑥ 가까움: 머무는 곳(또는 내 여행 바구니 중심)에서 8km 이내면 만점, 50km 가까이 멀면 20점
+const nearScore = (km) => Math.max(10, Math.min(100, Math.round(100 - Math.max(0, km - 8) * (80 / 42))))
+
+export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', age = 'preschool', near = null, page = 1, limit = 12, accessibleOnly = false } = {}) {
   const found = await searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly })
   const candidates = found.items.filter((p) => p.lat && p.lng)
   const weatherByPlace = {}
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
 
   const items = await Promise.all(candidates.map(async (p) => {
-    const [access, fee, wx] = await Promise.all([
+    const [access, intro, wx] = await Promise.all([
       getAccess({ id: p.id }).catch(() => ({ id: p.id, registered: false })),
-      getUseFee(p).catch(() => null),
+      getIntro(p).catch(() => ({})),
       getW(placeByLat(p.lat)),
     ])
-    const a = accessScore(access, needs)
-    const s = safetyScore(p, wx?.summary ?? {})
-    const c = priceScore(fee, budget)
-    const total = Math.round(a.score * 0.45 + s.score * 0.3 + c.score * 0.25)
+    const a = accessScore(access, needs, intro)
+    const s = safetyScore(p, wx?.summary ?? {}, intro)
+    const k = kidsScore(p, access, age, s.indoor, intro)
+    const c = priceScore(intro.fee, budget, { ...p, menu: intro.menu })
+    const t = themeScore(p, keyword)
+    const km = near ? distKm(near, p) : null
+    const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }) }
+    const wsum = Object.keys(parts).reduce((n, key) => n + WEIGHTS[key], 0)
+    const total = Math.round(Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum)
     return {
       ...p, access, indoor: s.indoor, price: c.label,
-      scores: { access: a.score, safety: s.score, price: c.score, total }, notes: a.notes,
+      scores: { ...parts, total }, notes: [...(s.closed ? ['오늘 휴무'] : []), ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes].slice(0, 4), distanceKm: km == null ? null : Math.round(km * 10) / 10,
     }
   }))
   items.sort((x, y) => y.scores.total - x.scores.total)
   const w = await getW('제주시')
-  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total }
+  const weights = Object.fromEntries(Object.entries(WEIGHTS).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
+  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, basis: { age, needs, budget, weights } }
 }

@@ -60,7 +60,7 @@ export default function Home() {
     let off = false
     // 접근성이 필요한 가족은 무장애 정보가 등록된 곳에서, 날마다 다른 쪽(페이지)을 보여 줘서 매일 새롭게
     const needs = profile?.needs ?? []
-    fetchSpots({ type: needs.length ? '' : '12', needs, budget: profile?.budget ?? 'any', accessible: needs.length > 0, page: (dayIndex % 12) + 1, limit: 24 })
+    fetchSpots({ type: needs.length ? '' : '12', needs, budget: profile?.budget ?? 'any', age: ageBand, accessible: needs.length > 0, page: (dayIndex % 12) + 1, limit: 24 })
       .then((r) => {
         if (off) return
         // 후보 24곳 중 구경할 만한 곳(관광지·문화시설·체험·행사)을 점수순으로 3곳. 부족하면 나머지로 채운다
@@ -70,7 +70,7 @@ export default function Home() {
       })
       .catch((e) => { if (!off) setSpotErr(e.message) })
     return () => { off = true }
-  }, [user, profileLoaded, profile])
+  }, [user, profileLoaded, profile, ageBand])
 
   if (!ready) return <div className="intro" /> // 로그인 여부를 확인하는 동안 같은 배경만 보여 깜빡임을 막는다
   if (!user) return <Intro />

@@ -78,7 +78,7 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .spot-img { height: 130px; width: 100%; object-fit: cover; background: #f3e7d4; display: grid; place-items: center; color: #c9b79d; font-size: 2rem; }
 .score-pill { font-weight: 800; color: #fff; border-radius: 999px; padding: .1rem .65rem; font-size: .95rem; }
 .score-hi { background: #43a047; } .score-mid { background: #f9a825; } .score-lo { background: #e53935; }
-.mini-bar { display: grid; grid-template-columns: 52px 1fr 28px; align-items: center; gap: .4rem; font-size: .75rem; color: #6c625a; }
+.mini-bar { display: grid; grid-template-columns: 74px 1fr 30px; align-items: center; gap: .4rem; font-size: .85rem; color: #5b4a3a; }
 .mini-bar .progress { height: 6px; }
 .explore-grid { display: grid; gap: 1rem; }
 @media (min-width: 1200px) { .explore-grid { grid-template-columns: 1.1fr 1fr; align-items: start; } .sticky-scene { position: sticky; top: 1.2rem; } }
@@ -208,3 +208,17 @@ small, .small { font-size: .92rem; }
   .quick-tile { flex-direction: row; justify-content: flex-start; text-align: left; gap: .8rem; padding: .9rem 1rem; }
   .quick-tile i { font-size: 1.9rem; }
 }
+
+/* ── 길동무 찾기: 종류 버튼 · 점수 설명 ── */
+.cat-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: .5rem; }
+.cat-btn { display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .8rem .2rem; text-align: center; line-height: 1.2; background: #fff; border: 2px solid #ead7b8; border-radius: 1.1rem; color: #4a3a2c; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.cat-btn i { font-size: 1.7rem; color: var(--hm-orange); }
+.cat-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(120, 80, 20, .15); }
+.cat-btn.on { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; box-shadow: 0 4px 14px rgba(232, 121, 26, .35); }
+.cat-btn.on i { color: #fff; }
+.theme-chip { font-size: 1rem; padding: .35rem .95rem; }
+.how-score { background: var(--hm-orange-soft); border-radius: 1rem; padding: .9rem 1rem; }
+.how-row { display: flex; gap: .7rem; align-items: baseline; padding: .3rem 0; font-size: .95rem; }
+.how-row.off { opacity: .6; }
+.how-w { flex: 0 0 3rem; font-weight: 800; color: var(--hm-orange); text-align: right; }
+@media (max-width: 767.98px) { .cat-row { grid-template-columns: repeat(4, 1fr); } .cat-btn { font-size: .85rem; padding: .6rem .1rem; } .cat-btn i { font-size: 1.4rem; } }
