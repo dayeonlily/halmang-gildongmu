@@ -233,3 +233,6 @@ small, .small { font-size: .92rem; }
 
 /* 새 버전 안내: 화면 맨 위에 고정 */
 .new-version { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .25rem; padding: .6rem 1rem; background: #2f3a3f; color: #fff; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,.25); }
+
+/* 여행 바구니: 지도 아래에 일차별 칸을 가로로 나란히 (넓은 화면 2~3열, 좁은 화면 1열) */
+.basket-days { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 1.25rem; align-items: start; }

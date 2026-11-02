@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, ButtonGroup, Col, Form, Row } from 'react-bootstrap'
+import { Button, ButtonGroup, Form } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
 import { ScorePill } from '../components/ScoreBars'
@@ -115,9 +115,12 @@ export default function Basket() {
       {basket.length === 0 ? (
         <Empty icon="basket2" text={<>아직 담은 곳이 없어요. <Link to="/explore">길동무 찾으러 가기</Link></>} />
       ) : (
-        <Row className="g-4">
-          <Col lg={7}>
-            <div className="mb-4" {...zone(0)}>
+        <>
+          {/* 지도는 맨 위, 담은 곳(일차별)은 지도 아래에 가로로 나란히 */}
+          <div className="mb-4"><IslandScene spots={spots} height={360} /></div>
+
+          <div className="basket-days">
+            <div {...zone(0)}>
               <h5 className="mb-2"><span className="chip me-2"><i className="bi bi-inbox" />아직 안 정했어요</span><small className="text-muted fs-6">{unplaced.length}곳</small></h5>
               {unplaced.length === 0 && <div className="small text-muted ps-1">여기에 두면 나중에 일차를 정할 수 있어요.</div>}
               {unplaced.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
@@ -126,7 +129,7 @@ export default function Basket() {
             {dayList.map((d) => {
               const items = basket.filter((b) => b.day === d)
               return (
-                <div key={d} className="mb-4" {...zone(d)}>
+                <div key={d} {...zone(d)}>
                   <h4 className="mb-2 d-flex align-items-center">
                     <span className="chip me-2">{d}일차</span><small className="text-muted fs-6">{items.length}곳</small>
                     {total > 1 && <Button size="sm" variant="link" className="ms-auto text-muted" onClick={() => removeDay(d)}><i className="bi bi-x-circle me-1" />이 일차 삭제</Button>}
@@ -137,14 +140,13 @@ export default function Basket() {
                 </div>
               )
             })}
+          </div>
 
-            <div className="d-flex flex-wrap gap-2">
-              <Button variant="outline-secondary" onClick={() => setDays(total + 1)} disabled={total >= MAX_DAYS}><i className="bi bi-plus-circle me-1" />{total + 1}일차 추가</Button>
-              <Button variant="outline-primary" onClick={askCheck}><i className="bi bi-chat-heart me-1" />할망에게 일정 점검 부탁하기</Button>
-            </div>
-          </Col>
-          <Col lg={5}><div style={{ position: 'sticky', top: '1.2rem' }}><IslandScene spots={spots} height={380} /></div></Col>
-        </Row>
+          <div className="d-flex flex-wrap gap-2 mt-2">
+            <Button variant="outline-secondary" onClick={() => setDays(total + 1)} disabled={total >= MAX_DAYS}><i className="bi bi-plus-circle me-1" />{total + 1}일차 추가</Button>
+            <Button variant="outline-primary" onClick={askCheck}><i className="bi bi-chat-heart me-1" />할망에게 일정 점검 부탁하기</Button>
+          </div>
+        </>
       )}
       {reviewing && (
         <ReviewModal key={`${reviewing.day}-${reviewing.review?.id ?? 'new'}`} day={reviewing.day} review={reviewing.review} onHide={() => setReviewing(null)}
