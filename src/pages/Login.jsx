@@ -34,7 +34,7 @@ export default function Login() {
   return (
     <div style={{ maxWidth: 440 }} className="mx-auto">
       <PageTitle icon="person-heart" title={mode === 'in' ? '다시 만나서 반가워요' : '할망 길동무 가족 되기'} sub="이메일로 간단히 시작해요" />
-      {!isSupabaseReady && <Alert variant="warning">Supabase 설정(.env.local)이 없어서 로그인할 수 없어요. <b>연결 점검</b> 메뉴를 확인하세요.</Alert>}
+      {!isSupabaseReady && <Alert variant="warning">Supabase 설정(.env.local)이 없어서 로그인할 수 없어요. 관리자에게 문의하세요.</Alert>}
       <Card className="soft-card border-0">
         <Card.Body>
           <Nav variant="pills" className="mb-3" activeKey={mode} onSelect={setMode} fill>
