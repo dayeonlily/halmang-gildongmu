@@ -65,7 +65,7 @@ export default function Home() {
         if (off) return
         // 후보 24곳 중 구경할 만한 곳(관광지·문화시설·체험·행사)을 점수순으로 3곳. 부족하면 나머지로 채운다
         const sight = r.items.filter((p) => ['12', '14', '28', '15'].includes(p.type))
-          .sort((x, y) => y.scores.total - x.scores.total || Number(!!y.image) - Number(!!x.image)) // 같은 점수면 사진이 있는 곳 먼저
+          .sort((x, y) => y.rank - x.rank || Number(!!y.image) - Number(!!x.image)) // 같은 점수면 사진이 있는 곳 먼저
         setSpots([...sight, ...r.items.filter((p) => !sight.includes(p))].slice(0, 3))
       })
       .catch((e) => { if (!off) setSpotErr(e.message) })

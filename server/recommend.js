@@ -238,7 +238,7 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
     const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }), ...(rate == null ? {} : { crowd: Math.max(0, Math.min(100, Math.round(100 - rate))) }) }
     const wsum = Object.keys(parts).reduce((n, key) => n + WEIGHTS[key], 0)
     const exact = Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum
-    const total = Math.round(exact * 10) / 10 // 소수 첫째 자리까지: 계산값이 거의 같은 장소도 구분되게
+    const total = Math.round(exact) // 화면에는 정수만, 정렬은 소수까지 가진 rank 로
     return {
       ...p, access, indoor: s.indoor, price: c.label,
       rank: exact + Math.min(overview.length, 1500) / 1e5, // 정렬용(같은 점수면 소개 정보가 충실한 곳이 앞에)
