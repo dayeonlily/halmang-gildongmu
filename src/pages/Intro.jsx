@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { HalmangBuddy } from '../scene/JejuScene'
+import HalmangMascot from '../components/art/Mascot'
 import Waves from '../components/Waves'
 
 // 처음 방문한(로그인 전) 사람이 가장 먼저 보는 화면: 할망이 제주어로 말을 건넨다
@@ -11,7 +11,7 @@ export default function Intro() {
 
   return (
     <div className="intro">
-      <div className="intro-halmang"><HalmangBuddy speaking={speaking} height={285} bare /></div>
+      <div className="intro-halmang"><HalmangMascot pose="wave" speaking={speaking} /></div>
 
       <div className="intro-bubble">
         <span className="chip mb-2">혼저 옵서예 👋</span>

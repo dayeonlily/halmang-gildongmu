@@ -4,7 +4,7 @@ import { Badge, Button, Col, ProgressBar, Row, Tab, Tabs } from 'react-bootstrap
 import PageTitle from '../components/PageTitle'
 import StoryArt from '../components/StoryArt'
 import { Empty } from '../components/Status'
-import { HalmangBuddy } from '../scene/JejuScene'
+import HalmangMascot from '../components/art/Mascot'
 import { AGE_BANDS, MISSION_KINDS, STORIES, missionsFor, wordsFor } from '../../shared/lore'
 import { useAppStore } from '../store/useAppStore'
 
@@ -76,7 +76,7 @@ function StoryTab() {
             <Button key={s.id} variant={s.id === id ? 'primary' : 'outline-primary'} className="text-start" onClick={() => pick(s.id)}>{s.emoji} {s.title}</Button>
           ))}
         </div>
-        <div className="mt-3 d-none d-md-block"><HalmangBuddy speaking={speaking} height={240} /></div>
+        <div className="mt-3 d-none d-md-block text-center"><HalmangMascot pose="wave" speaking={speaking} style={{ width: 200 }} /></div>
       </Col>
     </Row>
   )

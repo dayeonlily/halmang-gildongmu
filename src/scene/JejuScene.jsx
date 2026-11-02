@@ -3,9 +3,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Html, Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { BOUNDS, HALLA, buildTerrain, terrainHeight, toXZ } from './terrain'
-import Halmang from './Halmang'
 
-export { toXZ, Halmang }
+export { toXZ }
 
 const scoreColor = (s) => (s >= 70 ? '#43a047' : s >= 50 ? '#f9a825' : '#e53935')
 const FOG = '#cfe3ee'
@@ -96,7 +95,7 @@ function Cloud({ x, y, z, s = 1, speed = 0.05 }) {
   return (
     <group ref={g} position={[x, y, z]} scale={s}>
       {puffs.map(([a, b, c, r], i) => (
-        <mesh key={i} position={[a, b, c]}><sphereGeometry args={[r, 14, 12]} /><meshStandardMaterial color="#fff" transparent opacity={0.9} roughness={1} /></mesh>
+        <mesh key={i} position={[a, b, c]}><sphereGeometry args={[r, 14, 12]} /><meshBasicMaterial color="#ffffff" transparent opacity={0.88} fog={false} /></mesh>
       ))}
     </group>
   )
@@ -173,7 +172,6 @@ function Lights({ shadows }) {
 export function IslandScene({ spots = [], selectedId, onSelect, hero = false, height = 420 }) {
   const controls = useRef()
   const shadows = typeof window !== 'undefined' && window.innerWidth > 700 // 폰은 그림자를 꺼서 가볍게
-  const halmangAt = useMemo(() => { const [x, z] = toXZ(33.455, 126.44); return [x, terrainHeight(x, z), z] }, [])
   const focus = useMemo(() => {
     const s = spots.find((p) => p.id === selectedId)
     if (!s) return null
@@ -193,7 +191,6 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
         <Cloud x={-2.4} y={2.6} z={-1.6} s={1.2} />
         <Cloud x={2.6} y={3.0} z={0.4} s={1.5} speed={0.07} />
         <Cloud x={0.4} y={3.4} z={-2.8} s={1.0} speed={0.04} />
-        {hero && <><Halmang position={halmangAt} scale={0.5} /></>}
         {spots.map((s) => <Pin key={s.id} spot={s} selected={s.id === selectedId} onSelect={onSelect} />)}
         <OrbitControls ref={controls} enablePan={false} enableDamping minDistance={2.2} maxDistance={11} maxPolarAngle={Math.PI / 2.1}
           autoRotate={hero && !selectedId} autoRotateSpeed={0.45} target={[HALLA[0] * 0.2, 0.15, HALLA[1] * 0.2]} />
@@ -203,17 +200,3 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
   )
 }
 
-// 이야기 들려주는 할망 (작은 캔버스)
-export function HalmangBuddy({ speaking = false, height = 220, bare = false }) {
-  return (
-    <div className="scene-wrap buddy" style={{ height, ...(bare ? { background: 'transparent', border: 'none' } : {}) }}>
-      <Canvas camera={{ position: [0, 1.2, 3.3], fov: 36 }} dpr={[1, 2]} gl={{ alpha: true }}>
-        <hemisphereLight args={['#fff4dc', '#f1c58d', 0.95]} />
-        <directionalLight position={[2.5, 4, 4]} intensity={1.7} color="#fff3e0" />
-        <directionalLight position={[-3, 2.5, -2.5]} intensity={0.9} color="#bfe6ff" />
-        <Halmang speaking={speaking} position={[0, -0.02, 0]} scale={1} />
-        <OrbitControls enableZoom={false} enablePan={false} target={[0, 0.95, 0]} maxPolarAngle={Math.PI / 1.9} minPolarAngle={Math.PI / 3} />
-      </Canvas>
-    </div>
-  )
-}
