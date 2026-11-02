@@ -1,0 +1,99 @@
+import { useEffect, useState } from 'react'
+import { Badge, Button, Container, Form, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NAV_ITEMS } from '../router'
+import { useAppStore } from '../store/useAppStore'
+
+function NavList({ onPick }) {
+  const basketCount = useAppStore((s) => s.basket.length)
+  return (
+    <nav className="nav flex-column gap-1">
+      {NAV_ITEMS.map((n) => (
+        <NavLink key={n.to} to={n.to} end={n.to === '/'} className="nav-link" onClick={onPick}>
+          <i className={`bi bi-${n.icon}`} />{n.label}
+          {n.to === '/basket' && basketCount > 0 && <Badge bg="light" text="dark" pill className="ms-auto">{basketCount}</Badge>}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
+function Account() {
+  const user = useAppStore((s) => s.user)
+  const profile = useAppStore((s) => s.profile)
+  const signOut = useAppStore((s) => s.signOut)
+  const nav = useNavigate()
+  if (!user) return <Button variant="primary" size="sm" className="w-100" onClick={() => nav('/login')}><i className="bi bi-box-arrow-in-right me-1" />로그인 · 회원가입</Button>
+  return (
+    <div>
+      <div className="mb-1 text-truncate"><i className="bi bi-person-circle me-1" />{profile?.display_name || user.email}</div>
+      <Button variant="outline-light" size="sm" className="w-100" onClick={signOut}>로그아웃</Button>
+    </div>
+  )
+}
+
+function KidsSwitch() {
+  const kidsMode = useAppStore((s) => s.kidsMode)
+  const setKidsMode = useAppStore((s) => s.setKidsMode)
+  return (
+    <Form.Check type="switch" id="kids-switch" label="아이와 함께 모드" checked={kidsMode}
+      onChange={(e) => setKidsMode(e.target.checked)} className="mb-3" />
+  )
+}
+
+export default function RootLayout() {
+  const toasts = useAppStore((s) => s.toasts)
+  const kidsMode = useAppStore((s) => s.kidsMode)
+  const initAuth = useAppStore((s) => s.initAuth)
+  const basket = useAppStore((s) => s.basket.length)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => { initAuth() }, [initAuth])
+  useEffect(() => { document.body.classList.toggle('kids', kidsMode) }, [kidsMode])
+
+  return (
+    <div className="app-shell">
+      {/* 데스크톱: 좌측 레일 */}
+      <aside className="rail">
+        <Link to="/" className="brand"><img src="/favicon.svg" alt="" />할망 길동무</Link>
+        <NavList />
+        <div className="rail-foot">
+          <KidsSwitch />
+          <Account />
+          <div className="mt-3 opacity-50" style={{ fontSize: '.72rem' }}>데이터: 한국관광공사 · 기상청 (공공데이터포털)</div>
+        </div>
+      </aside>
+
+      {/* 모바일: 상단바 + 서랍 + 하단 탭 */}
+      <header className="topbar">
+        <Link to="/" className="text-white text-decoration-none display-font fs-5"><img src="/favicon.svg" alt="" width="28" className="me-2" />할망 길동무</Link>
+        <Button variant="link" className="text-white fs-4 p-0" onClick={() => setOpen(true)} aria-label="메뉴"><i className="bi bi-list" /></Button>
+      </header>
+      <Offcanvas show={open} onHide={() => setOpen(false)} placement="end" className="drawer" style={{ background: '#2f3a3f', color: '#fff' }}>
+        <Offcanvas.Header closeButton closeVariant="white"><Offcanvas.Title className="display-font">메뉴</Offcanvas.Title></Offcanvas.Header>
+        <Offcanvas.Body className="d-flex flex-column">
+          <NavList onPick={() => setOpen(false)} />
+          <div className="mt-auto pt-3"><KidsSwitch /><Account /></div>
+        </Offcanvas.Body>
+      </Offcanvas>
+      <nav className="tabbar">
+        {NAV_ITEMS.filter((n) => n.tab).map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.to === '/'}>
+            <i className={`bi bi-${n.icon}`} />{n.label.replace('할망에게 ', '').replace('여행 ', '').replace('길동무 ', '')}
+            {n.to === '/basket' && basket > 0 && <Badge bg="danger" pill className="count">{basket}</Badge>}
+          </NavLink>
+        ))}
+      </nav>
+
+      <main className="main-area">
+        <Container style={{ maxWidth: 1180 }}><Outlet /></Container>
+      </main>
+
+      <ToastContainer position="bottom-end" className="p-3 position-fixed" style={{ zIndex: 2000, bottom: 64 }}>
+        {toasts.map((t) => (
+          <Toast key={t.id} bg={t.variant}><Toast.Body className={t.variant === 'warning' ? '' : 'text-white'}>{t.message}</Toast.Body></Toast>
+        ))}
+      </ToastContainer>
+    </div>
+  )
+}
