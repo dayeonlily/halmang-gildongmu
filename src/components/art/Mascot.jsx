@@ -9,7 +9,6 @@ export const MascotId = createContext('')
 export const OUTLINE = '#6f4b3e' // 장면의 다른 요소들이 쓰는 윤곽선 색
 const LINE = '#8a5a4a' // 몸 전체를 감싸는 단 하나의 윤곽선 색
 const SKIN = '#ffe3cf', BLUSH = '#ff9aa8'
-const HAIR = '#e8e8f2'
 const TOP = '#ffc9d8', SLEEVE = '#ffb4c8'
 const LAV = '#b9aeea'
 const INK = '#4a3029'
