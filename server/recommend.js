@@ -139,11 +139,14 @@ const T_KID = /아이|어린이|유아|가족|놀이|체험|동물|먹이|그네
 const T_EASY = /평탄|평지|완만|산책로|데크|산책하기 좋|걷기 좋|넓은 주차|쉬엄쉬엄|그늘/g
 const T_HARD = /가파|급경사|경사가|계단|험한|험준|오르막|암벽|절벽|미끄|위험|등반|바위|돌길|자갈/g
 const T_ACC = /유모차|휠체어|장애인|엘리베이터|경사로|편의시설|수유/g
+const T_QUIET = /조용|한적|고즈넉|여유|사색|평화로운|호젓|힐링|치유/g
+const T_LOUD = /북적|붐비|시끌|떠들썩|인파|혼잡|워터파크|테마파크|놀이공원|페스티벌|축제|카트|서킷|레이싱|ATV|메이즈|클럽/g
 const T_HIST = /역사|유적|설화|전설|유네스코|세계|문화재|4·3|해녀|돌하르방/g
 function textSignals(text, age, needs) {
   const kid = Math.min(3, hits(T_KID, text)), easy = Math.min(2, hits(T_EASY, text)), hard = Math.min(2, hits(T_HARD, text))
   const acc = Math.min(2, hits(T_ACC, text)), hist = Math.min(2, hits(T_HIST, text))
   const needsEase = needs.includes('stroller') || needs.includes('wheelchair')
+  const quiet = Math.min(2, hits(T_QUIET, text)), loud = Math.min(2, hits(T_LOUD, text))
   const young = age === 'infant' || age === 'toddler'
   let kids = 0
   const notes = []
@@ -152,6 +155,11 @@ function textSignals(text, age, needs) {
   else { kids += kid * 4 + easy * 2 - hard * 3 }
   if (hard && (young || needsEase)) notes.push('소개글에 계단·경사 언급')
   else if (easy && (young || needsEase)) notes.push('걷기 편한 곳')
+  if (needs.includes('sensory')) { // 조용한 환경을 원하면: 한적한 곳은 가점, 북적이는 곳은 감점
+    kids += quiet * 5 - loud * 7
+    if (quiet) notes.push('조용한 분위기')
+    if (loud) notes.push('북적이는 편')
+  }
   let access = 0
   if (needsEase) access += easy * 4 - hard * 6
   access += acc * 5
@@ -216,6 +224,7 @@ const nearScore = (km) => Math.max(10, Math.min(100, Math.round(100 - Math.max(0
 
 export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', age = 'preschool', near = null, date = '', page = 1, limit = 12, accessibleOnly = false } = {}) {
   // 방문 날짜: 집중률 예측과 정기 휴무 판단에 쓴다 (지난 날짜나 이상한 값이면 오늘)
+  const W = needs.includes('sensory') ? { ...WEIGHTS, crowd: WEIGHTS.crowd * 2 } : WEIGHTS // 조용한 환경 선호: 덜 붐비는 곳을 더 중요하게
   const today = todayYmd()
   const ymd = /^\d{8}$/.test(date) && date >= today ? date : today
   const [found, air, uvJeju, uvSeogwipo, crowdTable] = await Promise.all([
@@ -235,7 +244,7 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
       soft(getOverview(p), ''),
     ])
     if (isAdultOnly(p.title, overview)) return null // 소개글에 성인 전용·미성년자 출입 금지 등이 있는 곳
-    const ts = textSignals(overview, age, needs)
+    const ts = textSignals(`${p.title}. ${overview}`, age, needs)
     const a0 =accessScore(access, needs, intro)
     const a = { score: Math.max(0, Math.min(100, a0.score + ts.access)), notes: a0.notes }
     const s = safetyScore(p, wx?.summary ?? {}, intro, { ymd, age, env: { air, uv: placeByLat(p.lat) === '서귀포시' ? uvSeogwipo : uvJeju } })
@@ -247,8 +256,8 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
     const t = themeScore(p, keyword)
     const km = near ? distKm(near, p) : null
     const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }), ...(rate == null ? {} : { crowd: Math.max(0, Math.min(100, Math.round(100 - rate))) }) }
-    const wsum = Object.keys(parts).reduce((n, key) => n + WEIGHTS[key], 0)
-    const exact = Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum
+    const wsum = Object.keys(parts).reduce((n, key) => n + W[key], 0)
+    const exact = Object.entries(parts).reduce((n, [key, v]) => n + v * W[key], 0) / wsum
     const total = Math.round(exact) // 화면에는 정수만, 정렬은 소수까지 가진 rank 로
     return {
       ...p, access, indoor: s.indoor, price: c.label,
@@ -260,6 +269,6 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
   const hiddenAdult = allCandidates.length - items.length // 성인 대상이라 뺀 장소 수
   items.sort((x, y) => y.rank - x.rank)
   const w = await getW('제주시')
-  const weights = Object.fromEntries(Object.entries(WEIGHTS).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
+  const weights = Object.fromEntries(Object.entries(W).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
   return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, hiddenAdult, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
 }

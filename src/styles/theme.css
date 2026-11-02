@@ -230,3 +230,6 @@ small, .small { font-size: .92rem; }
   .intro-halmang { position: absolute; right: calc(100% + 14px); bottom: -8px; width: min(280px, calc((100vw - 560px) / 2 - 40px)); margin: 0; }
   .intro-bubble::before { top: 62%; left: -13px; transform: translateY(-50%) rotate(-45deg); }
 }
+
+/* 새 버전 안내: 화면 맨 위에 고정 */
+.new-version { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .25rem; padding: .6rem 1rem; background: #2f3a3f; color: #fff; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,.25); }

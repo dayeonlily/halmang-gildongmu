@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Container, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import NewVersionBanner from '../components/NewVersionBanner'
 import { NAV_ITEMS } from '../router'
 import { useAppStore } from '../store/useAppStore'
 
@@ -47,6 +48,7 @@ export default function RootLayout() {
   if (pathname === '/login' || (pathname === '/' && (!authReady || !user))) {
     return (
       <>
+        <NewVersionBanner />
         <Outlet />
         <ToastContainer position="bottom-end" className="p-3 position-fixed" style={{ zIndex: 2000 }}>
           {toasts.map((t) => (
@@ -59,6 +61,7 @@ export default function RootLayout() {
 
   return (
     <div className="app-shell">
+      <NewVersionBanner />
       {/* 데스크톱: 좌측 레일 */}
       <aside className="rail">
         <Link to="/" className="brand"><img src="/favicon.svg" alt="" />할망 길동무</Link>
