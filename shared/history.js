@@ -368,5 +368,25 @@ export const TITLES = [
   { min: 20, label: '제주 역사 박사', emoji: '🎓' },
   { min: 40, label: '전설의 탐라 도슨트', emoji: '👑' },
 ]
-export const titleFor = (n) => [...TITLES].reverse().find((t) => n >= t.min)
-export const nextTitle = (n) => TITLES.find((t) => t.min > n)
+// 학년별 칭호: 저학년 코스는 16곳, 고학년 코스는 24곳이라 칭호를 얻는 도장 수를 각각 맞춘다
+export const TITLES_BY_TAB = {
+  young: [
+    { min: 0, label: '역사 새싹', emoji: '🌱' },
+    { min: 1, label: '탐험 꿈나무', emoji: '🌿' },
+    { min: 4, label: '시간 여행자', emoji: '🧭' },
+    { min: 8, label: '제주 역사 지킴이', emoji: '🛡️' },
+    { min: 12, label: '제주 역사 박사', emoji: '🎓' },
+    { min: 16, label: '전설의 탐라 도슨트', emoji: '👑' },
+  ],
+  upper: [
+    { min: 0, label: '역사 새싹', emoji: '🌱' },
+    { min: 1, label: '탐험 꿈나무', emoji: '🌿' },
+    { min: 5, label: '시간 여행자', emoji: '🧭' },
+    { min: 10, label: '제주 역사 지킴이', emoji: '🛡️' },
+    { min: 18, label: '제주 역사 박사', emoji: '🎓' },
+    { min: 24, label: '전설의 탐라 도슨트', emoji: '👑' },
+  ],
+}
+const titlesOf = (tab) => TITLES_BY_TAB[tab] ?? TITLES
+export const titleFor = (n, tab) => [...titlesOf(tab)].reverse().find((t) => n >= t.min)
+export const nextTitle = (n, tab) => titlesOf(tab).find((t) => t.min > n)

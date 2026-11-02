@@ -115,7 +115,7 @@ export default function HistoryTour() {
         {HISTORY_TABS.map((t) => <Tab key={t.key} eventKey={t.key} title={t.short}><TourPanel tab={t.key} /></Tab>)}
       </Tabs>
       <p className="small text-muted mb-0"><i className="bi bi-info-circle me-1" />운영시간·관람 범위는 장소마다 달라요. 방문 전에 확인해 주세요. 연도와 설명은 현장 안내판·박물관 설명으로 한 번 더 확인해 보세요.</p>
-      {book && <StampBook stamps={stamps} onHide={() => setBook(false)} onPick={pick} />}
+      {book && <StampBook stamps={stamps} initialTab={tab} onHide={() => setBook(false)} onPick={pick} />}
     </>
   )
 }

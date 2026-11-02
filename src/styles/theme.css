@@ -236,3 +236,11 @@ small, .small { font-size: .92rem; }
 
 /* 여행 바구니: 지도 아래에 일차별 칸을 가로로 나란히 (넓은 화면 2~3열, 좁은 화면 1열) */
 .basket-days { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 1.25rem; align-items: start; }
+
+/* 도장첩: 학년 고르기 칸 */
+.book-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.book-tab { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .7rem .4rem; background: #fff; border: 2px solid #ead7b8; border-radius: 1rem; color: #4a3a2c; font-weight: 700; cursor: pointer; transition: transform .15s; }
+.book-tab:hover { transform: translateY(-1px); }
+.book-tab.on { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; box-shadow: 0 4px 14px rgba(232, 121, 26, .3); }
+.book-tab-name { font-size: 1rem; }
+.book-tab-count { font-size: .85rem; font-weight: 600; opacity: .85; }
