@@ -13,7 +13,7 @@ const MODEL = 'claude-sonnet-5-5'
 const tools = [
   {
     name: 'search_spots',
-    description: '한국관광공사 관광정보 + 무장애 여행정보 + 기상청 예보를 합쳐, 아이 동반 가족에게 맞는 제주 스팟을 접근성·안전·가격 점수순으로 추천한다',
+    description: '한국관광공사 관광정보 + 베리어프리 여행정보 + 기상청 예보를 합쳐, 아이 동반 가족에게 맞는 제주 스팟을 접근성·안전·가격 점수순으로 추천한다',
     input_schema: {
       type: 'object',
       properties: {
@@ -21,14 +21,14 @@ const tools = [
         contentTypeId: { type: 'string', description: '12 관광지, 14 문화시설, 15 축제·행사, 39 음식점. 비우면 전체' },
         needs: { type: 'array', items: { type: 'string', enum: ['stroller', 'wheelchair', 'nursing', 'sensory'] } },
         budget: { type: 'string', enum: ['free', 'low', 'mid', 'any'] },
-        accessibleOnly: { type: 'boolean', description: '무장애 여행정보에 등록된 장소만 보고 싶을 때 true' },
+        accessibleOnly: { type: 'boolean', description: '베리어프리 여행정보에 등록된 장소만 보고 싶을 때 true' },
         page: { type: 'integer', description: '더 많은 결과가 필요할 때 2, 3...' },
       },
     },
   },
   {
     name: 'get_accessibility',
-    description: '한 장소의 무장애 상세(유모차·휠체어·엘리베이터·수유실·화장실·주차)를 조회한다. contentId는 search_spots 결과의 id',
+    description: '한 장소의 베리어프리 상세(유모차·휠체어·엘리베이터·수유실·화장실·주차)를 조회한다. contentId는 search_spots 결과의 id',
     input_schema: { type: 'object', properties: { contentId: { type: 'string' } }, required: ['contentId'] },
   },
   {

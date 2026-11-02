@@ -39,7 +39,7 @@ const THEMES = {
 const themesFor = (type) => THEMES[type] ?? NATURE_THEMES
 
 const CRITERIA = {
-  access: ['접근성', '유모차·휠체어·수유실·화장실·주차 등 무장애 시설이 얼마나 갖춰졌는지 (고른 필요 항목은 더 크게 반영)'],
+  access: ['접근성', '유모차·휠체어·수유실·화장실·주차 등 베리어프리 시설이 얼마나 갖춰졌는지 (고른 필요 항목은 더 크게 반영)'],
   kids: ['아이 맞춤', '아이 나이대에 맞는 곳인지: 영아는 수유실·실내·유모차, 걸음마·유아는 놀이·체험, 저학년은 체험·동물, 고학년은 체험·역사'],
   safety: ['날씨 안전', '기상청 예보(비·더위·바람) · 에어코리아 미세먼지 · 기상청 자외선지수 · 정기 휴무 — 야외일수록, 아이가 어릴수록 크게 반영'],
   crowd: ['한산함', '한국관광공사 관광지 집중률 예측 — 고른 날짜에 덜 붐빌수록 높게 (예측이 있는 장소만)'],
@@ -96,7 +96,7 @@ export default function Explore() {
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
   const [sel, setSel] = useState(null)
-  const [accessible, setAccessible] = useState(false) // 무장애 정보가 등록된 장소만
+  const [accessible, setAccessible] = useState(false) // 베리어프리 정보가 등록된 장소만
   const [more, setMore] = useState(false)
   const [open, setOpen] = useState(null) // 상세 창에 띄울 장소
   const [how, setHow] = useState(false)  // 점수 기준 설명 펼치기
@@ -185,7 +185,7 @@ export default function Explore() {
             {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
           </Form.Select>
         </div>
-        <Form.Check type="switch" id="acc-only" className="pb-1" label="무장애 등록 장소만" checked={accessible} onChange={(e) => setAccessible(e.target.checked)} />
+        <Form.Check type="switch" id="acc-only" className="pb-1" title="베리어프리 = 유모차·휠체어도 계단 없이 편하게 다닐 수 있도록 갖춘 곳" label="베리어프리 등록 장소만 (유모차·휠체어 편한 곳)" checked={accessible} onChange={(e) => setAccessible(e.target.checked)} />
         <Button variant="link" size="sm" className="ms-auto p-0" onClick={() => setHow(!how)} aria-expanded={how}>
           <i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?
         </Button>
@@ -204,7 +204,7 @@ export default function Explore() {
                 </div>
               )
             })}
-            <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사(관광정보·무장애·집중률), 기상청(단기예보·자외선지수), 한국환경공단 에어코리아입니다.</div>
+            <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사(관광정보·베리어프리·집중률), 기상청(단기예보·자외선지수), 한국환경공단 에어코리아입니다.</div>
           </div>
         </div>
       </Collapse>

@@ -1,4 +1,4 @@
-// ② 한국관광공사 무장애 여행정보 (KorWithService2) — 유모차·휠체어·수유실 등
+// ② 한국관광공사 베리어프리 여행정보 (KorWithService2) — 유모차·휠체어·수유실 등
 import { dataGo, toArray } from './dataGo.js'
 import { snapshotOf } from './placeData.js'
 

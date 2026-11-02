@@ -10,7 +10,7 @@ import ScoreBars, { ScorePill } from './ScoreBars'
 
 const TYPE_LABEL = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 28: '레포츠·체험', 32: '숙박', 38: '쇼핑', 39: '음식점' }
 
-// 무장애 항목 → 아이콘과 이름 (정보가 등록된 것만 켜짐)
+// 베리어프리 항목 → 아이콘과 이름 (정보가 등록된 것만 켜짐)
 const ACCESS_FLAGS = [
   ['stroller', '유모차', 'cart'], ['wheelchair', '휠체어', 'person-wheelchair'], ['elevator', '엘리베이터', 'building-up'],
   ['restroom', '장애인 화장실', 'badge-wc'], ['parking', '장애인 주차', 'p-square'], ['exit', '출입구 정보', 'door-open'],
@@ -40,7 +40,7 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
   const mapQ = encodeURIComponent(`${spot.title},${spot.lat},${spot.lng}`)
   const tips = [
     spot.indoor ? '실내라 비·더위·바람 걱정이 적어요' : '야외 장소예요 — 모자·물·여벌 옷을 챙기세요',
-    spot.scores.access >= 70 ? '무장애 정보가 잘 갖춰진 곳이에요' : spot.access?.registered ? '무장애 시설 일부만 등록돼 있어요. 방문 전 전화 확인을 권해요' : '무장애 정보가 등록되지 않았어요. 유모차·휠체어는 전화 확인이 필요해요',
+    spot.scores.access >= 70 ? '베리어프리 정보가 잘 갖춰진 곳이에요' : spot.access?.registered ? '베리어프리 시설 일부만 등록돼 있어요. 방문 전 전화 확인을 권해요' : '베리어프리 정보가 등록되지 않았어요. 유모차·휠체어는 전화 확인이 필요해요',
   ]
 
   return (
@@ -88,7 +88,7 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
             )}
 
             <div className="mb-3">
-              <h6 className="fw-bold"><i className="bi bi-universal-access me-1 text-primary" />무장애·아이 동반 정보</h6>
+              <h6 className="fw-bold"><i className="bi bi-universal-access me-1 text-primary" />베리어프리·아이 동반 정보 <span className="small text-muted fw-normal">(유모차·휠체어도 편하게 다닐 수 있는지)</span></h6>
               {a?.registered ? (
                 <>
                   <div className="d-flex flex-wrap gap-1 mb-2">
@@ -102,7 +102,7 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
                     {ACCESS_TEXT.filter(([k]) => a[k]).map(([k, label]) => <Fragment key={k}><dt className="col-4 col-md-3">{label}</dt><dd className="col-8 col-md-9">{a[k]}</dd></Fragment>)}
                   </dl>
                 </>
-              ) : <div className="small text-muted">무장애 여행정보에 등록되지 않은 장소예요. 유모차·휠체어 이동 동선은 방문 전에 전화로 확인해 주세요.</div>}
+              ) : <div className="small text-muted">베리어프리 여행정보에 등록되지 않은 장소예요. 유모차·휠체어 이동 동선은 방문 전에 전화로 확인해 주세요.</div>}
             </div>
 
             <div className="mb-3">

@@ -1,4 +1,4 @@
-// 장소 상세 — 관광정보(공통·소개·이미지) + 무장애 정보를 한 번에 모아 화면에 줍니다.
+// 장소 상세 — 관광정보(공통·소개·이미지) + 베리어프리 정보를 한 번에 모아 화면에 줍니다.
 import { dataGo, toArray } from './dataGo.js'
 import { getAccess } from './access.js'
 

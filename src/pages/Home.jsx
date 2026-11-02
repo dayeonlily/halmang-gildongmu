@@ -224,7 +224,7 @@ export default function Home() {
         {EMERGENCY.slice(0, 3).map((e) => <Button key={e.tel} as="a" href={`tel:${e.tel}`} size="sm" variant={e.tone}><i className="bi bi-telephone-fill me-1" />{e.name} <span className="d-none d-sm-inline small">{e.desc.split(' ')[0]}</span></Button>)}
         <Button as={Link} to="/care" size="sm" variant="outline-secondary" className="ms-auto">보호자 노트</Button>
       </div>
-      <div className="small text-muted mt-3"><i className="bi bi-database-check me-1" />한국관광공사 관광정보·무장애·집중률, 기상청 단기예보·자외선지수, 한국환경공단 에어코리아(공공데이터포털)를 사용해요.</div>
+      <div className="small text-muted mt-3"><i className="bi bi-database-check me-1" />한국관광공사 관광정보·베리어프리·집중률, 기상청 단기예보·자외선지수, 한국환경공단 에어코리아(공공데이터포털)를 사용해요.</div>
     </>
   )
 }

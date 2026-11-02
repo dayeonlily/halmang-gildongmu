@@ -4,8 +4,8 @@ import PageTitle from '../components/PageTitle'
 import { useAppStore } from '../store/useAppStore'
 
 const TOOL_LABEL = {
-  search_spots: ['장소 검색 (관광정보+무장애+날씨)', 'search'],
-  get_accessibility: ['무장애 상세', 'universal-access'],
+  search_spots: ['장소 검색 (관광정보+베리어프리+날씨)', 'search'],
+  get_accessibility: ['베리어프리 상세', 'universal-access'],
   get_weather: ['기상청 예보', 'cloud-sun'],
   tell_story: ['할망 이야기', 'book'],
   get_kids_content: ['아이 미션·체크리스트', 'balloon-heart'],

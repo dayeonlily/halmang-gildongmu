@@ -37,7 +37,7 @@ supabase/schema.sql       profiles · basket_items · mission_stamps (+RLS)
 | API | 역할 |
 |---|---|
 | 한국관광공사 국문 관광정보 (KorService2) | 스팟 검색·요금(문화시설) |
-| 한국관광공사 무장애 여행정보 (KorWithService2) | 유모차·휠체어·수유실 → 접근성 점수 |
+| 한국관광공사 베리어프리 여행정보 (KorWithService2) | 유모차·휠체어·수유실 → 접근성 점수 |
 | 기상청 단기예보 | 비·더위·바람 → 안전 점수, 실내 대안 |
 
 추천 점수 = 접근성 45% + 안전 30% + 가격 25% (`server/recommend.js`)
@@ -48,7 +48,7 @@ supabase/schema.sql       profiles · basket_items · mission_stamps (+RLS)
 ## 장소 정보 미리 받아 두기 (공공데이터 하루 한도 대응)
 
 공공데이터포털은 API마다 **하루 호출 횟수**가 정해져 있어서(개발 계정), 검색할 때마다 장소 정보를 부르면 금방 바닥납니다.
-그래서 장소별 소개글·소개정보·무장애 정보와 집중률 예측을 파일(`server/data/places.json`, `crowd.json`)에 미리 받아 두고,
+그래서 장소별 소개글·소개정보·베리어프리 정보와 집중률 예측을 파일(`server/data/places.json`, `crowd.json`)에 미리 받아 두고,
 서버는 이 파일을 먼저 읽습니다. 파일에 없는 장소만 공공데이터를 직접 부릅니다.
 
 - **자동:** `.github/workflows/place-cache.yml` 이 매일 한국 시간 00:30(한도 초기화 직후)에 실행되어 조금씩 채우고 저장소에 올립니다. Vercel 이 알아서 다시 배포합니다.

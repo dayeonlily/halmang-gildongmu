@@ -20,14 +20,14 @@ export const WEIGHTS = { access: 30, kids: 25, safety: 20, price: 15, theme: 10,
 // ① 접근성: 선택한 필요(유모차·휠체어·수유)는 크게, 나머지 시설은 작게 → 시설이 많이 갖춰질수록 점수가 달라진다
 function accessScore(a, needs, intro = {}) {
   if (!a?.registered) {
-    // 무장애 정보가 없어도 소개 정보의 유모차 대여·주차로 조금씩 구분한다
+    // 베리어프리 정보가 없어도 소개 정보의 유모차 대여·주차로 조금씩 구분한다
     const notes = []
     let score = 25
     if (intro.carriage === 'yes') { score += 18; notes.push('유모차 대여') }
     else if (intro.carriage === 'no' && needs.includes('stroller')) score -= 8
     if (intro.parking === 'yes') { score += 8; notes.push('주차 가능') }
     else if (intro.parking === 'no' && (needs.includes('wheelchair') || needs.includes('stroller'))) score -= 5
-    if (!notes.length) notes.push('무장애 정보 미등록')
+    if (!notes.length) notes.push('베리어프리 정보 미등록')
     return { score: Math.max(5, score), notes }
   }
   const f = a.flags, notes = []
@@ -258,7 +258,7 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
 
   const enriched = await Promise.all(candidates.map(async (p) => {
     const [access, intro, wx, overview] = await Promise.all([
-      soft(getAccess({ id: p.id }), { id: p.id, registered: false }, '무장애 정보'),
+      soft(getAccess({ id: p.id }), { id: p.id, registered: false }, '베리어프리 정보'),
       soft(getIntro(p), {}, '요금·주차 정보'),
       soft(getW(placeByLat(p.lat)), null, '기상 예보'),
       soft(getOverview(p), '', '소개글'),

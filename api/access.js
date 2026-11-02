@@ -1,4 +1,4 @@
-// GET /api/access?id=콘텐츠ID → 무장애 상세 (유모차·휠체어·수유실…)
+// GET /api/access?id=콘텐츠ID → 베리어프리 상세 (유모차·휠체어·수유실…)
 import { getAccess } from '../server/access.js'
 
 export default async function handler(req, res) {

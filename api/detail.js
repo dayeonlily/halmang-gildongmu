@@ -1,4 +1,4 @@
-// GET /api/detail?id=콘텐츠ID&type=12 → 소개·사진·이용정보·무장애 상세
+// GET /api/detail?id=콘텐츠ID&type=12 → 소개·사진·이용정보·베리어프리 상세
 import { getDetail } from '../server/detail.js'
 
 export default async function handler(req, res) {

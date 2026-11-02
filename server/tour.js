@@ -3,11 +3,11 @@ import { dataGo, toArray } from './dataGo.js'
 import { snapshotOf } from './placeData.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2'
-const BASE_WITH = 'https://apis.data.go.kr/B551011/KorWithService2' // 무장애 정보가 등록된 장소만
+const BASE_WITH = 'https://apis.data.go.kr/B551011/KorWithService2' // 베리어프리 정보가 등록된 장소만
 // 제주 = 법정동 코드 50. (구버전 areaCode=39 는 제주 데이터의 일부만 돌려줘서 lDongRegnCd 를 씁니다)
 const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', lDongRegnCd: '50' }
 
-// 장소 목록 검색. accessibleOnly=true 면 무장애 여행정보에 등록된 장소만.
+// 장소 목록 검색. accessibleOnly=true 면 베리어프리 여행정보에 등록된 장소만.
 // 반환: { items, total }  (total = 조건에 맞는 전체 건수 → "더보기" 판단용)
 async function searchOne({ keyword = '', contentTypeId = '', page = 1, rows = 12, accessibleOnly = false } = {}) {
   const params = { ...COMMON, numOfRows: String(rows), pageNo: String(page), arrange: 'Q' } // Q = 최근 수정순(대표이미지 있는 것) — 제목순이면 가나다 앞쪽 장소만 보여서
