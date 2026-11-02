@@ -9,7 +9,7 @@ create table if not exists public.trip_reviews (
   body text not null check (char_length(body) between 1 and 1500),
   rating int not null default 5 check (rating between 1 and 5),
   route jsonb not null default '[]',                  -- 그날 돌아다닌 장소들 [{id, title}] (후기를 쓸 때의 스냅샷)
-  is_public boolean not null default false,           -- true 면 다른 가족도 볼 수 있음 (작성자가 직접 선택)
+  is_public boolean not null default true,            -- 후기는 모두 공개 (익명이어도 됨)
   author text not null default '',                    -- 공개 시 보여줄 이름(이메일은 절대 공개하지 않음)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -28,3 +28,7 @@ create policy "own reviews" on public.trip_reviews
 drop policy if exists "public reviews are readable" on public.trip_reviews;
 create policy "public reviews are readable" on public.trip_reviews
   for select using (is_public = true);
+
+-- 후기는 모두 공개: 예전에 비공개로 저장된 후기도 공개로 바꾼다
+alter table public.trip_reviews alter column is_public set default true;
+update public.trip_reviews set is_public = true where is_public = false;

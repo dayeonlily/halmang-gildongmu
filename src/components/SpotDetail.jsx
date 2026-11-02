@@ -113,13 +113,13 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
               </div>
               {reviews === null ? <div className="small text-muted">후기를 불러오는 중...</div> : reviews.length === 0 ? (
                 <div className="soft-card p-3 small text-muted" style={{ background: 'var(--hm-orange-soft)' }}>
-                  아직 후기가 없어요. 이곳에 다녀온 뒤 <b>여행 바구니</b>에서 일차별로 후기를 남기면 여기에 보여요. (공개로 정한 후기만 다른 가족에게 보여요)
+                  아직 후기가 없어요. 이곳에 다녀온 뒤 <b>여행 바구니</b>에서 일차별로 후기를 남기면 여기에 보여요. (후기는 모두 공개돼요)
                 </div>
               ) : reviews.map((r) => (
                 <div key={r.id} className="soft-card p-3 mb-2">
                   <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
                     <span className="chip">{r.day}일차</span><Stars value={r.rating} />
-                    {user?.id === r.user_id && !r.is_public && <Badge bg="secondary">나만 보기</Badge>}
+                    {user?.id === r.user_id && <Badge bg="success">내 후기</Badge>}
                     <span className="ms-auto small text-muted">{new Date(r.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   </div>
                   {r.title && <div className="fw-bold">{r.title}</div>}

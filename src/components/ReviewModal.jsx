@@ -10,7 +10,6 @@ export default function ReviewModal({ day, route, review, onHide }) {
   const [rating, setRating] = useState(review?.rating ?? 5)
   const [title, setTitle] = useState(review?.title ?? '')
   const [body, setBody] = useState(review?.body ?? '')
-  const [isPublic, setIsPublic] = useState(review?.is_public ?? false)
   const [busy, setBusy] = useState(false)
   const places = review?.route?.length ? review.route : route
 
@@ -18,7 +17,7 @@ export default function ReviewModal({ day, route, review, onHide }) {
     e.preventDefault()
     if (!body.trim()) return useAppStore.getState().toast('후기 내용을 적어 주세요', 'warning')
     setBusy(true)
-    const ok = await saveReview({ id: review?.id, day: review?.day ?? day, title, body, rating, route: places, is_public: isPublic })
+    const ok = await saveReview({ id: review?.id, day: review?.day ?? day, title, body, rating, route: places, is_public: true })
     setBusy(false)
     if (ok) onHide()
   }
@@ -60,9 +59,7 @@ export default function ReviewModal({ day, route, review, onHide }) {
               placeholder={`${review?.day ?? day}일차에 이런 루트로 돌아다녔더니 너무 좋았어요. 유모차로 이동하기 편했고, 아이가…`} />
             <div className="text-end small text-muted">{body.length} / 1500</div>
           </Form.Group>
-          <Form.Check type="switch" id="review-public" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}
-            label="다른 가족에게도 보여줄래요" />
-          <div className="small text-muted ps-4">공개하면 별점·글·루트가 <b>내 이름(우리 가족 이름)</b>과 함께 보여요. 이메일은 공개되지 않아요. 언제든 비공개로 바꾸거나 지울 수 있어요.</div>
+          <div className="small text-muted"><i className="bi bi-people me-1" />후기는 모든 가족에게 공개돼요. 이름은 <b>프로필의 우리 가족 이름</b>으로 보이고(없으면 “익명의 가족”), 이메일은 공개되지 않아요. 언제든 고치거나 지울 수 있어요.</div>
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
           {review ? <Button variant="outline-danger" onClick={remove}><i className="bi bi-trash me-1" />삭제</Button> : <span />}

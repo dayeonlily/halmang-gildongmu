@@ -14,7 +14,7 @@ function ReviewCard({ r, mine, onEdit }) {
     <div className="soft-card p-3 mb-3">
       <div className="d-flex align-items-center flex-wrap gap-2 mb-1">
         <span className="chip">{r.day}일차</span><Stars value={r.rating} />
-        {mine && <Badge bg={r.is_public ? 'success' : 'secondary'}>{r.is_public ? '공개' : '나만 보기'}</Badge>}
+        {mine && <Badge bg="success">내 후기</Badge>}
         <span className="ms-auto small text-muted">{fmt(r.created_at)}</span>
       </div>
       {r.title && <h5 className="mb-2">{r.title}</h5>}
