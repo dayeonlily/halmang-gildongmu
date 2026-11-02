@@ -37,7 +37,10 @@ export async function homePicks({ needs = [], budget = 'any', age = 'preschool',
   const seen = new Set()
   const all = results.flatMap((r) => r.items).filter((p) => (seen.has(p.id) ? false : seen.add(p.id)))
   // 나들이 장소가 아닌 곳을 빼고, 아이 맞춤 점수가 낮거나 오늘 쉬는 곳도 뺀다
-  const fit = all.filter((p) => !NOT_OUTING.test(p.title) && p.scores.kids >= 50 && !p.notes.some((n) => /휴무/.test(n)))
+  const young = age === 'infant' || age === 'toddler'
+  // 영아·걸음마기는 레포츠(활동) 종류를 홈 추천에서 빼되, 체험·동물·농장처럼 어린아이가 즐기는 곳은 남긴다
+  const youngOk = (p) => !young || p.type !== '28' || /체험|키즈|농장|목장|동물|공원|정원|놀이/.test(p.title)
+  const fit = all.filter((p) => !NOT_OUTING.test(p.title) && youngOk(p) && p.scores.kids >= 50 && !p.notes.some((n) => /휴무/.test(n)))
   fit.sort((a, b) => b.rank - a.rank)
 
   // 같은 종류가 3곳을 다 차지하지 않게: 한 종류는 최대 2곳, 나머지는 점수순

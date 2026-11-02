@@ -51,6 +51,13 @@ const ADULT_TITLE = /건강과\s*성|성\s*박물관|성\s*문화|러브\s*랜�
 const ADULT_TEXT = /성인\s*(전용|만\s*(입장|관람|이용))|19\s*세\s*(미만|이상)|미성년자[^.。]{0,8}(출입|입장|관람|이용)[^.。]{0,4}(불가|금지|제한)|청소년\s*(관람|입장|출입|이용)\s*(불가|금지)|성(인)?\s*조각|성\s*(을|에)\s*(주제|테마)/
 const isAdultOnly = (title, overview = '') => ADULT_TITLE.test(title) || ADULT_TEXT.test(overview)
 
+// 아이 나이에 아직 이르거나 위험한 활동은 그 나이 가족에게는 목록에서 뺀다 (예: 영아·걸음마기에 장거리 트레킹·오프로드·카약·승마)
+const BLOCK_YOUNG = /올레\s*\d|올레길|트레킹|둘레길\s*\d|오프로드|ATV|사륜|카트|서킷|레이싱|사격|카약|서핑|스쿠버|다이빙|패러|번지|짚라인|래프팅|요트|잠수함|승마|낚시|암벽|클라이밍|서바이벌|야간\s*투어|동굴|만장굴|쌍용굴|해안열두굴|열두굴/i
+const BLOCK_PRESCHOOL = /올레\s*\d+\s*코스|오프로드|ATV|사륜|서킷|레이싱|사격|스쿠버|다이빙|패러|번지|래프팅|서바이벌|암벽|클라이밍/i
+const BLOCK_LOWER = /사격|스쿠버|다이빙|패러|번지|서바이벌|암벽|클라이밍/i
+const BLOCK_BY_AGE = { infant: BLOCK_YOUNG, toddler: BLOCK_YOUNG, preschool: BLOCK_PRESCHOOL, lower: BLOCK_LOWER }
+const isAgeBlocked = (title, age) => Boolean(BLOCK_BY_AGE[age]?.test(title))
+
 const KID_PLAY = /키즈|어린이|아이|체험|놀이|동물|목장|농장|공원|아쿠아|테마파크|승마|썰매/ // 영아·걸음마기: 박물관·미술관이라는 이름만으로는 아이 장소로 보지 않는다
 const KID = /키즈|어린이|아이|체험|놀이|동물|목장|농장|공원|박물관|과학|아쿠아|테마파크|승마|썰매|미술관/
 const ANIMAL_PARK = /동물|목장|농장|공원|해변|해수욕|아쿠아/
@@ -232,7 +239,7 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
     soft(getAir(), null, 7000), soft(getUv('제주시'), null, 7000), soft(getUv('서귀포시'), null, 7000), soft(getCrowdTable(), null, 7000), // 환경 정보가 늦으면 그 항목만 빼고 진행
   ])
   const allCandidates = found.items.filter((p) => p.lat && p.lng)
-  const candidates = allCandidates.filter((p) => !isAdultOnly(p.title)) // 이름으로 먼저 거른다 (소개글은 아래에서 한 번 더)
+  const candidates = allCandidates.filter((p) => !isAdultOnly(p.title) && !isAgeBlocked(p.title, age)) // 이름으로 먼저 거른다 (소개글은 아래에서 한 번 더)
   const weatherByPlace = {}
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
 
