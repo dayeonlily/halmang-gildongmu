@@ -1,5 +1,6 @@
 // POST /api/agent — "할망" 에이전트: 공공데이터 API 3종 + 이야기·체크리스트를 도구로 쓴다
 import Anthropic from '@anthropic-ai/sdk'
+import { runGemini } from '../server/gemini.js'
 import { recommend } from '../server/recommend.js'
 import { getAccess } from '../server/access.js'
 import { getWeather } from '../server/weather.js'
@@ -140,29 +141,55 @@ async function runClaude({ message, history, profile, steps }) {
   return TOO_MANY
 }
 
-// Anthropic 오류를 보호자가 이해할 수 있는 한국어로 (원문은 서버 로그에 남긴다)
-function friendlyError(e) {
-  console.error('agent error:', e.status, e.message)
+// Claude 가 못 답하는 상황(크레딧 소진·키 오류·사용량 초과·서버 장애·연결 실패)인가 → Gemini 로 넘어갈 수 있다.
+// 질문 자체가 잘못된 일반 400 은 넘어가지 않는다.
+const canFallback = (e) => /credit balance|overloaded/i.test(String(e.message)) || [0, 401, 402, 403, 429].includes(e.status ?? 0) || e.status >= 500 || e.status === undefined
+
+// AI 오류를 보호자가 이해할 수 있는 한국어로 (원문은 서버 로그에 남긴다)
+function friendlyError(e, tried) {
+  const provider = e.provider ?? 'claude'
+  console.error(`agent error (${provider}):`, e.status, e.message)
   const msg = String(e.message ?? '')
-  if (/credit balance/i.test(msg)) return '할망의 AI 크레딧이 모두 떨어졌어요. 관리자가 Anthropic 콘솔(Plans & Billing)에서 크레딧을 충전하면 바로 다시 답해요.'
-  if (e.status === 401) return 'AI 키가 올바르지 않아요. ANTHROPIC_API_KEY 를 다시 확인해 주세요.'
-  if (e.status === 404) return '설정한 AI 모델을 찾을 수 없어요. 모델 이름을 확인해 주세요.'
-  if (e.status === 429) return '사용량이 많아요. 1분 뒤 다시 시도하세요.'
-  if (e.status === 529 || e.status >= 500) return 'AI 서버가 잠시 바빠요. 잠시 뒤 다시 시도해 주세요.'
-  return msg
+  const gemini = provider === 'gemini'
+  const who = gemini ? 'Gemini' : '할망의 AI(Claude)'
+  let why
+  if (/credit balance/i.test(msg)) why = `${who} 크레딧이 모두 떨어졌어요. 관리자가 ${gemini ? 'Google AI Studio' : 'Anthropic 콘솔(Plans & Billing)'}에서 충전하면 바로 다시 답해요.`
+  else if (e.status === 401 || e.status === 403) why = `${who} 키가 올바르지 않거나 권한이 없어요. 키를 다시 확인해 주세요.`
+  else if (e.status === 404) why = '설정한 AI 모델을 찾을 수 없어요. 모델 이름을 확인해 주세요.'
+  else if (e.status === 429) why = `${who} 사용량이 많아요. 1분 뒤 다시 시도하세요.`
+  else if (e.status === 0 || e.status >= 500) why = 'AI 서버가 잠시 바빠요. 잠시 뒤 다시 시도해 주세요.'
+  else why = msg
+  // 둘 다 시도했는데 둘 다 실패한 경우: 마지막(Gemini) 이유 앞에 알려 준다
+  return tried.length > 1 ? `Claude가 답하지 못해 Gemini가 대신하려 했지만 이것도 실패했어요. ${why}` : why
+}
+
+const runners = {
+  claude: ({ message, history, profile, steps }) => runClaude({ message, history, profile, steps }),
+  gemini: ({ message, history, profile, steps }) => runGemini({ message, history, system: systemPrompt(profile), tools, exec, steps, maxTurns: MAX_TURNS, tooMany: TOO_MANY }),
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY 가 설정되지 않았어요 (.env.local 확인)' })
+  // 쓸 수 있는 AI 를 순서대로: Claude 먼저, 안 되면 Gemini
+  const order = [process.env.ANTHROPIC_API_KEY && 'claude', process.env.GEMINI_API_KEY && 'gemini'].filter(Boolean)
+  if (!order.length) return res.status(500).json({ error: 'AI 키가 설정되지 않았어요 (.env.local 의 ANTHROPIC_API_KEY 또는 GEMINI_API_KEY 확인)' })
   const { message, history = [], profile = null } = req.body ?? {}
   if (!message) return res.status(400).json({ error: 'message 가 필요해요' })
-  const steps = [] // 화면에 "할망이 무엇을 확인했는지" 보여주기용
+  const recent = history.slice(-10) // 최근 10개만 → 비용 절약
 
-  try {
-    const answer = await runClaude({ message, history: history.slice(-10), profile, steps }) // 최근 10개만 → 비용 절약
-    res.status(200).json({ answer, steps })
-  } catch (e) {
-    res.status(e.status ?? 500).json({ error: friendlyError(e) })
+  const tried = []
+  let lastErr
+  for (const name of order) {
+    tried.push(name)
+    const steps = [] // 화면에 "할망이 무엇을 확인했는지" 보여주기용 (AI 마다 따로)
+    try {
+      const answer = await runners[name]({ message, history: recent, profile, steps })
+      return res.status(200).json({ answer, steps, provider: name, fallback: name !== order[0] })
+    } catch (e) {
+      lastErr = e
+      if (name === 'claude') console.warn('Claude 실패 →', order.includes('gemini') ? 'Gemini 로 대신 답해 볼게요:' : '대체 AI 없음:', e.status, String(e.message).slice(0, 120))
+      if (!canFallback(e)) break
+    }
   }
+  res.status(lastErr?.status >= 400 && lastErr.status < 600 ? lastErr.status : 500).json({ error: friendlyError(lastErr, tried) })
 }

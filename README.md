@@ -9,7 +9,7 @@ copy .env.example .env.local     # 값 채우기
 npm run dev                      # http://localhost:5173  (화면 + /api 함께 동작)
 ```
 1. Supabase 대시보드 → SQL Editor 에 `supabase/schema.sql` 을 붙여 넣고 Run
-2. `.env.local` 에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `DATA_GO_KR_KEY`(Decoding 키), `ANTHROPIC_API_KEY` 입력
+2. `.env.local` 에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `DATA_GO_KR_KEY`(Decoding 키), `ANTHROPIC_API_KEY` 입력 (선택: Claude 를 쓸 수 없을 때 대신 답하는 `GEMINI_API_KEY`)
 3. `npm run dev` 로 실행해 `/api/hello` 에서 키 설정 여부를 확인
    (공공데이터포털에서 `KorService2`, `KorWithService2`, `VilageFcstInfoService_2.0` 활용 신청 필요)
 

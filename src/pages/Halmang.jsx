@@ -55,6 +55,7 @@ export default function Halmang() {
               </div>
             )}
             <div className={`msg ${m.role}`}>{m.text}</div>
+            {m.fallback && <div className="small text-muted mb-2"><i className="bi bi-arrow-repeat me-1" />할망의 AI(Claude)를 쓸 수 없어 Gemini가 대신 답했어요</div>}
           </div>
         ))}
         {loading && <div className="small text-muted"><Spinner size="sm" className="me-2" />할망이 공공데이터를 확인하는 중...</div>}
