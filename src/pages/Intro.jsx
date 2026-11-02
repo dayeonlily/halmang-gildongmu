@@ -15,8 +15,8 @@ export default function Intro() {
 
       <div className="intro-bubble">
         <span className="chip mb-2">혼저 옵서예 👋</span>
-        <div className="intro-jeju">제주에서 혼디<br />재미지게 놀게마씸!</div>
-        <div className="intro-ko">제주에서 같이 재미있게 놀자!</div>
+        <div className="intro-jeju">놀멍 배우멍 걸으멍,<br />다 혼디 제주</div>
+        <div className="intro-ko">놀며 배우며 걸으며, 모두 함께 제주</div>
         <div className="d-flex flex-wrap justify-content-center gap-2 mt-3">
           <Button as={Link} to="/login" size="lg" className="px-4"><i className="bi bi-box-arrow-in-right me-2" />로그인</Button>
           <Button as={Link} to="/login?mode=up" size="lg" variant="outline-primary" className="px-4 bg-white"><i className="bi bi-person-plus me-2" />회원가입</Button>

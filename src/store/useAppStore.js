@@ -3,6 +3,9 @@ import { persist } from 'zustand/middleware'
 import { supabase } from '../lib/supabase'
 import { askHalmang } from '../api/client'
 
+// 후기 표(trip_reviews)를 아직 안 만들었을 때 나는 오류인지 (SQL 을 실행하기 전에는 조용히 넘어간다)
+const isMissingTable = (e) => e?.code === 'PGRST205' || e?.code === '42P01' || (/trip_reviews/.test(e?.message ?? '') && /schema cache|does not exist/.test(e?.message ?? ''))
+
 const needSupabase = (get) => {
   if (supabase) return false
   get().toast('Supabase 설정(.env.local)이 필요해요', 'warning')
@@ -35,7 +38,7 @@ export const useAppStore = create(
           const prev = get().user?.id
           set({ user: session?.user ?? null })
           if (session?.user && session.user.id !== prev) { set({ profileLoaded: false }); get().loadAll() }
-          if (!session) set({ profile: null, profileLoaded: true, basket: [], stamps: [], messages: [] })
+          if (!session) set({ profile: null, profileLoaded: true, basket: [], stamps: [], reviews: [], messages: [] })
         })
       },
       signUp: async (email, password) => {
@@ -53,7 +56,7 @@ export const useAppStore = create(
       },
       signOut: async () => { await supabase?.auth.signOut() },
 
-      loadAll: async () => { await Promise.all([get().loadProfile(), get().loadBasket(), get().loadStamps()]) },
+      loadAll: async () => { await Promise.all([get().loadProfile(), get().loadBasket(), get().loadStamps(), get().loadReviews()]) },
 
       // ③ 가족 프로필
       profile: null,
@@ -127,7 +130,47 @@ export const useAppStore = create(
         else if (!done) get().toast('스탬프 쾅! 🎉')
       },
 
-      // ⑥ 할망 에이전트 대화 — 페이지를 옮겨도 대화가 남도록 store 에 둡니다
+      // ⑥ 여행 후기: 일차별로 별점·글·그날의 루트를 남긴다. 공개를 고르면 다른 가족도 볼 수 있다
+      reviews: [],            // 내 후기
+      publicReviews: [],      // 다른 가족이 공개한 후기
+      reviewsReady: true,     // false 면 DB 에 trip_reviews 표가 아직 없다 (supabase/reviews.sql 미실행)
+      loadReviews: async () => {
+        const { data, error } = await supabase.from('trip_reviews').select('*').eq('user_id', get().user.id).order('created_at', { ascending: false })
+        if (error) return set({ reviewsReady: !isMissingTable(error) })
+        set({ reviews: data, reviewsReady: true })
+      },
+      loadPublicReviews: async () => {
+        if (!supabase) return
+        const { data, error } = await supabase.from('trip_reviews').select('*').eq('is_public', true).order('created_at', { ascending: false }).limit(60)
+        if (error) return set({ reviewsReady: !isMissingTable(error) })
+        set({ publicReviews: data, reviewsReady: true })
+      },
+      saveReview: async (r) => {
+        if (needSupabase(get)) return false
+        if (!get().user) { get().toast('로그인하면 후기를 남길 수 있어요', 'warning'); return false }
+        if (!get().reviewsReady) { get().toast('후기 기능을 쓰려면 Supabase 에서 reviews.sql 을 먼저 실행해 주세요', 'warning'); return false }
+        const row = {
+          day: r.day, title: r.title.trim(), body: r.body.trim(), rating: r.rating, route: r.route, is_public: r.is_public,
+          author: get().profile?.display_name || '익명의 가족', updated_at: new Date().toISOString(),
+        }
+        const q = r.id
+          ? supabase.from('trip_reviews').update(row).eq('id', r.id)
+          : supabase.from('trip_reviews').insert(row)
+        const { data, error } = await q.select().single()
+        if (error) { get().toast(error.message, 'danger'); return false }
+        set({ reviews: r.id ? get().reviews.map((x) => (x.id === r.id ? data : x)) : [data, ...get().reviews] })
+        get().loadPublicReviews()
+        get().toast(r.id ? '후기를 고쳤어요' : '후기를 남겼어요 🎉')
+        return true
+      },
+      deleteReview: async (id) => {
+        const prev = get().reviews
+        set({ reviews: prev.filter((x) => x.id !== id), publicReviews: get().publicReviews.filter((x) => x.id !== id) })
+        const { error } = await supabase.from('trip_reviews').delete().eq('id', id)
+        if (error) { set({ reviews: prev }); get().toast(error.message, 'danger') }
+      },
+
+      // ⑦ 할망 에이전트 대화 — 페이지를 옮겨도 대화가 남도록 store 에 둡니다
       messages: [],
       chatLoading: false,
       sendMessage: async (text) => {
@@ -143,7 +186,7 @@ export const useAppStore = create(
         }
       },
 
-      // ⑦ 아이와 함께 모드 (새로고침해도 유지)
+      // ⑧ 아이와 함께 모드 (새로고침해도 유지)
       kidsMode: false,
       setKidsMode: (kidsMode) => set({ kidsMode }),
       ageBand: 'preschool',

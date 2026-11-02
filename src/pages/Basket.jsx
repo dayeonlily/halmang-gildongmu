@@ -5,6 +5,8 @@ import PageTitle from '../components/PageTitle'
 import { ScorePill } from '../components/ScoreBars'
 import { Empty } from '../components/Status'
 import { IslandScene } from '../scene/JejuScene'
+import ReviewModal from '../components/ReviewModal'
+import Stars from '../components/Stars'
 import { useAppStore } from '../store/useAppStore'
 
 // 여행 일수는 사람마다 달라서 직접 늘리고 줄인다 (이 기기에 기억). day 0 = "아직 안 정했어요"
@@ -34,12 +36,28 @@ function BasketItem({ b, dayList, update, remove }) {
   )
 }
 
+// 일차 아래의 후기 칸: 쓴 후기가 있으면 미리 보여 주고, 없으면 쓰기 버튼
+function DayReview({ day, count, review, onOpen }) {
+  if (review) {
+    return (
+      <div className="soft-card p-2 px-3 small d-flex align-items-center gap-2" style={{ background: 'var(--hm-orange-soft)' }}>
+        <Stars value={review.rating} /><div className="flex-grow-1 text-truncate">{review.title || review.body}</div>
+        <Button size="sm" variant="link" className="p-0" onClick={() => onOpen(review)}>후기 수정</Button>
+      </div>
+    )
+  }
+  if (!count) return null
+  return <Button size="sm" variant="outline-primary" onClick={() => onOpen(undefined)}><i className="bi bi-pencil-square me-1" />{day}일차 후기 쓰기</Button>
+}
+
 export default function Basket() {
   const basket = useAppStore((s) => s.basket)
   const update = useAppStore((s) => s.updateBasketItem)
   const remove = useAppStore((s) => s.removeFromBasket)
   const sendMessage = useAppStore((s) => s.sendMessage)
+  const reviews = useAppStore((s) => s.reviews)
   const nav = useNavigate()
+  const [reviewing, setReviewing] = useState(null) // { day, review? } 후기 창
   const [days, setDaysRaw] = useState(loadDays)
   const [over, setOver] = useState(null) // 끌어서 올려 둔 칸 (일차 번호, 0 = 미정)
 
@@ -115,6 +133,7 @@ export default function Basket() {
                   </h4>
                   {items.length === 0 && <div className="small text-muted ps-1">비어 있어요. 장소를 끌어다 놓거나, 다른 일차에서 옮겨 보세요.</div>}
                   {items.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
+                  <DayReview day={d} count={items.length} review={reviews.find((r) => r.day === d)} onOpen={(review) => setReviewing({ day: d, review })} />
                 </div>
               )
             })}
@@ -126,6 +145,10 @@ export default function Basket() {
           </Col>
           <Col lg={5}><div style={{ position: 'sticky', top: '1.2rem' }}><IslandScene spots={spots} height={380} /></div></Col>
         </Row>
+      )}
+      {reviewing && (
+        <ReviewModal key={`${reviewing.day}-${reviewing.review?.id ?? 'new'}`} day={reviewing.day} review={reviewing.review} onHide={() => setReviewing(null)}
+          route={basket.filter((b) => b.day === reviewing.day).map((b) => ({ id: b.content_id, title: b.title }))} />
       )}
     </>
   )

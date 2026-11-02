@@ -119,3 +119,7 @@ body.kids .card { border-width: 2px; border-color: #ffd596; }
 @keyframes introPop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
 @keyframes waveShift { from { transform: translateX(-2%); } to { transform: translateX(2%); } }
 @media (prefers-reduced-motion: reduce) { .intro *, .intro { animation: none !important; } }
+
+/* 탭(알약) 선택 색을 앱 색으로 */
+.nav-pills { --bs-nav-pills-link-active-bg: var(--hm-orange); --bs-nav-pills-link-active-color: #fff; }
+.nav-pills .nav-link:not(.active) { color: #9a4c0b; }
