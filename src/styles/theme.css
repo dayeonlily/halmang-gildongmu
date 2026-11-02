@@ -128,3 +128,7 @@ body.kids .card { border-width: 2px; border-color: #ffd596; }
 .auth-box { position: relative; z-index: 2; width: min(440px, 100%); animation: introUp .6s ease-out both; }
 .auth-back { position: absolute; top: 1rem; left: 1rem; z-index: 3; color: #9a4c0b; text-decoration: none; font-weight: 600; background: rgba(255,255,255,.7); border-radius: 999px; padding: .3rem .8rem .3rem .5rem; }
 .auth-back:hover { background: #fff; color: #7a3a07; }
+
+/* ── 할망 이야기 그림 ── */
+.story-art { width: 100%; height: auto; display: block; border-radius: 1rem; background: #f7efdc; animation: artIn .6s ease-out both; }
+@keyframes artIn { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }

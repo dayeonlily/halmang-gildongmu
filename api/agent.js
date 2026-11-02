@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { recommend } from '../server/recommend.js'
 import { getAccess } from '../server/access.js'
 import { getWeather } from '../server/weather.js'
-import { STORIES, JEJU_WORDS, CHECKLISTS, AGE_BANDS, missionsFor, findStory } from '../shared/lore.js'
+import { STORIES, CHECKLISTS, AGE_BANDS, missionsFor, wordsFor, findStory } from '../shared/lore.js'
 
 const MODEL = 'claude-sonnet-5-5'
 
@@ -67,7 +67,7 @@ const runTool = {
   },
   get_kids_content: (i) => ({
     missions: missionsFor(i.ageBand).map((m) => ({ title: m.title, text: m.text })),
-    words: JEJU_WORDS.slice(0, 4),
+    words: wordsFor(i.ageBand).slice(0, 4), // 연령에 맞는 제주어 카드
     checklist: CHECKLISTS[i.ageBand],
   }),
 }

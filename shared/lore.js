@@ -99,30 +99,130 @@ export const STORIES = [
   },
 ]
 
-// ── 제주어 카드 ──────────────────────────────────────────
-export const JEJU_WORDS = [
-  { jeju: '혼저옵서예', ko: '어서 오세요', tip: '제주 어디서나 들리는 환영 인사', emoji: '👋' },
-  { jeju: '고맙수다', ko: '고맙습니다', tip: '"-수다"는 정중한 끝맺음', emoji: '🙏' },
-  { jeju: '폭삭 속았수다', ko: '정말 수고 많으셨어요', tip: '"폭삭"은 아주, "속다"는 수고하다', emoji: '🌼' },
-  { jeju: '바당', ko: '바다', tip: '바당 = 바다의 제주어', emoji: '🌊' },
-  { jeju: '오름', ko: '작은 화산 언덕', tip: '제주에만 360여 개가 있어요', emoji: '⛰️' },
-  { jeju: '삼춘', ko: '어른을 부르는 다정한 호칭', tip: '꼭 친척이 아니어도 "삼춘"이라 불러요', emoji: '🧑‍🌾' },
-  { jeju: '놀멍 쉬멍 걸으멍', ko: '놀며 쉬며 걸으며', tip: '제주 올레길의 느린 여행 정신', emoji: '🚶' },
-  { jeju: '사랑햄수다', ko: '사랑해요', tip: '가족에게 먼저 말해 볼까요?', emoji: '💛' },
-]
+// ── 제주어 카드 (연령별) ─────────────────────────────────
+// ※ 표기·발음은 지역과 세대에 따라 조금씩 달라요. 화면에도 그렇게 안내합니다.
+export const JEJU_WORDS_BY_AGE = {
+  // 영아: 보호자가 들려주는 짧은 소리 말
+  infant: [
+    { jeju: '혼저옵서예', ko: '어서 오세요', tip: '제주 어디서나 들리는 환영 인사', emoji: '👋' },
+    { jeju: '사랑햄수다', ko: '사랑해요', tip: '아기 눈을 보며 천천히 말해 주세요', emoji: '💛' },
+    { jeju: '고맙수다', ko: '고맙습니다', tip: '"-수다"는 정중한 끝맺음', emoji: '🙏' },
+    { jeju: '바당', ko: '바다', tip: '"바당~ 철썩" 파도 소리와 함께 들려주세요', emoji: '🌊' },
+    { jeju: '보름', ko: '바람', tip: '바람이 불 때 "보름 분다~" 하고 말해 보세요', emoji: '🌬️' },
+    { jeju: '하르방', ko: '할아버지', tip: '돌하르방은 "돌 할아버지"라는 뜻이에요', emoji: '🗿' },
+    { jeju: '할망', ko: '할머니', tip: '설문대할망, 영등할망의 그 "할망"', emoji: '👵' },
+    { jeju: '웡이자랑', ko: '자장자장 (제주 자장가 소리)', tip: '아기를 재울 때 불러 주던 제주 자장가의 후렴이에요', emoji: '🌙' },
+  ],
+  // 걸음마기: 동물·가족·자연 이름
+  toddler: [
+    { jeju: '강생이', ko: '강아지', tip: '"멍멍!" 소리도 같이 내 봐요', emoji: '🐶' },
+    { jeju: '고냉이', ko: '고양이', tip: '"야옹~" 하고 불러 봐요', emoji: '🐱' },
+    { jeju: '쉐', ko: '소', tip: '"음메~" 제주 들판의 소를 만나면 불러 봐요', emoji: '🐮' },
+    { jeju: '돗', ko: '돼지', tip: '제주 흑돼지의 "돼지"를 제주어로 "돗"이라 해요', emoji: '🐷' },
+    { jeju: '독', ko: '닭', tip: '"꼬꼬댁!" 소리와 함께', emoji: '🐔' },
+    { jeju: '어멍', ko: '엄마(어머니)', tip: '엄마를 부르는 제주 말', emoji: '👩' },
+    { jeju: '아방', ko: '아빠(아버지)', tip: '아빠를 부르는 제주 말', emoji: '👨' },
+    { jeju: '오름', ko: '작은 화산 언덕', tip: '제주에만 360여 개가 있어요', emoji: '⛰️' },
+  ],
+  // 유아: 인사·음식·바다 먹거리
+  preschool: [
+    { jeju: '혼저 먹읍서', ko: '어서 드세요', tip: '밥 먹기 전에 가족에게 말해 봐요', emoji: '🍚' },
+    { jeju: '하영 먹읍서', ko: '많이 드세요', tip: '"하영"은 "많이"라는 뜻이에요', emoji: '🥢' },
+    { jeju: '곱닥허다', ko: '예쁘다', tip: '예쁜 꽃을 보면 "곱닥허다!"', emoji: '🌸' },
+    { jeju: '메역', ko: '미역', tip: '바다에서 자라는 초록 풀 같은 먹거리', emoji: '🌿' },
+    { jeju: '구젱기', ko: '소라', tip: '귀에 대면 바다 소리가 나요', emoji: '🐚' },
+    { jeju: '보말', ko: '바다 고둥', tip: '보말국·보말죽으로 먹어요', emoji: '🐌' },
+    { jeju: '감저', ko: '고구마', tip: '제주에서는 고구마를 "감저"라 불러요', emoji: '🍠' },
+    { jeju: '지슬', ko: '감자', tip: '제주에서는 감자를 "지슬"이라 불러요', emoji: '🥔' },
+  ],
+  // 초등 저학년: 묻고 답하는 말, 짧은 표현
+  lower: [
+    { jeju: '무사', ko: '왜', tip: '"무사 경 햄수광?"은 "왜 그러고 있어요?"', emoji: '❓' },
+    { jeju: '게메마씸', ko: '글쎄요', tip: '"-마씸"은 높임을 더하는 말이에요', emoji: '🤔' },
+    { jeju: '호썰', ko: '조금', tip: '"호썰 쉬엉 갑서" = 조금 쉬었다 가세요', emoji: '☕' },
+    { jeju: '하영', ko: '많이', tip: '"하영 놀아보게!" = 많이 놀아 보자!', emoji: '🎈' },
+    { jeju: '몬딱', ko: '모두, 전부', tip: '"몬딱 혼디 가게" = 모두 같이 가자', emoji: '👨‍👩‍👧' },
+    { jeju: '혼디', ko: '함께', tip: '"혼디 놀게" = 같이 놀자', emoji: '🤝' },
+    { jeju: '어디 감수광?', ko: '어디 가세요?', tip: '길에서 만난 어른께 건네는 인사말', emoji: '🚶' },
+    { jeju: '폭삭 속았수다', ko: '정말 수고 많으셨어요', tip: '"폭삭"은 아주, "속다"는 수고하다', emoji: '🌼' },
+  ],
+  // 초등 고학년: 문화·생활 낱말과 정신
+  upper: [
+    { jeju: '괸당', ko: '가까운 친척·이웃', tip: '피를 나눈 사이를 넘어 이웃까지 아우르는 말', emoji: '🏘️' },
+    { jeju: '삼춘', ko: '어른을 부르는 다정한 호칭', tip: '꼭 친척이 아니어도 "삼춘"이라 불러요', emoji: '🧑‍🌾' },
+    { jeju: '물질', ko: '해녀가 바다에서 해산물을 따는 일', tip: '해녀 문화는 유네스코 인류무형문화유산이에요', emoji: '🤿' },
+    { jeju: '테왁·망사리', ko: '해녀의 떠 있는 도구와 그물주머니', tip: '테왁은 쉼터, 망사리는 수확물 주머니', emoji: '🟠' },
+    { jeju: '수눌음', ko: '서로 돕는 품앗이', tip: '농사·집짓기를 번갈아 도우며 함께 살던 문화', emoji: '🌾' },
+    { jeju: '조냥', ko: '아끼고 절약하는 생활 지혜', tip: '"조냥정신"은 자원이 귀한 섬에서 이어진 정신', emoji: '♻️' },
+    { jeju: '지꺼지다', ko: '기쁘다', tip: '"지꺼진 하루"처럼 써 볼 수 있어요', emoji: '😊' },
+    { jeju: '놀멍 쉬멍 걸으멍', ko: '놀며 쉬며 걸으며', tip: '제주 올레길의 느린 여행 정신', emoji: '🚶' },
+  ],
+}
+// 에이전트·옛 코드용: 모든 연령 카드를 중복 없이 한 줄로
+export const JEJU_WORDS = Object.values(JEJU_WORDS_BY_AGE).flat().filter((w, i, a) => a.findIndex((x) => x.jeju === w.jeju) === i)
+export const wordsFor = (ageKey) => JEJU_WORDS_BY_AGE[ageKey] ?? JEJU_WORDS_BY_AGE.preschool
 
 // ── 연령별 미션 카드 ─────────────────────────────────────
+// kind: 미션의 성격 (화면에서 종류별로 골라 볼 수 있어요)
+export const MISSION_KINDS = [
+  { key: 'sense', label: '오감', icon: 'ear' },
+  { key: 'body', label: '몸놀이', icon: 'person-walking' },
+  { key: 'look', label: '관찰', icon: 'binoculars' },
+  { key: 'make', label: '만들기', icon: 'palette' },
+  { key: 'culture', label: '문화', icon: 'bank' },
+  { key: 'heart', label: '배려', icon: 'heart' },
+]
+// ※ id 는 저장된 스탬프와 이어지니 바꾸지 마세요 (m- 로 시작하는 건 처음부터 있던 미션)
 export const MISSIONS = [
-  { id: 'm-stone', age: ['infant', 'toddler'], title: '돌하르방 코 쓰다듬기', text: '돌하르방을 만나면 코를 살짝 쓰다듬고 "안녕" 인사해요.', icon: 'hand-index-thumb', stamp: '🗿' },
-  { id: 'm-wind', age: ['infant', 'toddler', 'preschool'], title: '바람 소리 듣기', text: '눈을 감고 10초 동안 바람 소리를 들어요. 무슨 소리 같아요?', icon: 'wind', stamp: '🌬️' },
-  { id: 'm-color', age: ['toddler', 'preschool'], title: '제주 색깔 찾기', text: '검은 돌, 노란 유채, 파란 바다. 보이는 색을 손가락으로 짚어 봐요.', icon: 'palette', stamp: '🎨' },
-  { id: 'm-sumbi', age: ['preschool', 'lower'], title: '숨비소리 따라 하기', text: '숨을 크게 들이마시고 "호오이~" 휘파람처럼 내쉬어 봐요.', icon: 'mic', stamp: '🐚' },
-  { id: 'm-oreum', age: ['preschool', 'lower'], title: '오름 이름 짓기', text: '오름이나 언덕을 보고 나만의 이름을 지어 가족에게 소개해요.', icon: 'signpost-split', stamp: '⛰️' },
-  { id: 'm-word', age: ['preschool', 'lower', 'upper'], title: '제주어 3개 말하기', text: '오늘 제주어 카드에서 배운 말 세 가지를 하루 동안 써 봐요.', icon: 'chat-heart', stamp: '💬' },
-  { id: 'm-stone2', age: ['lower', 'upper'], title: '돌담 구멍의 비밀', text: '제주 돌담은 구멍이 숭숭 뚫려 있어요. 왜 그럴까요? (바람이 지나가도록!)', icon: 'search', stamp: '🧱' },
-  { id: 'm-trash', age: ['lower', 'upper'], title: '해변 쓰레기 3개 줍기', text: '바다를 아끼는 해녀 할망처럼, 안전한 곳에서 쓰레기 세 개를 주워요.', icon: 'recycle', stamp: '♻️' },
-  { id: 'm-map', age: ['upper'], title: '가족 길잡이 되기', text: '오늘 일정 지도를 보고 다음 장소까지 길을 안내해 봐요.', icon: 'map', stamp: '🧭' },
-  { id: 'm-diary', age: ['upper'], title: '할망에게 편지 쓰기', text: '오늘 가장 기억에 남는 장면을 설문대할망에게 편지로 남겨요.', icon: 'envelope-heart', stamp: '💌' },
+  // ─ 영아(0~1세): 보호자와 함께하는 오감 놀이 ─
+  { id: 'm-stone', age: ['infant', 'toddler'], kind: 'culture', title: '돌하르방 코 쓰다듬기', text: '돌하르방을 만나면 코를 살짝 쓰다듬고 "안녕" 인사해요.', icon: 'hand-index-thumb', stamp: '🗿' },
+  { id: 'm-wind', age: ['infant', 'toddler', 'preschool'], kind: 'sense', title: '바람 소리 듣기', text: '눈을 감고 10초 동안 바람 소리를 들어요. 무슨 소리 같아요?', icon: 'wind', stamp: '🌬️' },
+  { id: 'i-sea', age: ['infant'], kind: 'sense', title: '파도 소리 들려주기', text: '아기를 안고 파도 소리를 1분 들려주며 "철썩~ 바당 소리" 하고 말해 줘요. (물가에서 한 걸음 떨어져서)', icon: 'water', stamp: '🌊' },
+  { id: 'i-touch', age: ['infant'], kind: 'sense', title: '보드라운 것 만져 보기', text: '안전하고 깨끗한 곳에서 풀잎·고운 모래·돌담 앞 바람을 살짝 느끼게 해 줘요.', icon: 'hand-index', stamp: '🌿' },
+  { id: 'i-yellow', age: ['infant'], kind: 'look', title: '노란 유채꽃 보여주기', text: '노란 꽃을 가리키며 "노랑~ 예쁘다" 하고 말해 줘요. 아기가 시선을 따라가는지 지켜봐요.', icon: 'flower1', stamp: '🌼' },
+  { id: 'i-lullaby', age: ['infant'], kind: 'culture', title: '제주 자장가 불러 주기', text: '낮잠 전에 "웡이자랑 웡이자랑" 하고 천천히 흥얼거려 줘요.', icon: 'moon-stars', stamp: '🌙' },
+  { id: 'i-scent', age: ['infant'], kind: 'sense', title: '귤 향기 맡아 보기', text: '귤 껍질의 향기를 코 가까이에서 맡게 해 줘요. (알레르기가 없을 때만, 입에 넣지 않게)', icon: 'emoji-smile', stamp: '🍊' },
+  { id: 'i-photo', age: ['infant'], kind: 'make', title: '첫 제주 사진 남기기', text: '아기와 바다·오름 배경으로 사진 한 장을 찍고 오늘 날짜를 적어 두어요.', icon: 'camera', stamp: '📷' },
+
+  // ─ 걸음마기(1~3세): 몸으로 만나는 제주 ─
+  { id: 'm-color', age: ['toddler', 'preschool'], kind: 'look', title: '제주 색깔 찾기', text: '검은 돌, 노란 유채, 파란 바다. 보이는 색을 손가락으로 짚어 봐요.', icon: 'palette', stamp: '🎨' },
+  { id: 't-stack', age: ['toddler'], kind: 'make', title: '돌 세 개 쌓기', text: '해변의 큰 돌 세 개를 쌓아 봐요. 작은 돌은 입에 넣지 않게 곁에서 지켜봐요.', icon: 'layers', stamp: '🪨' },
+  { id: 't-animal', age: ['toddler'], kind: 'sense', title: '동물 소리 따라 하기', text: '강생이·고냉이·쉐 소리를 내며 놀아요. (제주 목장·농장에서 만나면 더 좋아요)', icon: 'megaphone', stamp: '🐮' },
+  { id: 't-hop', age: ['toddler'], kind: 'body', title: '언덕 폴짝폴짝', text: '낮고 완만한 언덕에서 보호자 손을 잡고 폴짝폴짝 다섯 번 뛰어요.', icon: 'arrow-up-circle', stamp: '🦘' },
+  { id: 't-orange', age: ['toddler'], kind: 'look', title: '주황색 찾기', text: '길에서 귤·꽃·지붕 중 주황색을 찾으면 "주황!" 하고 외쳐요.', icon: 'circle-fill', stamp: '🟠' },
+  { id: 't-bye', age: ['toddler'], kind: 'heart', title: '바다에게 인사하기', text: '"바당아 안녕~" 하고 손을 흔들어요. 물 가까이는 가지 않고 모래 위에서만!', icon: 'hand-thumbs-up', stamp: '👋' },
+  { id: 't-hareubang', age: ['toddler', 'preschool'], kind: 'body', title: '돌하르방 따라 하기', text: '두 손을 배 위에 올리고 눈을 크게 뜨고 꼼짝 않고 서 있어 봐요. 누가 더 오래 버틸까요?', icon: 'emoji-neutral', stamp: '🗿' },
+
+  // ─ 유아(4~6세): 표현하고 체험하기 ─
+  { id: 'm-sumbi', age: ['preschool', 'lower'], kind: 'body', title: '숨비소리 따라 하기', text: '숨을 크게 들이마시고 "호오이~" 휘파람처럼 내쉬어 봐요.', icon: 'mic', stamp: '🐚' },
+  { id: 'm-oreum', age: ['preschool', 'lower'], kind: 'make', title: '오름 이름 짓기', text: '오름이나 언덕을 보고 나만의 이름을 지어 가족에게 소개해요.', icon: 'signpost-split', stamp: '⛰️' },
+  { id: 'm-word', age: ['preschool', 'lower', 'upper'], kind: 'culture', title: '제주어 3개 말하기', text: '오늘 제주어 카드에서 배운 말 세 가지를 하루 동안 써 봐요.', icon: 'chat-heart', stamp: '💬' },
+  { id: 'p-draw', age: ['preschool'], kind: 'make', title: '오늘의 풍경 그리기', text: '보이는 오름이나 바다 중 하나를 종이에 그려요. 어디가 가장 마음에 들었는지 말해 봐요.', icon: 'brush', stamp: '🖍️' },
+  { id: 'p-shell', age: ['preschool'], kind: 'look', title: '다른 조개껍데기 3가지', text: '모양이 다른 조개껍데기 세 가지를 찾아 사진을 찍어요. 사진만 찍고 제자리에 두고 와요.', icon: 'search-heart', stamp: '🐚' },
+  { id: 'p-wall', age: ['preschool'], kind: 'look', title: '돌담 구멍으로 바람 느끼기', text: '돌담 앞에 서서 구멍으로 바람이 지나가는 걸 느껴 봐요. 돌담은 올라타지 않아요.', icon: 'wind', stamp: '🧱' },
+  { id: 'p-step', age: ['preschool'], kind: 'body', title: '할망 걸음으로 성큼성큼', text: '설문대할망처럼 아주 큰 걸음으로 열 걸음을 걸어 봐요. 작은 걸음과 어느 쪽이 빠를까요?', icon: 'person-walking', stamp: '👣' },
+  { id: 'p-thanks', age: ['preschool'], kind: 'heart', title: '"고맙수다" 말하기', text: '오늘 나를 도와준 사람에게 "고맙수다!" 하고 인사해요.', icon: 'heart', stamp: '🙏' },
+  { id: 'p-tewak', age: ['preschool'], kind: 'culture', title: '테왁과 망사리 찾기', text: '해녀박물관이나 바닷가에서 테왁(둥근 박)과 망사리(그물주머니)를 찾아 사진을 찍어요.', icon: 'binoculars', stamp: '🟠' },
+
+  // ─ 초등 저학년(7~9세): 관찰하고 이야기하기 ─
+  { id: 'm-stone2', age: ['lower', 'upper'], kind: 'look', title: '돌담 구멍의 비밀', text: '제주 돌담은 구멍이 숭숭 뚫려 있어요. 왜 그럴까요? (바람이 지나가도록!)', icon: 'search', stamp: '🧱' },
+  { id: 'm-trash', age: ['lower', 'upper'], kind: 'heart', title: '해변 쓰레기 3개 줍기', text: '바다를 아끼는 해녀 할망처럼, 안전한 곳에서 쓰레기 세 개를 주워요.', icon: 'recycle', stamp: '♻️' },
+  { id: 'l-map', age: ['lower'], kind: 'make', title: '나만의 보물지도 그리기', text: '오늘 다닌 길을 지도로 그려요. 출발점·간식 먹은 곳·화장실을 표시해 보세요.', icon: 'map', stamp: '🗺️' },
+  { id: 'l-weather', age: ['lower'], kind: 'look', title: '날씨 기자 되기', text: '하늘·바람·기온을 살펴보고 "오늘의 제주 날씨"를 한 문장 뉴스로 전해요.', icon: 'cloud-sun', stamp: '🎙️' },
+  { id: 'l-count', age: ['lower'], kind: 'look', title: '돌담 돌 세어 보기', text: '돌담 한 칸에 돌이 몇 개일지 어림해 본 뒤 직접 세어 봐요. 얼마나 비슷했나요?', icon: '123', stamp: '🔢' },
+  { id: 'l-ask', age: ['lower'], kind: 'culture', title: '삼춘께 물어보기', text: '보호자와 함께 안내소·가게 어른께 "이 동네에서 제일 좋은 곳은 어디예요?" 하고 여쭤봐요.', icon: 'chat-quote', stamp: '🙋' },
+  { id: 'l-retell', age: ['lower'], kind: 'culture', title: '할망 이야기 다시 들려주기', text: '오늘 들은 이야기를 세 문장으로 가족에게 들려줘요.', icon: 'book', stamp: '📖' },
+  { id: 'l-three', age: ['lower'], kind: 'make', title: '사진 세 장으로 하루 이야기', text: '처음·중간·마지막 장면을 사진 세 장으로 남기고 제목을 붙여요.', icon: 'images', stamp: '🖼️' },
+
+  // ─ 초등 고학년(10~12세): 계획하고 해설하기 ─
+  { id: 'm-map', age: ['upper'], kind: 'look', title: '가족 길잡이 되기', text: '오늘 일정 지도를 보고 다음 장소까지 길을 안내해 봐요.', icon: 'map', stamp: '🧭' },
+  { id: 'm-diary', age: ['upper'], kind: 'make', title: '할망에게 편지 쓰기', text: '오늘 가장 기억에 남는 장면을 설문대할망에게 편지로 남겨요.', icon: 'envelope-heart', stamp: '💌' },
+  { id: 'u-compass', age: ['upper'], kind: 'look', title: '해와 그림자로 방위 찾기', text: '해와 그림자로 동서남북을 가늠해 본 뒤 지도 앱과 맞춰 보세요. 얼마나 맞았을까요?', icon: 'compass', stamp: '🧭' },
+  { id: 'u-budget', age: ['upper'], kind: 'make', title: '여행 가계부 쓰기', text: '오늘 쓴 입장료·간식비를 적고 합계를 계산해요. 내일 예산도 정해 보세요.', icon: 'calculator', stamp: '🧮' },
+  { id: 'u-compare', age: ['upper'], kind: 'culture', title: '오름 vs 바다 비교하기', text: '오름과 바다의 분위기를 장점 세 가지씩 비교해 한 편의 글로 써요.', icon: 'columns-gap', stamp: '⚖️' },
+  { id: 'u-sign', age: ['upper'], kind: 'culture', title: '제주어 간판 해독하기', text: '간판·안내문에서 제주어를 찾아 표준어로 풀어 봐요. (예: "혼저옵서예")', icon: 'signpost', stamp: '🔤' },
+  { id: 'u-guide', age: ['upper'], kind: 'culture', title: '가족 해설사 되기', text: '오늘 본 장소 하나를 골라 안내판을 읽고 1분 동안 가족에게 해설해 줘요.', icon: 'megaphone', stamp: '🎤' },
+  { id: 'u-safe', age: ['upper'], kind: 'heart', title: '안전 점검대장', text: '계단·바위·파도처럼 위험한 곳 세 가지를 찾아 동생에게 알려 줘요.', icon: 'shield-check', stamp: '🦺' },
 ]
 
 // ── 보호자 체크리스트 (아동생활복지 관점, 발달단계별) ─────
