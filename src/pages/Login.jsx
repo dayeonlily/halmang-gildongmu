@@ -7,7 +7,7 @@ import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
 
 export default function Login() {
-  const { signIn, signUp, user, profile, profileLoaded } = useAppStore()
+  const { signIn, signUp, user } = useAppStore()
   const nav = useNavigate()
   const from = useLocation().state?.from
   const [params] = useSearchParams()
@@ -17,11 +17,11 @@ export default function Login() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  // 로그인되면: 가족 정보를 다 불러온 뒤에 판단한다.
-  // 처음 가입한 사람(정보 없음)만 가족 정보 입력으로, 이미 입력한 사람은 바로 원래 가려던 곳으로
+  // 로그인·회원가입이 끝나면 홈으로. (로그인이 필요한 페이지에서 튕겨 온 경우만 원래 가려던 곳으로)
+  // 가족 정보가 아직 없는 새 가입자에게는 홈 위쪽에 입력 안내 카드가 뜬다
   useEffect(() => {
-    if (user && profileLoaded) nav(profile ? (from ?? '/explore') : '/profile', { replace: true })
-  }, [user, profile, profileLoaded, from, nav])
+    if (user) nav(from ?? '/', { replace: true })
+  }, [user, from, nav])
 
   async function submit(e) {
     e.preventDefault()

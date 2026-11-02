@@ -16,10 +16,22 @@ export default function Home() {
   const kids = useAppStore((s) => s.kidsMode)
   const user = useAppStore((s) => s.user)
   const ready = useAppStore((s) => s.authReady)
+  const profile = useAppStore((s) => s.profile)
+  const profileLoaded = useAppStore((s) => s.profileLoaded)
   if (!ready) return <div className="intro" /> // 로그인 여부를 확인하는 동안 같은 배경만 보여 깜빡임을 막는다
   if (!user) return <Intro />
   return (
     <>
+      {profileLoaded && !profile && (
+        <div className="soft-card p-3 mb-3 d-flex flex-wrap align-items-center gap-3" style={{ background: 'var(--hm-orange-soft)' }}>
+          <i className="bi bi-people fs-3 text-primary" />
+          <div className="flex-grow-1">
+            <div className="fw-bold">처음 오셨네요! 우리 가족 정보를 알려 주세요</div>
+            <div className="small text-muted">아이 나이, 유모차·휠체어, 예산을 한 번만 적으면 맞춤 추천을 해 드려요. 나중에 '우리 가족' 메뉴에서 고칠 수 있어요.</div>
+          </div>
+          <Button as={Link} to="/profile">가족 정보 입력하기</Button>
+        </div>
+      )}
       <section className="hero mb-4">
         <div className="hero-copy">
           <span className="chip mb-3"><i className="bi bi-heart-fill" />아동 친화 · 무장애 제주 여행</span>
