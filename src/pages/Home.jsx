@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Col, ProgressBar, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { fetchSpots, fetchWeather } from '../api/client'
+import { fetchPicks, fetchWeather } from '../api/client'
 import { ScorePill } from '../components/ScoreBars'
 import { IslandScene } from '../scene/JejuScene'
 import Intro from './Intro'
-import { AGE_BANDS, EMERGENCY, STORIES, missionsFor, wordsFor } from '../../shared/lore'
+import { AGE_BANDS, BUDGETS, EMERGENCY, NEEDS, STORIES, missionsFor, wordsFor, youngestBand } from '../../shared/lore'
 import { HISTORY_COURSES, eraOf, stampIdOf } from '../../shared/history'
 import { useAppStore } from '../store/useAppStore'
 
@@ -54,23 +54,18 @@ export default function Home() {
   const [spotErr, setSpotErr] = useState('')
   const [flip, setFlip] = useState(false)
 
-  // 우리 가족(접근성·예산)에 맞춘 오늘의 추천 장소
+  // 가족 정보(가장 어린 아이의 나이·필요한 것·예산)로 점수를 매긴 오늘의 추천 3곳
+  const familyAge = youngestBand(profile?.child_age_bands) ?? ageBand
+  const needsKey = (profile?.needs ?? []).join(',')
   useEffect(() => {
     if (!user || !profileLoaded) return
     let off = false
-    // 접근성이 필요한 가족은 무장애 정보가 등록된 곳에서, 날마다 다른 쪽(페이지)을 보여 줘서 매일 새롭게
-    const needs = profile?.needs ?? []
-    fetchSpots({ type: needs.length ? '' : '12', needs, budget: profile?.budget ?? 'any', age: ageBand, accessible: needs.length > 0, page: (dayIndex % 12) + 1, limit: 24 })
-      .then((r) => {
-        if (off) return
-        // 후보 24곳 중 구경할 만한 곳(관광지·문화시설·체험·행사)을 점수순으로 3곳. 부족하면 나머지로 채운다
-        const sight = r.items.filter((p) => ['12', '14', '28', '15'].includes(p.type))
-          .sort((x, y) => y.rank - x.rank || Number(!!y.image) - Number(!!x.image)) // 같은 점수면 사진이 있는 곳 먼저
-        setSpots([...sight, ...r.items.filter((p) => !sight.includes(p))].slice(0, 3))
-      })
+    setSpots(null); setSpotErr('')
+    fetchPicks({ needs: needsKey ? needsKey.split(',') : [], budget: profile?.budget ?? 'any', age: familyAge })
+      .then((r) => { if (!off) setSpots(r.items) })
       .catch((e) => { if (!off) setSpotErr(e.message) })
     return () => { off = true }
-  }, [user, profileLoaded, profile, ageBand])
+  }, [user, profileLoaded, needsKey, profile?.budget, familyAge])
 
   if (!ready) return <div className="intro" /> // 로그인 여부를 확인하는 동안 같은 배경만 보여 깜빡임을 막는다
   if (!user) return <Intro />
@@ -135,6 +130,13 @@ export default function Home() {
         <h2 className="home-section">오늘 우리 가족이 가기 좋은 곳</h2>
         <Link to="/explore" className="fw-bold">더 보기 <i className="bi bi-chevron-right" /></Link>
       </div>
+      <div className="d-flex flex-wrap align-items-center gap-1 mb-3 small">
+        <span className="text-muted me-1"><i className="bi bi-people-fill text-primary me-1" />우리 가족 기준</span>
+        <Badge bg="primary">{AGE_BANDS.find((x) => x.key === familyAge)?.label}</Badge>
+        {(profile?.needs ?? []).map((k) => <Badge key={k} bg="secondary">{NEEDS.find((n) => n.key === k)?.label}</Badge>)}
+        <Badge bg="light" text="dark" className="border">예산 {BUDGETS.find((x) => x.key === (profile?.budget ?? 'any'))?.label}</Badge>
+        {!profile && <Link to="/profile" className="ms-1">가족 정보를 입력하면 더 잘 맞춰요</Link>}
+      </div>
       <Row xs={1} md={3} className="g-3 mb-4">
         {!spots && !spotErr && [0, 1, 2].map((i) => <Col key={i}><div className="soft-card p-3 text-muted small" style={{ minHeight: 170 }}><i className="bi bi-hourglass-split me-1" />추천을 고르는 중...</div></Col>)}
         {spotErr && <Col xs={12}><div className="soft-card p-3 small text-muted">추천을 불러오지 못했어요. <Link to="/explore">길동무 찾기</Link>에서 직접 찾아보세요.</div></Col>}
@@ -147,7 +149,7 @@ export default function Home() {
                 <div className="small text-muted text-truncate mb-2">{s.addr}</div>
                 <div className="d-flex flex-wrap gap-1 mb-2">
                   <Badge bg={s.indoor ? 'info' : 'success'}>{s.indoor ? '실내' : '야외'}</Badge>
-                  {s.notes.slice(0, 2).map((n) => <Badge key={n} bg="warning" text="dark">{n}</Badge>)}
+                  {(s.reasons ?? []).slice(0, 3).map((n) => <Badge key={n} bg="warning" text="dark">{n}</Badge>)}
                 </div>
                 <div className="d-flex gap-2">
                   <Button as={Link} to={`/explore?q=${encodeURIComponent(s.title)}`} size="sm" variant="outline-primary" className="flex-fill">자세히</Button>

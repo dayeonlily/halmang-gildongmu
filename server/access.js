@@ -7,7 +7,10 @@ const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json' }
 const clean = (v) => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 const has = (v) => { const s = clean(v); return s !== '' && !/^(없음|없습니다|불가|미운영|해당없음)/.test(s) }
 
-export async function getAccess({ id }) {
+const memo = new Map()
+export const getAccess = ({ id }) => { if (!memo.has(id)) memo.set(id, fetchAccess({ id }).catch((e) => { memo.delete(id); throw e })); return memo.get(id) }
+
+async function fetchAccess({ id }) {
   const body = await dataGo(`${BASE}/detailWithTour2`, { ...COMMON, contentId: String(id) })
   const d = toArray(body?.items?.item)[0]
   if (!d) return { id: String(id), registered: false }

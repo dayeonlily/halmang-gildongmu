@@ -9,6 +9,8 @@ export const AGE_BANDS = [
   { key: 'upper', label: '초등 고학년 (10~12세)', short: '고학년', icon: 'compass' },
 ]
 
+export const AGE_LABEL = Object.fromEntries(AGE_BANDS.map((a) => [a.key, a.short]))
+
 // 아이가 여럿이면 가장 어린 아이를 기준으로 한다 (안전·적합도는 어린 쪽에 맞춰야 하므로). AGE_BANDS 는 어린 순서
 export const youngestBand = (bands = []) => AGE_BANDS.find((a) => bands.includes(a.key))?.key
 
