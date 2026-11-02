@@ -3,8 +3,9 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Html, Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { BOUNDS, HALLA, buildTerrain, terrainHeight, toXZ } from './terrain'
+import Halmang from './Halmang'
 
-export { toXZ }
+export { toXZ, Halmang }
 
 const scoreColor = (s) => (s >= 70 ? '#43a047' : s >= 50 ? '#f9a825' : '#e53935')
 const FOG = '#cfe3ee'
@@ -134,49 +135,6 @@ function Pin({ spot, selected, onSelect }) {
   )
 }
 
-// ── 할망 캐릭터 (한복 원뿔 몸 + 쪽 찐 머리) ───────────────
-export function Halmang({ speaking = false, position = [0, 0, 0], scale = 1 }) {
-  const root = useRef(), arm = useRef(), mouth = useRef()
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime
-    if (root.current) root.current.position.y = position[1] + Math.sin(t * 1.6) * 0.04
-    if (arm.current) arm.current.rotation.z = -2.2 + Math.sin(t * 3.2) * 0.35
-    if (mouth.current) mouth.current.scale.y = speaking ? 0.4 + Math.abs(Math.sin(t * 12)) * 0.9 : 1
-  })
-  return (
-    <group ref={root} position={position} scale={scale}>
-      <mesh position={[0, 0.38, 0]} castShadow><coneGeometry args={[0.42, 0.78, 28]} /><meshStandardMaterial color="#ef6c57" roughness={0.7} /></mesh>
-      <mesh position={[0, 0.82, 0]} castShadow><cylinderGeometry args={[0.2, 0.26, 0.3, 24]} /><meshStandardMaterial color="#fff1c9" /></mesh>
-      <mesh position={[0, 0.9, 0.17]} rotation={[0.25, 0, 0]}><boxGeometry args={[0.1, 0.18, 0.02]} /><meshStandardMaterial color="#ef6c57" /></mesh>
-      <mesh position={[0, 1.2, 0]} castShadow><sphereGeometry args={[0.26, 28, 24]} /><meshStandardMaterial color="#ffd9b3" /></mesh>
-      <mesh position={[0, 1.32, -0.04]} scale={[1, 0.75, 1]}><sphereGeometry args={[0.27, 28, 20, 0, Math.PI * 2, 0, Math.PI / 1.9]} /><meshStandardMaterial color="#cfd2d6" /></mesh>
-      <mesh position={[0, 1.55, -0.12]}><sphereGeometry args={[0.11, 16, 14]} /><meshStandardMaterial color="#cfd2d6" /></mesh>
-      <mesh position={[0, 1.5, -0.12]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.012, 0.012, 0.3, 8]} /><meshStandardMaterial color="#c9a227" /></mesh>
-      <mesh position={[-0.09, 1.22, 0.23]}><sphereGeometry args={[0.028, 10, 10]} /><meshStandardMaterial color="#3b2a22" /></mesh>
-      <mesh position={[0.09, 1.22, 0.23]}><sphereGeometry args={[0.028, 10, 10]} /><meshStandardMaterial color="#3b2a22" /></mesh>
-      <mesh position={[-0.15, 1.15, 0.2]}><sphereGeometry args={[0.04, 10, 10]} /><meshStandardMaterial color="#ff9e9e" /></mesh>
-      <mesh position={[0.15, 1.15, 0.2]}><sphereGeometry args={[0.04, 10, 10]} /><meshStandardMaterial color="#ff9e9e" /></mesh>
-      <mesh ref={mouth} position={[0, 1.12, 0.245]} rotation={[0, 0, Math.PI]}><torusGeometry args={[0.05, 0.012, 8, 16, Math.PI]} /><meshStandardMaterial color="#8c3b2a" /></mesh>
-      <group position={[0.24, 0.9, 0]}>
-        <group ref={arm} rotation={[0, 0, -2.2]}>
-          <mesh position={[0, 0.17, 0]}><capsuleGeometry args={[0.05, 0.22, 6, 12]} /><meshStandardMaterial color="#fff1c9" /></mesh>
-          <mesh position={[0, 0.34, 0]}><sphereGeometry args={[0.055, 12, 12]} /><meshStandardMaterial color="#ffd9b3" /></mesh>
-        </group>
-      </group>
-      <mesh position={[-0.25, 0.8, 0.02]} rotation={[0, 0, 0.35]}><capsuleGeometry args={[0.05, 0.22, 6, 12]} /><meshStandardMaterial color="#fff1c9" /></mesh>
-    </group>
-  )
-}
-
-// 땅에 붙은 그림자(할망 발밑)
-function BlobShadow({ position, r = 0.4 }) {
-  return (
-    <mesh position={[position[0], position[1] + 0.006, position[2]]} rotation={[-Math.PI / 2, 0, 0]}>
-      <circleGeometry args={[r, 24]} /><meshBasicMaterial color="#1c2a1c" transparent opacity={0.28} depthWrite={false} />
-    </mesh>
-  )
-}
-
 // 선택한 핀으로 카메라가 부드럽게 다가감
 function CameraRig({ controls, focus }) {
   const camera = useThree((s) => s.camera)
@@ -235,7 +193,7 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
         <Cloud x={-2.4} y={2.6} z={-1.6} s={1.2} />
         <Cloud x={2.6} y={3.0} z={0.4} s={1.5} speed={0.07} />
         <Cloud x={0.4} y={3.4} z={-2.8} s={1.0} speed={0.04} />
-        {hero && <><BlobShadow position={halmangAt} r={0.28} /><Halmang position={halmangAt} scale={0.62} /></>}
+        {hero && <><Halmang position={halmangAt} scale={0.5} /></>}
         {spots.map((s) => <Pin key={s.id} spot={s} selected={s.id === selectedId} onSelect={onSelect} />)}
         <OrbitControls ref={controls} enablePan={false} enableDamping minDistance={2.2} maxDistance={11} maxPolarAngle={Math.PI / 2.1}
           autoRotate={hero && !selectedId} autoRotateSpeed={0.45} target={[HALLA[0] * 0.2, 0.15, HALLA[1] * 0.2]} />
@@ -249,11 +207,12 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
 export function HalmangBuddy({ speaking = false, height = 220, bare = false }) {
   return (
     <div className="scene-wrap buddy" style={{ height, ...(bare ? { background: 'transparent', border: 'none' } : {}) }}>
-      <Canvas camera={{ position: [0, 1.1, 3.1], fov: 38 }} dpr={[1, 2]} gl={{ alpha: true }}>
-        <hemisphereLight args={['#fff4dc', '#e8b97a', 0.8]} />
-        <directionalLight position={[3, 5, 4]} intensity={1.6} />
-        <Halmang speaking={speaking} position={[0, -0.1, 0]} scale={1.4} />
-        <OrbitControls enableZoom={false} enablePan={false} target={[0, 0.85, 0]} maxPolarAngle={Math.PI / 1.9} minPolarAngle={Math.PI / 3} />
+      <Canvas camera={{ position: [0, 1.2, 3.3], fov: 36 }} dpr={[1, 2]} gl={{ alpha: true }}>
+        <hemisphereLight args={['#fff4dc', '#f1c58d', 0.95]} />
+        <directionalLight position={[2.5, 4, 4]} intensity={1.7} color="#fff3e0" />
+        <directionalLight position={[-3, 2.5, -2.5]} intensity={0.9} color="#bfe6ff" />
+        <Halmang speaking={speaking} position={[0, -0.02, 0]} scale={1} />
+        <OrbitControls enableZoom={false} enablePan={false} target={[0, 0.95, 0]} maxPolarAngle={Math.PI / 1.9} minPolarAngle={Math.PI / 3} />
       </Canvas>
     </div>
   )
