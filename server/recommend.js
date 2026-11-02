@@ -43,6 +43,12 @@ function accessScore(a, needs, intro = {}) {
 }
 
 // ② 아이 맞춤: 아이 나이대에 따라 같은 장소도 점수가 다르다
+// 아이와 함께 갈 수 없는 성인 대상 장소(성 테마 박물관·공원, 술집·주점·유흥 등)는 추천 목록에서 뺀다
+const ADULT_TITLE = /건강과\s*성|성\s*박물관|성\s*문화|러브\s*랜드|러브랜드|섹스|에로|누드|19금|성인\s*(전용|용품|영화)|술\s*박물관|이자카야|포차|호프|주점|술집|\bpub\b|\bbar\b|와인\s*바|칵테일|라운지\s*바|룸\s*살롱|클럽|나이트|카지노|유흥/i
+const ADULT_TEXT = /성인\s*(전용|만\s*(입장|관람|이용))|19\s*세\s*(미만|이상)|미성년자[^.。]{0,8}(출입|입장|관람|이용)[^.。]{0,4}(불가|금지|제한)|청소년\s*(관람|입장|출입|이용)\s*(불가|금지)|성(인)?\s*조각|성\s*(을|에)\s*(주제|테마)/
+const isAdultOnly = (title, overview = '') => ADULT_TITLE.test(title) || ADULT_TEXT.test(overview)
+
+const KID_PLAY = /키즈|어린이|아이|체험|놀이|동물|목장|농장|공원|아쿠아|테마파크|승마|썰매/ // 영아·걸음마기: 박물관·미술관이라는 이름만으로는 아이 장소로 보지 않는다
 const KID = /키즈|어린이|아이|체험|놀이|동물|목장|농장|공원|박물관|과학|아쿠아|테마파크|승마|썰매|미술관/
 const ANIMAL_PARK = /동물|목장|농장|공원|해변|해수욕|아쿠아/
 const TOUGH = /오름|올레|등반|한라산|트레킹|폭포|동굴|둘레길/
@@ -65,7 +71,7 @@ function kidsScore(p, a, ageBand, indoor, intro = {}) {
     if (/카페|디저트|베이커리/.test(p.title + intro.menu) && ageBand !== 'upper') s += 4
   }
   if (p.type === '32' && FAMILY_ROOM.test(`${intro.room} ${intro.sub}`)) { s += 12; notes.push('가족 객실·부대시설') }
-  const kid = KID.test(text), tough = TOUGH.test(text)
+  const kid = (ageBand === 'infant' || ageBand === 'toddler' ? KID_PLAY : KID).test(text), tough = TOUGH.test(text)
   if (ageBand === 'infant') {
     if (indoor) { s += 12; notes.push('실내라 영아에게 편해요') }
     if (f.lactation) { s += 14; notes.push('수유실 있음') }
@@ -213,19 +219,21 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
     searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly }),
     getAir(), getUv('제주시'), getUv('서귀포시'), getCrowdTable(),
   ])
-  const candidates = found.items.filter((p) => p.lat && p.lng)
+  const allCandidates = found.items.filter((p) => p.lat && p.lng)
+  const candidates = allCandidates.filter((p) => !isAdultOnly(p.title)) // 이름으로 먼저 거른다 (소개글은 아래에서 한 번 더)
   const weatherByPlace = {}
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
 
-  const items = await Promise.all(candidates.map(async (p) => {
+  const enriched = await Promise.all(candidates.map(async (p) => {
     const [access, intro, wx, overview] = await Promise.all([
       getAccess({ id: p.id }).catch(() => ({ id: p.id, registered: false })),
       getIntro(p).catch(() => ({})),
       getW(placeByLat(p.lat)),
       getOverview(p).catch(() => ''),
     ])
+    if (isAdultOnly(p.title, overview)) return null // 소개글에 성인 전용·미성년자 출입 금지 등이 있는 곳
     const ts = textSignals(overview, age, needs)
-    const a0 = accessScore(access, needs, intro)
+    const a0 =accessScore(access, needs, intro)
     const a = { score: Math.max(0, Math.min(100, a0.score + ts.access)), notes: a0.notes }
     const s = safetyScore(p, wx?.summary ?? {}, intro, { ymd, age, env: { air, uv: placeByLat(p.lat) === '서귀포시' ? uvSeogwipo : uvJeju } })
     const rate = crowdFor(crowdTable, p.title, ymd) // 집중률: 클수록 붐빈다
@@ -245,8 +253,10 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
       scores: { ...parts, total }, notes: [...(s.closed ? [ymd === today ? '오늘 휴무' : '그날 휴무'] : []), ...s.notes, ...crowdNote, ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes, ...ts.notes].slice(0, 5), distanceKm: km == null ? null : Math.round(km * 10) / 10,
     }
   }))
+  const items = enriched.filter(Boolean)
+  const hiddenAdult = allCandidates.length - items.length // 성인 대상이라 뺀 장소 수
   items.sort((x, y) => y.rank - x.rank)
   const w = await getW('제주시')
   const weights = Object.fromEntries(Object.entries(WEIGHTS).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
-  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
+  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, hiddenAdult, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
 }

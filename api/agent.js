@@ -5,7 +5,7 @@ import { recommend } from '../server/recommend.js'
 import { getAccess } from '../server/access.js'
 import { getWeather } from '../server/weather.js'
 import { HISTORY_COURSES, ERAS } from '../shared/history.js'
-import { STORIES, CHECKLISTS, AGE_BANDS, missionsFor, wordsFor, findStory } from '../shared/lore.js'
+import { STORIES, CHECKLISTS, AGE_BANDS, missionsFor, wordsFor, findStory, youngestBand } from '../shared/lore.js'
 
 const MODEL = 'claude-sonnet-5-5'
 
@@ -66,8 +66,10 @@ const tools = [
 
 // ② 도구 이름 → 실제 실행 함수
 const runTool = {
-  search_spots: async (i) => {
-    const r = await recommend({ keyword: i.keyword, contentTypeId: i.contentTypeId, needs: i.needs ?? [], budget: i.budget ?? 'any', page: i.page ?? 1, accessibleOnly: Boolean(i.accessibleOnly), limit: 6 })
+  // 가족 정보(profile)의 아이 나이(가장 어린 아이)·필요한 것·예산을 기본값으로 써서, 물어보지 않아도 우리 가족 기준으로 추천한다
+  search_spots: async (i, profile) => {
+    const age = youngestBand(profile?.child_age_bands) ?? 'preschool'
+    const r = await recommend({ keyword: i.keyword, contentTypeId: i.contentTypeId, needs: i.needs ?? profile?.needs ?? [], budget: i.budget ?? profile?.budget ?? 'any', age, page: i.page ?? 1, accessibleOnly: Boolean(i.accessibleOnly), limit: 6 })
     return r.items.map((p) => ({
       id: p.id, title: p.title, addr: p.addr, type: p.type, indoor: p.indoor, price: p.price,
       scores: p.scores, notes: p.notes,
@@ -104,6 +106,7 @@ ${lines}
 
 [규칙]
 - 장소·접근성·날씨 정보는 반드시 도구로 확인한 뒤 답한다. 도구 결과에 없는 장소·시설·요금은 지어내지 않는다.
+- 아이 연령대(특히 가장 어린 아이)에 맞는 곳만 추천한다. 성인 대상 장소(성 테마 박물관·공원, 술집·주점·유흥 시설 등)와 아이에게 위험하거나 부적절한 곳은 절대 추천하지 않는다.
 - 장소를 추천할 땐 접근성·안전·가격 점수 중 근거를 한 줄로 말하고, 가족의 접근성 필요(유모차·휠체어 등)를 우선한다.
 - 비·더위·강풍이 있으면 실내 대안을 함께 제안한다.
 - 이야기를 요청받으면 tell_story로 가져와 그 내용을 바탕으로 아이 눈높이에 맞게 구연한다.
@@ -115,9 +118,9 @@ const MAX_TURNS = 6
 const TOO_MANY = '확인할 게 너무 많아 멈췄주. 질문을 조금만 좁혀 주겠어요?'
 
 // 도구 실행 + 화면에 "할망이 무엇을 확인했는지" 보여줄 기록
-async function exec(name, input, steps) {
+async function exec(name, input, steps, profile) {
   let result
-  try { result = await runTool[name](input ?? {}) }
+  try { result = await runTool[name](input ?? {}, profile) }
   catch (e) { result = { error: e.message } }
   steps.push({ tool: name, args: input, count: Array.isArray(result) ? result.length : 1, error: result?.error })
   return JSON.stringify(result).slice(0, 12000)
@@ -134,7 +137,7 @@ async function runClaude({ message, history, profile, steps }) {
     const results = []
     for (const b of r.content) {
       if (b.type !== 'tool_use') continue
-      results.push({ type: 'tool_result', tool_use_id: b.id, content: await exec(b.name, b.input, steps) })
+      results.push({ type: 'tool_result', tool_use_id: b.id, content: await exec(b.name, b.input, steps, profile) })
     }
     messages.push({ role: 'user', content: results })
   }
@@ -165,7 +168,7 @@ function friendlyError(e, tried) {
 
 const runners = {
   claude: ({ message, history, profile, steps }) => runClaude({ message, history, profile, steps }),
-  gemini: ({ message, history, profile, steps }) => runGemini({ message, history, system: systemPrompt(profile), tools, exec, steps, maxTurns: MAX_TURNS, tooMany: TOO_MANY }),
+  gemini: ({ message, history, profile, steps }) => runGemini({ message, history, system: systemPrompt(profile), tools, exec: (n, i, st) => exec(n, i, st, profile), steps, maxTurns: MAX_TURNS, tooMany: TOO_MANY }),
 }
 
 export default async function handler(req, res) {

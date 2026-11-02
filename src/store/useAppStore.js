@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '../lib/supabase'
 import { askHalmang } from '../api/client'
+import { youngestBand } from '../../shared/lore'
 
 // 후기 표(trip_reviews)를 아직 안 만들었을 때 나는 오류인지 (SQL 을 실행하기 전에는 조용히 넘어간다)
 const isMissingTable = (e) => e?.code === 'PGRST205' || e?.code === '42P01' || (/trip_reviews/.test(e?.message ?? '') && /schema cache|does not exist/.test(e?.message ?? ''))
@@ -70,7 +71,8 @@ export const useAppStore = create(
         const { data, error } = await supabase.from('profiles').select('*').eq('id', get().user.id).maybeSingle()
         set({ profileLoaded: true })
         if (error) return get().toast(error.message, 'danger')
-        set({ profile: data })
+        // 가족 정보의 아이 나이가 추천 기준이 되도록 불러올 때마다 맞춘다 (아이가 여럿이면 가장 어린 아이)
+        set({ profile: data, ...(youngestBand(data?.child_age_bands) ? { ageBand: youngestBand(data.child_age_bands) } : {}) })
       },
       saveProfile: async (p) => {
         if (needSupabase(get) || !get().user) return false

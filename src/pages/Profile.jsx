@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button, Card, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
-import { AGE_BANDS, BUDGETS, NEEDS } from '../../shared/lore'
+import { youngestBand, AGE_BANDS, BUDGETS, NEEDS } from '../../shared/lore'
 import { useAppStore } from '../store/useAppStore'
 
 const GUARDIAN_AGES = [['20s', '20대'], ['30s', '30대'], ['40s', '40대'], ['50s', '50대 이상 (조부모 포함)']]
@@ -35,7 +35,7 @@ export default function Profile() {
     const ok = await saveProfile(f)
     setBusy(false)
     if (!ok) return
-    setAgeBand(f.child_age_bands[0])
+    setAgeBand(youngestBand(f.child_age_bands)) // 아이가 여럿이면 가장 어린 아이 기준
     if (wasNew) nav('/explore') // 처음 입력한 뒤에만 추천 화면으로. 수정할 때는 이 화면에 머문다
   }
 
