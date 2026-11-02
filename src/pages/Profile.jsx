@@ -18,6 +18,7 @@ function Toggle({ on, onClick, icon, children }) {
 
 export default function Profile() {
   const { profile, saveProfile, user, setAgeBand } = useAppStore()
+  const editing = Boolean(profile) // 이미 저장한 가족 정보가 있으면 '수정' 화면
   const nav = useNavigate()
   const [f, setF] = useState({ display_name: '', guardian_age: '30s', child_age_bands: [], needs: [], budget: 'any' })
   const [busy, setBusy] = useState(false)
@@ -30,14 +31,17 @@ export default function Profile() {
     e.preventDefault()
     if (f.child_age_bands.length === 0) return useAppStore.getState().toast('아이 연령대를 하나 이상 골라 주세요', 'warning')
     setBusy(true)
+    const wasNew = !profile
     const ok = await saveProfile(f)
     setBusy(false)
-    if (ok) { setAgeBand(f.child_age_bands[0]); nav('/explore') }
+    if (!ok) return
+    setAgeBand(f.child_age_bands[0])
+    if (wasNew) nav('/explore') // 처음 입력한 뒤에만 추천 화면으로. 수정할 때는 이 화면에 머문다
   }
 
   return (
     <div style={{ maxWidth: 720 }}>
-      <PageTitle icon="people" title="우리 가족 알려주기" sub={user?.email} />
+      <PageTitle icon="people" title={editing ? '우리 가족 정보 수정' : '우리 가족 알려주기'} sub={editing ? `${user?.email} · 바꾼 내용은 저장해야 반영돼요` : '처음 한 번만 입력하면 돼요. 나중에 이 메뉴에서 언제든 고칠 수 있어요'} />
       <Form onSubmit={submit}>
         <Card className="soft-card border-0 mb-3"><Card.Body>
           <Form.Group className="mb-3"><Form.Label className="fw-bold">부르는 이름</Form.Label>
@@ -69,7 +73,7 @@ export default function Profile() {
           </div>
         </Card.Body></Card>
 
-        <Button type="submit" size="lg" disabled={busy}><i className="bi bi-check2-circle me-2" />{busy ? '저장 중...' : '저장하고 추천 받기'}</Button>
+        <Button type="submit" size="lg" disabled={busy}><i className="bi bi-check2-circle me-2" />{busy ? '저장 중...' : editing ? '수정 저장' : '저장하고 추천 받기'}</Button>
       </Form>
     </div>
   )

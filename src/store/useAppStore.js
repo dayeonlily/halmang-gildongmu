@@ -30,11 +30,12 @@ export const useAppStore = create(
         const { data } = await supabase.auth.getSession()
         set({ user: data.session?.user ?? null, authReady: true })
         if (data.session) get().loadAll()
+        else set({ profileLoaded: true })
         supabase.auth.onAuthStateChange((_e, session) => {
           const prev = get().user?.id
           set({ user: session?.user ?? null })
-          if (session?.user && session.user.id !== prev) get().loadAll()
-          if (!session) set({ profile: null, basket: [], stamps: [], messages: [] })
+          if (session?.user && session.user.id !== prev) { set({ profileLoaded: false }); get().loadAll() }
+          if (!session) set({ profile: null, profileLoaded: true, basket: [], stamps: [], messages: [] })
         })
       },
       signUp: async (email, password) => {
@@ -56,8 +57,10 @@ export const useAppStore = create(
 
       // ③ 가족 프로필
       profile: null,
+      profileLoaded: false, // 로그인 직후 서버에서 가족 정보를 다 불러왔는지 (불러오기 전에는 '정보 없음'으로 판단하면 안 됨)
       loadProfile: async () => {
         const { data, error } = await supabase.from('profiles').select('*').eq('id', get().user.id).maybeSingle()
+        set({ profileLoaded: true })
         if (error) return get().toast(error.message, 'danger')
         set({ profile: data })
       },

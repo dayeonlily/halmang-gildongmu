@@ -6,7 +6,7 @@ import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
 
 export default function Login() {
-  const { signIn, signUp, user, profile } = useAppStore()
+  const { signIn, signUp, user, profile, profileLoaded } = useAppStore()
   const nav = useNavigate()
   const from = useLocation().state?.from
   const [mode, setMode] = useState('in')
@@ -15,10 +15,11 @@ export default function Login() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  // 로그인되면: 프로필이 없으면 가족 정보 입력으로, 있으면 원래 가려던 곳으로
+  // 로그인되면: 가족 정보를 다 불러온 뒤에 판단한다.
+  // 처음 가입한 사람(정보 없음)만 가족 정보 입력으로, 이미 입력한 사람은 바로 원래 가려던 곳으로
   useEffect(() => {
-    if (user) nav(from ?? (profile ? '/explore' : '/profile'), { replace: true })
-  }, [user, profile, from, nav])
+    if (user && profileLoaded) nav(profile ? (from ?? '/explore') : '/profile', { replace: true })
+  }, [user, profile, profileLoaded, from, nav])
 
   async function submit(e) {
     e.preventDefault()
@@ -47,7 +48,8 @@ export default function Login() {
             <Form.Group className="mb-3"><Form.Label>비밀번호 (6자 이상)</Form.Label>
               <Form.Control type="password" required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={pw} onChange={(e) => setPw(e.target.value)} /></Form.Group>
             {msg && <Alert variant="success" className="py-2 small">{msg}</Alert>}
-            <Button type="submit" className="w-100" disabled={busy}>{busy ? '잠시만요...' : mode === 'in' ? '로그인' : '가입하기'}</Button>
+            <Button type="submit" className="w-100" disabled={busy || !!user}>{busy || user ? '잠시만요...' : mode === 'in' ? '로그인' : '가입하기'}</Button>
+            {mode === 'up' && <div className="small text-muted mt-2">가입하면 우리 가족 정보를 한 번만 물어봐요. 나중에 메뉴의 '우리 가족'에서 언제든 고칠 수 있어요.</div>}
           </Form>
         </Card.Body>
       </Card>
