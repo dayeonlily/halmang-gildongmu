@@ -4,10 +4,11 @@
 import { searchTour, getIntro } from './tour.js'
 import { getAccess } from './access.js'
 import { getWeather, placeByLat } from './weather.js'
+import { crowdFor, getAir, getCrowdTable, getUv, todayYmd } from './environment.js'
 
 const INDOOR = new Set(['14', '38', '39']) // 문화시설·쇼핑·음식점
 const BUDGET_LIMIT = { free: 0, low: 10000, mid: 30000, any: Infinity }
-export const WEIGHTS = { access: 30, kids: 25, safety: 20, price: 15, theme: 10, near: 15 }
+export const WEIGHTS = { access: 30, kids: 25, safety: 20, price: 15, theme: 10, near: 15, crowd: 12 }
 
 // ① 접근성: 선택한 필요(유모차·휠체어·수유)는 크게, 나머지 시설은 작게 → 시설이 많이 갖춰질수록 점수가 달라진다
 function accessScore(a, needs, intro = {}) {
@@ -102,15 +103,29 @@ function kidsScore(p, a, ageBand, indoor, intro = {}) {
 
 // 오늘(한국 시간) 정기 휴무인가: "매주 화요일" 같은 주간 휴무만 읽는다 ("첫째 주 월요일" 같은 건 판단하지 않음)
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
-const todayChar = () => DAYS[new Date(Date.now() + 9 * 3600e3).getUTCDay()]
-function closedToday(rest) {
+const dayChar = (ymd) => DAYS[new Date(Date.UTC(+ymd.slice(0, 4), +ymd.slice(4, 6) - 1, +ymd.slice(6, 8))).getUTCDay()]
+function closedOn(rest, ymd) {
   if (!rest || /연중무휴|무휴/.test(rest)) return false
   const m = rest.match(/매주\s*([^※()]{0,14})/)
-  return Boolean(m && new RegExp(`${todayChar()}(요일|,|·|/|\\s|$)`).test(`${m[1]} `))
+  return Boolean(m && new RegExp(`${dayChar(ymd)}(요일|,|·|/|\\s|$)`).test(`${m[1]} `))
 }
 
-// ③ 날씨·운영 안전
-function safetyScore(p, w, intro = {}) {
+// 미세먼지·자외선: 야외 장소의 안전 점수를 깎고, 아이가 어릴수록 더 깎는다 (환경 값은 오늘 기준)
+function envPenalty(indoor, age, { air, uv }) {
+  if (indoor) return { delta: air?.grade >= 3 ? 4 : 0, notes: [] }
+  const young = age === 'infant' || age === 'toddler'
+  let delta = 0
+  const notes = []
+  if (air?.grade === 3) { delta -= young ? 24 : 18; notes.push('미세먼지 나쁨') }
+  else if (air?.grade === 4) { delta -= young ? 42 : 34; notes.push('미세먼지 매우 나쁨') }
+  if (uv?.max >= 11) { delta -= young ? 22 : 18; notes.push('자외선 위험') }
+  else if (uv?.max >= 8) { delta -= young ? 16 : 12; notes.push('자외선 매우 높음') }
+  else if (uv?.max >= 6) { delta -= young ? 10 : 6; notes.push('자외선 높음') }
+  return { delta, notes }
+}
+
+// ③ 날씨·운영 안전 (기상청 예보 + 미세먼지 + 자외선 + 정기 휴무)
+function safetyScore(p, w, intro = {}, { ymd, age, env = {} } = {}) {
   const indoor = INDOOR.has(p.type)
   let s = 80
   if (w.wet) s += indoor ? 15 : -45
@@ -121,9 +136,11 @@ function safetyScore(p, w, intro = {}) {
   // 같은 날씨여도 강수확률·쾌적한 기온(약 15~25도)에서 벗어난 만큼 야외는 조금씩 깎는다
   if (!indoor) { s -= Math.round((w.pop ?? 0) * 0.15); if (w.temp != null) s -= Math.round(Math.max(0, Math.abs(w.temp - 20) - 5) * 0.8) }
   else if ((w.pop ?? 0) >= 30 || (w.temp != null && Math.abs(w.temp - 20) > 10)) s += 3
-  const closed = closedToday(intro.rest)
+  const e = envPenalty(indoor, age, env)
+  s += e.delta
+  const closed = closedOn(intro.rest, ymd)
   if (closed) s = Math.min(s, 10)
-  return { score: Math.max(0, Math.min(100, s)), indoor, closed }
+  return { score: Math.max(0, Math.min(100, s)), indoor, closed, notes: e.notes }
 }
 
 // ④ 비용: 예산 안이면 높게, 넘으면 낮게. 예산 상관없음이어도 값이 낮을수록 높게 매겨 구분한다
@@ -162,8 +179,14 @@ const distKm = (a, b) => { const x = rad(b.lat - a.lat), y = rad(b.lng - a.lng);
 // ⑥ 가까움: 머무는 곳(또는 내 여행 바구니 중심)에서 8km 이내면 만점, 50km 가까이 멀면 20점
 const nearScore = (km) => Math.max(10, Math.min(100, Math.round(100 - Math.max(0, km - 8) * (80 / 42))))
 
-export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', age = 'preschool', near = null, page = 1, limit = 12, accessibleOnly = false } = {}) {
-  const found = await searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly })
+export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', age = 'preschool', near = null, date = '', page = 1, limit = 12, accessibleOnly = false } = {}) {
+  // 방문 날짜: 집중률 예측과 정기 휴무 판단에 쓴다 (지난 날짜나 이상한 값이면 오늘)
+  const today = todayYmd()
+  const ymd = /^\d{8}$/.test(date) && date >= today ? date : today
+  const [found, air, uvJeju, uvSeogwipo, crowdTable] = await Promise.all([
+    searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly }),
+    getAir(), getUv('제주시'), getUv('서귀포시'), getCrowdTable(),
+  ])
   const candidates = found.items.filter((p) => p.lat && p.lng)
   const weatherByPlace = {}
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
@@ -175,21 +198,23 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
       getW(placeByLat(p.lat)),
     ])
     const a = accessScore(access, needs, intro)
-    const s = safetyScore(p, wx?.summary ?? {}, intro)
+    const s = safetyScore(p, wx?.summary ?? {}, intro, { ymd, age, env: { air, uv: placeByLat(p.lat) === '서귀포시' ? uvSeogwipo : uvJeju } })
+    const rate = crowdFor(crowdTable, p.title, ymd) // 집중률: 클수록 붐빈다
+    const crowdNote = rate == null ? [] : rate >= 80 ? [`붐빌 예정(${Math.round(rate)}%)`] : rate <= 30 ? ['한산할 예정'] : []
     const k = kidsScore(p, access, age, s.indoor, intro)
     const c = priceScore(intro.fee, budget, { ...p, menu: intro.menu })
     const t = themeScore(p, keyword)
     const km = near ? distKm(near, p) : null
-    const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }) }
+    const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }), ...(rate == null ? {} : { crowd: Math.max(0, Math.min(100, Math.round(100 - rate))) }) }
     const wsum = Object.keys(parts).reduce((n, key) => n + WEIGHTS[key], 0)
     const total = Math.round(Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum)
     return {
       ...p, access, indoor: s.indoor, price: c.label,
-      scores: { ...parts, total }, notes: [...(s.closed ? ['오늘 휴무'] : []), ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes].slice(0, 4), distanceKm: km == null ? null : Math.round(km * 10) / 10,
+      scores: { ...parts, total }, notes: [...(s.closed ? [ymd === today ? '오늘 휴무' : '그날 휴무'] : []), ...s.notes, ...crowdNote, ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes].slice(0, 5), distanceKm: km == null ? null : Math.round(km * 10) / 10,
     }
   }))
   items.sort((x, y) => y.scores.total - x.scores.total)
   const w = await getW('제주시')
   const weights = Object.fromEntries(Object.entries(WEIGHTS).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
-  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, basis: { age, needs, budget, weights } }
+  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
 }

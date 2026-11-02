@@ -41,7 +41,8 @@ const themesFor = (type) => THEMES[type] ?? NATURE_THEMES
 const CRITERIA = {
   access: ['접근성', '유모차·휠체어·수유실·화장실·주차 등 무장애 시설이 얼마나 갖춰졌는지 (고른 필요 항목은 더 크게 반영)'],
   kids: ['아이 맞춤', '아이 나이대에 맞는 곳인지: 영아는 수유실·실내·유모차, 걸음마·유아는 놀이·체험, 저학년은 체험·동물, 고학년은 체험·역사'],
-  safety: ['날씨 안전', '오늘 기상청 예보(비·더위·추위·바람)에서 실내·야외 장소가 얼마나 안전한지'],
+  safety: ['날씨 안전', '기상청 예보(비·더위·바람) · 에어코리아 미세먼지 · 기상청 자외선지수 · 정기 휴무 — 야외일수록, 아이가 어릴수록 크게 반영'],
+  crowd: ['한산함', '한국관광공사 관광지 집중률 예측 — 고른 날짜에 덜 붐빌수록 높게 (예측이 있는 장소만)'],
   price: ['비용', '입장료가 예산 안인지 (예산을 정하지 않아도 저렴할수록 높게)'],
   near: ['가까움', '머무는 곳(또는 내 여행 바구니 중심)에서 가까울수록 높게 — 아이와는 이동 시간이 짧은 곳이 좋아요'],
   theme: ['테마 일치', '내가 고른 테마·검색어가 장소 이름·주소에 들어 있는지'],
@@ -50,6 +51,9 @@ const CRITERIA = {
 // 머무는 곳 근처로 점수를 매길 때 쓰는 기준 위치
 const BASES = [['jeju', '제주시 (공항·동문시장)', 33.4996, 126.5312], ['seogwipo', '서귀포시 (올레시장)', 33.2541, 126.5601], ['aewol', '애월·한림', 33.45, 126.31],
     ['jungmun', '중문·대정', 33.25, 126.42], ['seongsan', '성산·우도', 33.46, 126.93], ['hamdeok', '조천·함덕', 33.54, 126.67]].map(([key, label, lat, lng]) => ({ key, label, lat, lng }))
+
+// 오늘로부터 n일 뒤 날짜(YYYY-MM-DD, 한국 시간) — 날짜 선택칸의 범위
+const isoDay = (n) => new Date(Date.now() + 9 * 3600e3 + n * 86400e3).toISOString().slice(0, 10)
 
 function SpotCard({ s, selected, onOpen, onAdd, inBasket }) {
   return (
@@ -99,6 +103,7 @@ export default function Explore() {
   const [more, setMore] = useState(false)
   const [open, setOpen] = useState(null) // 상세 창에 띄울 장소
   const [how, setHow] = useState(false)  // 점수 기준 설명 펼치기
+  const [date, setDate] = useState('')      // 방문 날짜 ('' = 오늘): 집중률 예측과 휴무일에 쓴다
   const [base, setBase] = useState('')      // 머무는 곳 ('' = 상관없음, 'basket' = 내 여행 바구니 중심)
 
   const effNeeds = needs ?? profile?.needs ?? []
@@ -112,23 +117,23 @@ export default function Explore() {
 
   const search = useCallback(async (keyword) => {
     setLoading(true); setErr('')
-    try { setData(await fetchSpots({ keyword, type, needs: effNeeds, budget: effBudget, age: ageBand, near, accessible, limit: 24 })); setSel(null) }
+    try { setData(await fetchSpots({ keyword, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 24 })); setSel(null) }
     catch (e) { setErr(e.message) }
     finally { setLoading(false) }
-  }, [type, effNeeds, effBudget, ageBand, nearKey, accessible])
+  }, [type, effNeeds, effBudget, ageBand, nearKey, date, accessible])
 
   // 다음 페이지를 불러와 목록 뒤에 이어 붙인다
   async function loadMore() {
     setMore(true)
     try {
-      const next = await fetchSpots({ keyword: q, type, needs: effNeeds, budget: effBudget, age: ageBand, near, accessible, limit: 24, page: data.page + 1 })
+      const next = await fetchSpots({ keyword: q, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 24, page: data.page + 1 })
       const seen = new Set(data.items.map((x) => x.id))
       setData({ ...next, items: [...data.items, ...next.items.filter((x) => !seen.has(x.id))] })
     } catch (e) { setErr(e.message) }
     finally { setMore(false) }
   }
 
-  useEffect(() => { search(q) /* eslint-disable-next-line */ }, [type, needs, budget, profile, accessible, ageBand, nearKey])
+  useEffect(() => { search(q) /* eslint-disable-next-line */ }, [type, needs, budget, profile, accessible, ageBand, nearKey, date])
 
   const selected = data?.items.find((x) => x.id === sel)
   const toggleNeed = (k) => setNeeds(effNeeds.includes(k) ? effNeeds.filter((x) => x !== k) : [...effNeeds, k])
@@ -205,6 +210,10 @@ export default function Explore() {
             <Form.Select size="sm" value={effBudget} onChange={(e) => setBudget(e.target.value)}>{BUDGETS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}</Form.Select>
           </Col>
           <Col xs="auto">
+            <div className="small text-muted mb-1">언제 가세요?</div>
+            <Form.Control size="sm" type="date" value={date} min={isoDay(0)} max={isoDay(29)} onChange={(e) => setDate(e.target.value)} />
+          </Col>
+          <Col xs="auto">
             <div className="small text-muted mb-1">머무는 곳</div>
             <Form.Select size="sm" value={base} onChange={(e) => setBase(e.target.value)}>
               <option value="">상관없어요</option>
@@ -237,13 +246,23 @@ export default function Explore() {
                   </div>
                 )
               })}
-              <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사 관광정보·무장애 여행정보, 기상청 예보입니다.</div>
+              <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사(관광정보·무장애·집중률), 기상청(단기예보·자외선지수), 한국환경공단 에어코리아입니다.</div>
             </div>
           </div>
         </Collapse>
       </div>
 
-      {data?.weather && <div className="alert alert-light border py-2"><i className="bi bi-cloud-sun me-1" />지금 날씨: {data.weather.advice}</div>}
+      {data?.weather && (
+        <div className="alert alert-light border py-2">
+          <div><i className="bi bi-cloud-sun me-1" />지금 날씨: {data.weather.advice}</div>
+          {data.env && (data.env.air || data.env.uv) && (
+            <div className="mt-1">
+              {data.env.air && <span className={`me-3 ${data.env.air.grade >= 3 ? 'text-danger fw-bold' : ''}`}><i className="bi bi-wind me-1" />미세먼지 {data.env.air.label}{data.env.air.pm10 != null && ` (PM10 ${data.env.air.pm10})`}</span>}
+              {data.env.uv && <span className={data.env.uv.max >= 6 ? 'text-danger fw-bold' : ''}><i className="bi bi-brightness-high me-1" />자외선 {data.env.uv.label}</span>}
+            </div>
+          )}
+        </div>
+      )}
       <ErrorAlert error={err} />
 
       <div className="explore-grid">
