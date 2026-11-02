@@ -4,6 +4,7 @@ export default function handler(req, res) {
     ok: true,
     time: new Date().toISOString(),
     hasDataKey: Boolean(process.env.DATA_GO_KR_KEY),
+    version: (process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev').slice(0, 7), // 지금 서버가 돌리는 커밋
     hasClaudeKey: Boolean(process.env.ANTHROPIC_API_KEY),
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY), // Claude 를 쓸 수 없을 때 대신 답하는 Gemini
   })

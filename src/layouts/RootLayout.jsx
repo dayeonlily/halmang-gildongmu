@@ -19,6 +19,9 @@ function NavList({ onPick }) {
   )
 }
 
+// 지금 보고 있는 화면의 버전 (배포한 커밋 번호). 최신인지 확인할 때 쓴다
+const VersionStamp = ({ className = '' }) => <div className={`opacity-50 ${className}`} style={{ fontSize: '.72rem' }} title={`빌드 ${__BUILD_TIME__} (한국 시간)`}>버전 {__APP_VERSION__}</div>
+
 function Account() {
   const user = useAppStore((s) => s.user)
   const profile = useAppStore((s) => s.profile)
@@ -68,7 +71,8 @@ export default function RootLayout() {
         <NavList />
         <div className="rail-foot">
           <Account />
-          <div className="mt-3 opacity-50" style={{ fontSize: '.72rem' }}>데이터: 한국관광공사 · 기상청 (공공데이터포털)</div>
+          <div className="mt-3 opacity-50" style={{ fontSize: '.72rem' }}>데이터: 한국관광공사 · 기상청 · 에어코리아 (공공데이터포털)</div>
+          <VersionStamp className="mt-1" />
         </div>
       </aside>
 
@@ -81,7 +85,7 @@ export default function RootLayout() {
         <Offcanvas.Header closeButton closeVariant="white"><Offcanvas.Title className="display-font">메뉴</Offcanvas.Title></Offcanvas.Header>
         <Offcanvas.Body className="d-flex flex-column">
           <NavList onPick={() => setOpen(false)} />
-          <div className="mt-auto pt-3"><Account /></div>
+          <div className="mt-auto pt-3"><Account /><VersionStamp className="mt-2" /></div>
         </Offcanvas.Body>
       </Offcanvas>
       <nav className="tabbar">

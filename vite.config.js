@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
+import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
@@ -35,7 +36,12 @@ function localApi(env) {
   }
 }
 
+// 화면에 보여 줄 버전: Vercel 에서는 배포한 커밋, 내 컴퓨터에서는 git 의 현재 커밋 (어떤 버전을 보고 있는지 바로 알 수 있게)
+const gitShort = () => { try { return execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() } catch { return 'dev' } }
+const APP_VERSION = (process.env.VERCEL_GIT_COMMIT_SHA || gitShort()).slice(0, 7)
+
 export default defineConfig(({ mode }) => ({
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION), __BUILD_TIME__: JSON.stringify(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' ')) },
   plugins: [react(), localApi(loadEnv(mode, process.cwd(), ''))],
   build: { chunkSizeWarningLimit: 1500 },
 }))
