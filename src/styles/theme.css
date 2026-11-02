@@ -103,3 +103,19 @@ body.kids .card { border-width: 2px; border-color: #ffd596; }
 .mission-card.done { background: #f1fbf1; border-color: #8ccf8f !important; }
 .stamp { font-size: 2rem; filter: grayscale(1); opacity: .35; transition: .2s; }
 .done .stamp { filter: none; opacity: 1; transform: rotate(-8deg) scale(1.1); }
+
+/* ── 시작 화면(인트로): 할망이 제주어로 말을 건다 ── */
+.intro { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1.5rem 1rem 9rem; background: linear-gradient(#fff6e0 0%, #ffe4bd 55%, #cdeef0 100%); }
+.intro-sun { position: absolute; top: 7%; right: 10%; width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, #ffd27a 0%, #ffb74d 60%, transparent 72%); opacity: .6; }
+.intro-halmang { width: min(320px, 75vw); position: relative; z-index: 1; margin-bottom: -.4rem; animation: introPop .7s ease-out both; }
+.intro-bubble { position: relative; z-index: 2; background: #fff; border: 3px solid #ffd596; border-radius: 2rem; padding: 1.5rem 1.6rem 1.3rem; width: min(560px, 100%); box-shadow: 0 12px 34px rgba(120, 80, 20, .18); animation: introUp .8s .25s ease-out both; }
+.intro-bubble::before { content: ''; position: absolute; top: -13px; left: 50%; width: 22px; height: 22px; background: #fff; border-left: 3px solid #ffd596; border-top: 3px solid #ffd596; transform: translateX(-50%) rotate(45deg); }
+.intro-jeju { font-family: 'Jua', 'Pretendard', sans-serif; font-size: clamp(1.9rem, 6.2vw, 3rem); line-height: 1.25; color: var(--hm-orange); }
+.intro-ko { margin-top: .4rem; font-size: .95rem; color: #7a6f66; }
+.intro-waves { position: absolute; left: -5%; bottom: 0; width: 110%; height: 150px; z-index: 0; } /* 양옆으로 넉넉히 키워 물결이 흔들려도 틈이 안 보이게 */
+.intro-waves .w1 { animation: waveShift 7s ease-in-out infinite alternate; }
+.intro-waves .w2 { animation: waveShift 5s ease-in-out infinite alternate-reverse; }
+@keyframes introUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes introPop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes waveShift { from { transform: translateX(-2%); } to { transform: translateX(2%); } }
+@media (prefers-reduced-motion: reduce) { .intro *, .intro { animation: none !important; } }

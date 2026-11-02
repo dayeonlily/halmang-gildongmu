@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Container, Form, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { NAV_ITEMS } from '../router'
 import { useAppStore } from '../store/useAppStore'
 
@@ -46,10 +46,27 @@ export default function RootLayout() {
   const kidsMode = useAppStore((s) => s.kidsMode)
   const initAuth = useAppStore((s) => s.initAuth)
   const basket = useAppStore((s) => s.basket.length)
+  const user = useAppStore((s) => s.user)
+  const authReady = useAppStore((s) => s.authReady)
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
 
   useEffect(() => { initAuth() }, [initAuth])
   useEffect(() => { document.body.classList.toggle('kids', kidsMode) }, [kidsMode])
+
+  // 로그인 전 첫 화면(/)은 메뉴 없이 전체 화면 인트로로 보여 준다
+  if (pathname === '/' && (!authReady || !user)) {
+    return (
+      <>
+        <Outlet />
+        <ToastContainer position="bottom-end" className="p-3 position-fixed" style={{ zIndex: 2000 }}>
+          {toasts.map((t) => (
+            <Toast key={t.id} bg={t.variant}><Toast.Body className={t.variant === 'warning' ? '' : 'text-white'}>{t.message}</Toast.Body></Toast>
+          ))}
+        </ToastContainer>
+      </>
+    )
+  }
 
   return (
     <div className="app-shell">

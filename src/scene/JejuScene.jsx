@@ -246,10 +246,10 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
 }
 
 // 이야기 들려주는 할망 (작은 캔버스)
-export function HalmangBuddy({ speaking = false, height = 220 }) {
+export function HalmangBuddy({ speaking = false, height = 220, bare = false }) {
   return (
-    <div className="scene-wrap buddy" style={{ height }}>
-      <Canvas camera={{ position: [0, 1.1, 3.1], fov: 38 }} dpr={[1, 2]}>
+    <div className="scene-wrap buddy" style={{ height, ...(bare ? { background: 'transparent', border: 'none' } : {}) }}>
+      <Canvas camera={{ position: [0, 1.1, 3.1], fov: 38 }} dpr={[1, 2]} gl={{ alpha: true }}>
         <hemisphereLight args={['#fff4dc', '#e8b97a', 0.8]} />
         <directionalLight position={[3, 5, 4]} intensity={1.6} />
         <Halmang speaking={speaking} position={[0, -0.1, 0]} scale={1.4} />

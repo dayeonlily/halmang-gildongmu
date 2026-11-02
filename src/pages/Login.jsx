@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Card, Form, Nav } from 'react-bootstrap'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
 import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
@@ -9,7 +9,8 @@ export default function Login() {
   const { signIn, signUp, user, profile, profileLoaded } = useAppStore()
   const nav = useNavigate()
   const from = useLocation().state?.from
-  const [mode, setMode] = useState('in')
+  const [params] = useSearchParams()
+  const [mode, setMode] = useState(params.get('mode') === 'up' ? 'up' : 'in') // 시작 화면의 '회원가입' 버튼은 가입 탭으로
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)

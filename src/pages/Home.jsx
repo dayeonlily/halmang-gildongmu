@@ -2,6 +2,7 @@ import { Button, Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { IslandScene } from '../scene/JejuScene'
 import WeatherStrip from '../components/WeatherStrip'
+import Intro from './Intro'
 import { useAppStore } from '../store/useAppStore'
 
 const STEPS = [
@@ -14,6 +15,9 @@ const STEPS = [
 export default function Home() {
   const kids = useAppStore((s) => s.kidsMode)
   const user = useAppStore((s) => s.user)
+  const ready = useAppStore((s) => s.authReady)
+  if (!ready) return <div className="intro" /> // 로그인 여부를 확인하는 동안 같은 배경만 보여 깜빡임을 막는다
+  if (!user) return <Intro />
   return (
     <>
       <section className="hero mb-4">
