@@ -32,7 +32,11 @@ async function generate(model, body) {
     })
   } catch (e) { throw new GeminiError(0, `Gemini 에 연결하지 못했어요: ${e.message}`) }
   const data = await r.json().catch(() => ({}))
-  if (!r.ok) throw new GeminiError(r.status, data?.error?.message ?? `Gemini 오류 (${r.status})`)
+  if (!r.ok) {
+    const msg = data?.error?.message ?? `Gemini 오류 (${r.status})`
+    // 잘못된 키는 Google 이 400 으로 돌려준다 → 키 오류(401)로 바꿔서 안내 문구가 맞게 나오게 한다
+    throw new GeminiError(r.status === 400 && /API key not valid|API_KEY_INVALID/i.test(`${msg} ${JSON.stringify(data?.error?.details ?? '')}`) ? 401 : r.status, msg)
+  }
   return data
 }
 
