@@ -8,23 +8,24 @@ export const MascotId = createContext('')
 
 export const OUTLINE = '#6f4b3e' // 장면의 다른 요소들이 쓰는 윤곽선 색
 const LINE = '#8a5a4a' // 몸 전체를 감싸는 단 하나의 윤곽선 색
-const SKIN = '#ffe3cf', BLUSH = '#ff9aa8'
-const TOP = '#ffc9d8', SLEEVE = '#ffb4c8'
+const SKIN = '#ffe6d2', BLUSH = '#ff9aa8'
+const TOP = '#ffc9d8', SLEEVE = '#ffc4d5'
 const LAV = '#b9aeea'
 const INK = '#4a3029'
 
 // 자세별 팔(어깨→손목)과 손 위치
 const ARMS = {
-  wave: { L: ['M66 174 Q48 194 54 218', [54, 226]], R: ['M154 172 Q196 168 198 130', [198, 119]], wave: true },
-  stand: { L: ['M66 174 Q48 194 54 218', [54, 226]], R: ['M154 174 Q172 194 166 218', [166, 226]] },
-  stretch: { L: ['M66 172 Q20 158 22 114', [22, 103]], R: ['M154 172 Q200 158 198 114', [198, 103]] },
-  throw: { L: ['M66 174 Q48 194 54 218', [54, 226]], R: ['M154 172 Q200 162 198 120', [198, 109]], rock: true },
-  pour: { L: ['M66 176 Q96 198 128 204', [139, 205]], R: ['M154 176 Q172 194 166 214', [166, 222]], basket: true },
+  wave: { L: ['M72 170 Q48 194 54 218', [54, 226]], R: ['M148 170 Q196 168 198 130', [198, 119]], wave: true },
+  stand: { L: ['M72 170 Q48 194 54 218', [54, 226]], R: ['M148 170 Q172 194 166 218', [166, 226]] },
+  stretch: { L: ['M72 170 Q20 158 22 114', [22, 103]], R: ['M148 170 Q200 158 198 114', [198, 103]] },
+  throw: { L: ['M72 170 Q48 194 54 218', [54, 226]], R: ['M148 170 Q200 162 198 120', [198, 109]], rock: true },
+  pour: { L: ['M72 170 Q96 198 128 204', [139, 205]], R: ['M148 170 Q172 194 166 214', [166, 222]], basket: true },
 }
 
-function Arm({ a }) {
+function Arm({ a, sh }) {
   return (
     <g>
+      <path d={a[0]} fill="none" stroke="#c25b7c" strokeOpacity=".3" strokeWidth="25" strokeLinecap="round" transform="translate(2.500 3)" filter={sh} />
       <path d={a[0]} fill="none" stroke={SLEEVE} strokeWidth="25" strokeLinecap="round" />
       <circle cx={a[1][0]} cy={a[1][1]} r="12" fill={SKIN} />
     </g>
@@ -59,7 +60,7 @@ export function MascotArt({ pose = 'wave', speaking = false, animate = true }) {
         <filter id={`${id}-shade`} x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" /></filter>
         {/* 몸 전체의 바깥 윤곽선 하나 */}
         <filter id={`${id}-line`} filterUnits="userSpaceOnUse" x="-30" y="-30" width="280" height="360">
-          <feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="d" />
+          <feMorphology in="SourceAlpha" operator="dilate" radius="1.8" result="d" />
           <feGaussianBlur in="d" stdDeviation=".5" result="db" />
           <feFlood floodColor={LINE} result="c" />
           <feComposite in="c" in2="db" operator="in" result="o" />
@@ -74,7 +75,7 @@ export function MascotArt({ pose = 'wave', speaking = false, animate = true }) {
           <stop offset="1" stopColor="#2f7d52" stopOpacity=".22" />
         </linearGradient>
         <radialGradient id={`${id}-face`} cx=".42" cy=".38" r=".8"><stop offset="0" stopColor="#fff2e6" /><stop offset="1" stopColor={SKIN} /></radialGradient>
-        <linearGradient id={`${id}-hair`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f3f3fa" /><stop offset="1" stopColor="#d9d9e8" /></linearGradient>
+        <linearGradient id={`${id}-hair`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f7f3fb" /><stop offset="1" stopColor="#ddd7ec" /></linearGradient>
       </defs>
       <ellipse cx="110" cy="294" rx="76" ry="8" fill="#5a3a22" opacity=".18" filter={g('soft')} />
 
@@ -99,14 +100,14 @@ export function MascotArt({ pose = 'wave', speaking = false, animate = true }) {
           <circle cx="110" cy="207" r="5.500" fill="#9585d8" />
 
           {/* 팔: 어깨에서 소매로 이어짐 */}
-          <Arm a={a.L} />
+          <Arm a={a.L} sh={g('shade')} />
           {a.wave && animate
-            ? <g><animateTransform attributeName="transform" type="rotate" values="-9 154 172;9 154 172;-9 154 172" dur="1.5s" repeatCount="indefinite" /><Arm a={a.R} /></g>
-            : <Arm a={a.R} />}
+            ? <g><animateTransform attributeName="transform" type="rotate" values="-9 154 172;9 154 172;-9 154 172" dur="1.5s" repeatCount="indefinite" /><Arm a={a.R} sh={g('shade')} /></g>
+            : <Arm a={a.R} sh={g('shade')} />}
           {a.basket && <Basket animate={animate} />}
 
           {/* 턱 밑 그림자: 머리와 몸이 자연스럽게 이어지도록 */}
-          <ellipse cx="110" cy="168" rx="50" ry="12" fill="#c25b7c" opacity=".35" filter={g('shade')} />
+          <ellipse cx="110" cy="170" rx="34" ry="9" fill="#c25b7c" opacity=".22" filter={g('shade')} />
 
           {/* 머리 */}
           <g>
@@ -114,24 +115,22 @@ export function MascotArt({ pose = 'wave', speaking = false, animate = true }) {
             <ellipse cx="48" cy="116" rx="8" ry="11" fill={SKIN} /><ellipse cx="172" cy="116" rx="8" ry="11" fill={SKIN} />
             <path d="M110 46 C152 46 175 80 173 112 C171 146 147 166 110 166 C73 166 49 146 47 112 C45 80 68 46 110 46Z" fill={g('face')} />
             {/* 은빛 머리와 쪽 */}
-            <path d="M47 112 C37 54 74 28 110 28 C146 28 183 54 173 112 C169 92 155 76 139 72 C128 84 92 84 81 72 C65 76 51 92 47 112Z" fill={g('hair')} />
-            <path d="M110 84 C104 62 92 52 76 52 M110 84 C116 62 128 52 144 52 M108 82 C98 60 84 50 66 56 M112 82 C122 60 136 50 154 56" stroke="#b8b8d0" strokeOpacity=".7" strokeWidth="1.800" fill="none" />
+            <path d="M47 112 C37 54 74 28 110 28 C146 28 183 54 173 112 C170 92 160 76 146 68 C130 60 90 60 74 68 C60 76 50 92 47 112Z" fill={g('hair')} />
             <path d="M88 34 C80 14 98 4 112 5 C128 5 140 18 132 34 C124 40 96 40 88 34Z" fill={g('hair')} />
-            <path d="M96 22 C102 12 118 12 124 24 M100 30 C108 22 118 24 124 31" stroke="#b8b8d0" strokeOpacity=".8" strokeWidth="1.800" fill="none" />
             <path d="M76 28 L146 18" stroke="#3f9ec4" strokeWidth="7.500" /><path d="M76 28 L146 18" stroke="#8bd5ee" strokeWidth="4" />
             <circle cx="149" cy="17.500" r="5.500" fill="#8bd5ee" stroke="#3f9ec4" strokeWidth="2" />
-            {/* 이목구비: 웃어서 감긴 눈 */}
-            <path d="M75 100 Q88 93 100 98 M120 98 Q132 93 145 100" stroke="#bcbcd2" strokeWidth="3.200" fill="none" />
-            <path d="M77 116 Q88 103 99 116 M121 116 Q132 103 143 116" stroke={INK} strokeWidth="4" fill="none" />
-            <path d="M72 120 q-3 4 -6 1 M148 120 q3 4 6 1" stroke="#d99b82" strokeOpacity=".8" strokeWidth="1.800" fill="none" />
-            <ellipse cx="66" cy="134" rx="14" ry="9" fill={BLUSH} opacity=".5" /><ellipse cx="154" cy="134" rx="14" ry="9" fill={BLUSH} opacity=".5" />
-            <path d="M106 126 Q110 132 115 126" stroke="#d58a73" strokeWidth="2.600" fill="none" />
+            {/* 이목구비: 반짝이는 둥근 눈, 큰 볼, 활짝 웃는 입 */}
+            <ellipse cx="86" cy="114" rx="8.500" ry="10.500" fill={INK} /><ellipse cx="134" cy="114" rx="8.500" ry="10.500" fill={INK} />
+            <circle cx="89.500" cy="109.500" r="3.800" fill="#fff" /><circle cx="137.500" cy="109.500" r="3.800" fill="#fff" />
+            <circle cx="82.500" cy="119" r="1.900" fill="#fff" /><circle cx="130.500" cy="119" r="1.900" fill="#fff" />
+            <ellipse cx="64" cy="134" rx="15" ry="10" fill={BLUSH} opacity=".55" /><ellipse cx="156" cy="134" rx="15" ry="10" fill={BLUSH} opacity=".55" />
+            <ellipse cx="110" cy="129" rx="4.500" ry="3.200" fill="#f0907f" />
             {speaking ? (
               <path d="M97 139 Q110 160 123 139 Q110 146 97 139Z" fill="#c9453f">{animate && <animate attributeName="d" values="M98 141 Q110 146 122 141 Q110 144 98 141Z;M97 139 Q110 162 123 139 Q110 146 97 139Z;M98 141 Q110 152 122 141 Q110 145 98 141Z;M97 139 Q110 160 123 139 Q110 146 97 139Z;M98 141 Q110 146 122 141 Q110 144 98 141Z" dur="0.8s" repeatCount="indefinite" />}</path>
             ) : (
               <g>
-                <path d="M95 139 Q110 155 125 139" stroke="#c0574f" strokeWidth="3.400" fill="none" />
-                <path d="M93 137 q-2 3 0 5 M127 137 q2 3 0 5" stroke="#d58a73" strokeWidth="2" fill="none" />
+                <path d="M95 138 Q110 164 125 138 Q110 144 95 138Z" fill="#d9524b" />
+                <path d="M102 150 Q110 158 118 150 Q110 154 102 150Z" fill="#ff9aa0" />
               </g>
             )}
           </g>
