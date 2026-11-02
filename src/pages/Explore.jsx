@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Badge, Button, Col, Collapse, Form, InputGroup, Row } from 'react-bootstrap'
 import PageTitle from '../components/PageTitle'
 import ScoreBars, { ScorePill } from '../components/ScoreBars'
@@ -8,7 +8,6 @@ import DataNotice from '../components/DataNotice'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchSpots } from '../api/client'
 import { IslandScene } from '../scene/JejuScene'
-import { AGE_BANDS, BUDGETS, NEEDS } from '../../shared/lore'
 import { useAppStore } from '../store/useAppStore'
 
 // 무엇을 찾나요? — 종류 버튼 (공공데이터 contentTypeId)
@@ -89,13 +88,10 @@ export default function Explore() {
   const basket = useAppStore((s) => s.basket)
   const addToBasket = useAppStore((s) => s.addToBasket)
   const ageBand = useAppStore((s) => s.ageBand)
-  const setAgeBand = useAppStore((s) => s.setAgeBand)
   const [params] = useSearchParams()
   const initQ = params.get('q') ?? '' // 역사 스탬프 투어 등에서 넘어온 검색어
   const [q, setQ] = useState(initQ)
   const [type, setType] = useState(initQ ? '' : '12') // 첫 화면은 관광지부터 (전체는 음식점이 많아 식당 위주로 보임)
-  const [needs, setNeeds] = useState(null)   // null = 프로필 값 사용
-  const [budget, setBudget] = useState(null)
   const [data, setData] = useState(null)
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
@@ -107,9 +103,9 @@ export default function Explore() {
   const [date, setDate] = useState('')      // 방문 날짜 ('' = 오늘): 집중률 예측과 휴무일에 쓴다
   const [base, setBase] = useState('')      // 머무는 곳 ('' = 상관없음, 'basket' = 내 여행 바구니 중심)
 
-  const effNeeds = needs ?? profile?.needs ?? []
-  const effBudget = budget ?? profile?.budget ?? 'any'
-  const age = AGE_BANDS.find((a) => a.key === ageBand)
+  // 아이 나이·필요한 것·예산은 가족 정보(프로필)에서 가져온다 (아이 나이는 ageBand 에 이미 맞춰져 있다)
+  const effNeeds = profile?.needs ?? []
+  const effBudget = profile?.budget ?? 'any'
   // 기준 위치는 문자열로 들고 있다가 쓸 때만 좌표로 바꾼다 (객체를 deps 에 넣으면 매 렌더마다 다시 검색해서)
   const placed = basket.filter((b) => b.lat && b.lng)
   const nearKey = base === 'basket' ? (placed.length ? `${placed.reduce((n, b) => n + b.lat, 0) / placed.length},${placed.reduce((n, b) => n + b.lng, 0) / placed.length}` : '')
@@ -134,20 +130,18 @@ export default function Explore() {
     finally { setMore(false) }
   }
 
-  useEffect(() => { search(q) /* eslint-disable-next-line */ }, [type, needs, budget, profile, accessible, ageBand, nearKey, date])
+  useEffect(() => { search(q) /* eslint-disable-next-line */ }, [type, profile, accessible, ageBand, nearKey, date])
 
   const selected = data?.items.find((x) => x.id === sel)
-  const toggleNeed = (k) => setNeeds(effNeeds.includes(k) ? effNeeds.filter((x) => x !== k) : [...effNeeds, k])
   const pickType = (k) => { setType(k); setQ('') } // 종류를 바꾸면 이전 테마는 비운다
   const pickTheme = (kw) => { const next = q === kw ? '' : kw; setQ(next); search(next) } // 같은 테마를 다시 누르면 해제
   const themes = themesFor(type)
   const weights = data?.basis?.weights ?? {}
   const wsum = Object.values(weights).reduce((n, v) => n + v, 0) || 1
-  const needLabels = effNeeds.map((k) => NEEDS.find((n) => n.key === k)?.label).filter(Boolean)
 
   return (
     <>
-      <PageTitle icon="compass" title="길동무 찾기" sub="우리 가족 기준(아이 나이·필요한 것·예산)과 고른 테마에 맞춰 점수를 매겨요" />
+      <PageTitle icon="compass" title="길동무 찾기" sub="우리 가족 정보와 고른 종류·테마에 맞춰 점수를 매겨요" />
 
       {/* ① 무엇을 찾나요? */}
       <div className="cat-row mb-3" role="tablist" aria-label="장소 종류">
@@ -177,81 +171,43 @@ export default function Explore() {
         </InputGroup>
       </Form>
 
-      {/* ③ 우리 가족 기준: 여기를 바꾸면 점수가 달라진다 */}
-      <div className="soft-card p-3 mb-3">
-        <div className="d-flex align-items-center flex-wrap gap-2 mb-2">
-          <div className="fw-bold fs-6"><i className="bi bi-people-fill text-primary me-2" />우리 가족 기준 <span className="small text-muted fw-normal">바꾸면 점수가 바로 달라져요</span></div>
-          <Button variant="link" size="sm" className="ms-auto p-0" onClick={() => setHow(!how)} aria-expanded={how}>
-            <i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?
-          </Button>
+      {/* ③ 방문 조건: 가족 정보와 별개로 이번 검색에만 쓰는 것들 */}
+      <div className="d-flex flex-wrap align-items-end gap-3 mb-3">
+        <div>
+          <div className="small text-muted mb-1">언제 가세요?</div>
+          <Form.Control size="sm" type="date" value={date} min={isoDay(0)} max={isoDay(29)} onChange={(e) => setDate(e.target.value)} />
         </div>
-
-        <div className="small text-muted mb-1">아이 나이</div>
-        <div className="d-flex flex-wrap gap-2 mb-3">
-          {AGE_BANDS.map((a) => (
-            <Button key={a.key} size="sm" variant={ageBand === a.key ? 'primary' : 'outline-primary'} className="rounded-pill" onClick={() => setAgeBand(a.key)}>
-              <i className={`bi bi-${a.icon} me-1`} />{a.label}
-            </Button>
-          ))}
+        <div>
+          <div className="small text-muted mb-1">머무는 곳</div>
+          <Form.Select size="sm" value={base} onChange={(e) => setBase(e.target.value)}>
+            <option value="">상관없어요</option>
+            {placed.length > 0 && <option value="basket">내 여행 바구니 근처</option>}
+            {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
+          </Form.Select>
         </div>
-
-        <Row className="g-3 align-items-end">
-          <Col md="auto">
-            <div className="small text-muted mb-1">필요한 것</div>
-            <div className="d-flex flex-wrap gap-2">
-              {NEEDS.filter((n) => n.key !== 'sensory').map((n) => (
-                <Button key={n.key} size="sm" variant={effNeeds.includes(n.key) ? 'primary' : 'outline-primary'} className="rounded-pill" onClick={() => toggleNeed(n.key)}>
-                  <i className={`bi bi-${n.icon} me-1`} />{n.label}
-                </Button>
-              ))}
-            </div>
-          </Col>
-          <Col xs="auto">
-            <div className="small text-muted mb-1">예산</div>
-            <Form.Select size="sm" value={effBudget} onChange={(e) => setBudget(e.target.value)}>{BUDGETS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}</Form.Select>
-          </Col>
-          <Col xs="auto">
-            <div className="small text-muted mb-1">언제 가세요?</div>
-            <Form.Control size="sm" type="date" value={date} min={isoDay(0)} max={isoDay(29)} onChange={(e) => setDate(e.target.value)} />
-          </Col>
-          <Col xs="auto">
-            <div className="small text-muted mb-1">머무는 곳</div>
-            <Form.Select size="sm" value={base} onChange={(e) => setBase(e.target.value)}>
-              <option value="">상관없어요</option>
-              {placed.length > 0 && <option value="basket">내 여행 바구니 근처</option>}
-              {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
-            </Form.Select>
-          </Col>
-          <Col xs="auto">
-            <Form.Check type="switch" id="acc-only" label="무장애 등록 장소만" checked={accessible} onChange={(e) => setAccessible(e.target.checked)} />
-          </Col>
-        </Row>
-
-        <div className="mt-3 small" style={{ color: '#3d2a17' }}>
-          <i className="bi bi-bullseye text-primary me-1" />지금 점수는 <b>{age?.short}</b>
-          {needLabels.length > 0 && <> · <b>{needLabels.join('·')}</b></>} · 예산 <b>{BUDGETS.find((b) => b.key === effBudget)?.label}</b>
-          {near && <> · <b>{base === 'basket' ? '바구니' : BASES.find((x) => x.key === base)?.label.split(' ')[0]}</b> 근처</>}
-          {q && <> · 테마 <b>{themes.find(([, kw]) => kw === q)?.[0] ?? q}</b></>} 기준이에요
-        </div>
-
-        <Collapse in={how}>
-          <div>
-            <div className="how-score mt-3">
-              <div className="fw-bold mb-2">우리 가족 맞춤 점수 = 아래 기준을 가중 평균 (0~100점)</div>
-              {Object.entries(CRITERIA).map(([key, [name, desc]]) => {
-                const w = weights[key]
-                return (
-                  <div key={key} className={`how-row ${w ? '' : 'off'}`}>
-                    <span className="how-w">{w ? `${Math.round((w / wsum) * 100)}%` : '—'}</span>
-                    <span><b>{name}</b> {desc}{!w && ' (테마를 고르면 반영돼요)'}</span>
-                  </div>
-                )
-              })}
-              <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사(관광정보·무장애·집중률), 기상청(단기예보·자외선지수), 한국환경공단 에어코리아입니다.</div>
-            </div>
-          </div>
-        </Collapse>
+        <Form.Check type="switch" id="acc-only" className="pb-1" label="무장애 등록 장소만" checked={accessible} onChange={(e) => setAccessible(e.target.checked)} />
+        <Button variant="link" size="sm" className="ms-auto p-0" onClick={() => setHow(!how)} aria-expanded={how}>
+          <i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?
+        </Button>
       </div>
+      {!profile && <div className="small text-muted mb-3"><i className="bi bi-people me-1" /><Link to="/profile">가족 정보</Link>를 입력하면 아이 나이·필요한 것·예산에 맞춰 점수를 매겨요.</div>}
+      <Collapse in={how}>
+        <div>
+          <div className="how-score mb-3">
+            <div className="fw-bold mb-2">맞춤 점수 = 아래 기준을 가중 평균 (0~100점)</div>
+            {Object.entries(CRITERIA).map(([key, [name, desc]]) => {
+              const w = weights[key]
+              return (
+                <div key={key} className={`how-row ${w ? '' : 'off'}`}>
+                  <span className="how-w">{w ? `${Math.round((w / wsum) * 100)}%` : '—'}</span>
+                  <span><b>{name}</b> {desc}{!w && ' (테마를 고르면 반영돼요)'}</span>
+                </div>
+              )
+            })}
+            <div className="small text-muted mt-2">70점 이상 초록, 50점 이상 노랑, 그 아래 빨강으로 보여요. 데이터는 한국관광공사(관광정보·무장애·집중률), 기상청(단기예보·자외선지수), 한국환경공단 에어코리아입니다.</div>
+          </div>
+        </div>
+      </Collapse>
 
       {data?.weather && (
         <div className="alert alert-light border py-2">
