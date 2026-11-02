@@ -1,10 +1,12 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Badge, Button, Carousel, Modal } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { fetchDetail } from '../api/client'
+import { fetchPlaceReviews } from '../lib/reviews'
+import { useAppStore } from '../store/useAppStore'
+import Stars from './Stars'
 import { Loading, ErrorAlert } from './Status'
 import ScoreBars, { ScorePill } from './ScoreBars'
-import { storyFor } from '../../shared/lore'
 
 const TYPE_LABEL = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 28: '레포츠·체험', 32: '숙박', 38: '쇼핑', 39: '음식점' }
 
@@ -18,7 +20,8 @@ const ACCESS_TEXT = [['stroller', '유모차'], ['wheelchair', '휠체어'], ['e
 
 // 장소 상세 창 — 카드를 누르면 열립니다
 export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
-  const nav = useNavigate()
+  const user = useAppStore((s) => s.user)
+  const [reviews, setReviews] = useState(null) // null = 불러오는 중
   const [d, setD] = useState(null)
   const [err, setErr] = useState('')
   const [full, setFull] = useState(false)
@@ -27,11 +30,13 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
     if (!spot) return
     setD(null); setErr(''); setFull(false)
     fetchDetail(spot.id, spot.type).then(setD).catch((e) => setErr(e.message))
+    setReviews(null)
+    fetchPlaceReviews(spot.id).then(setReviews).catch(() => setReviews([]))
   }, [spot])
 
   if (!spot) return null
   const a = d?.access ?? spot.access
-  const story = storyFor(`${spot.title} ${d?.overview ?? ''}`)
+  const avg = reviews?.length ? reviews.reduce((n, r) => n + r.rating, 0) / reviews.length : 0
   const mapQ = encodeURIComponent(`${spot.title},${spot.lat},${spot.lng}`)
   const tips = [
     spot.indoor ? '실내라 비·더위·바람 걱정이 적어요' : '야외 장소예요 — 모자·물·여벌 옷을 챙기세요',
@@ -100,13 +105,29 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
               ) : <div className="small text-muted">무장애 여행정보에 등록되지 않은 장소예요. 유모차·휠체어 이동 동선은 방문 전에 전화로 확인해 주세요.</div>}
             </div>
 
-            {story && (
-              <div className="soft-card p-3 mb-3 d-flex align-items-center gap-3" style={{ background: 'var(--hm-orange-soft)' }}>
-                <div style={{ fontSize: '2rem' }}>{story.emoji}</div>
-                <div className="flex-grow-1"><div className="small text-muted">이 장소와 어울리는 할망 이야기</div><div className="fw-bold">{story.title}</div></div>
-                <Button size="sm" onClick={() => nav(`/kids?story=${story.id}`)}><i className="bi bi-play-fill me-1" />들으러 가기</Button>
+            <div className="mb-3">
+              <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <h6 className="fw-bold m-0"><i className="bi bi-chat-heart me-1 text-primary" />이 장소의 후기</h6>
+                {reviews?.length > 0 && <><Stars value={Math.round(avg)} /><span className="small text-muted">{avg.toFixed(1)} · {reviews.length}개</span></>}
+                <Link to="/reviews" className="ms-auto small">후기 모두 보기</Link>
               </div>
-            )}
+              {reviews === null ? <div className="small text-muted">후기를 불러오는 중...</div> : reviews.length === 0 ? (
+                <div className="soft-card p-3 small text-muted" style={{ background: 'var(--hm-orange-soft)' }}>
+                  아직 후기가 없어요. 이곳에 다녀온 뒤 <b>여행 바구니</b>에서 일차별로 후기를 남기면 여기에 보여요. (공개로 정한 후기만 다른 가족에게 보여요)
+                </div>
+              ) : reviews.map((r) => (
+                <div key={r.id} className="soft-card p-3 mb-2">
+                  <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+                    <span className="chip">{r.day}일차</span><Stars value={r.rating} />
+                    {user?.id === r.user_id && !r.is_public && <Badge bg="secondary">나만 보기</Badge>}
+                    <span className="ms-auto small text-muted">{new Date(r.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                  {r.title && <div className="fw-bold">{r.title}</div>}
+                  <div className="small" style={{ whiteSpace: 'pre-line' }}>{r.body}</div>
+                  <div className="small text-muted mt-1"><i className="bi bi-person-heart me-1" />{r.author || '익명의 가족'}</div>
+                </div>
+              ))}
+            </div>
 
             <div className="d-flex flex-wrap gap-2">
               {d.tel && /\d/.test(d.tel) && <Button as="a" variant="outline-secondary" size="sm" href={`tel:${(d.tel.match(/[\d-]{7,}/) ?? [''])[0]}`}><i className="bi bi-telephone me-1" />전화</Button>}

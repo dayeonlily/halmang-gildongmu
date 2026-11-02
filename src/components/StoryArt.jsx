@@ -13,7 +13,7 @@ export default function StoryArt({ storyId, index, label }) {
         <Defs id={id} />
         <g><Scene /></g>
         <rect width="400" height="280" filter={`url(#grain-${id})`} opacity=".5" style={{ pointerEvents: 'none' }} />
-        <rect x="3" y="3" width="394" height="274" rx="10" fill="none" stroke="#e1cfae" strokeWidth="6" />
+        <rect x="3" y="3" width="394" height="274" rx="10" fill="none" stroke="#6f4b3e" strokeWidth="5" />
       </svg>
     </ArtId.Provider>
   )

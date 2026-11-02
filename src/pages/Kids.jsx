@@ -25,60 +25,92 @@ function AgePicker() {
   )
 }
 
-// ── 이야기: 한 줄마다 그림이 바뀌고, 할망이 브라우저 음성(TTS)으로 읽어 줌 ──
+// ── 이야기: 한 줄마다 그림이 바뀌고, 큰 글씨로 읽기 쉽게, 할망이 음성(TTS)으로 읽어 줌 ──
+const FS_KEY = 'halmang-story-fs'
+const FONT_SIZES = [['보통', 1.15], ['크게', 1.4], ['아주 크게', 1.7]]
+const readFs = () => { try { const v = Number(localStorage.getItem(FS_KEY)); return v >= 0 && v < 3 ? v : 1 } catch { return 1 } }
+const NOTE = /^\(보호자님께:\s*(.*)\)$/
+
 function StoryTab() {
   const ageBand = useAppStore((s) => s.ageBand)
   const [params] = useSearchParams()
   const [id, setId] = useState(STORIES.some((x) => x.id === params.get('story')) ? params.get('story') : STORIES[0].id) // 장소 상세에서 넘어온 이야기
   const [i, setI] = useState(0)
   const [speaking, setSpeaking] = useState(false)
+  const [fs, setFs] = useState(readFs) // 글자 크기 단계
   const story = STORIES.find((s) => s.id === id)
   const tooYoung = ageIndex(ageBand) < ageIndex(story.minAge)
   const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
+  const line = story.lines[i]
+  const note = NOTE.exec(line)
+  const last = i === story.lines.length - 1
 
   useEffect(() => () => window.speechSynthesis?.cancel(), [])
 
   const stop = () => { window.speechSynthesis?.cancel(); setSpeaking(false) }
+  const go = (n) => { stop(); setI(Math.min(story.lines.length - 1, Math.max(0, n))) }
   function pick(sid) { stop(); setId(sid); setI(0) }
+  function pickSize(n) { setFs(n); try { localStorage.setItem(FS_KEY, String(n)) } catch { /* 저장 실패는 무시 */ } }
   function speak() {
     const synth = window.speechSynthesis
     if (speaking) return stop()
-    const u = new SpeechSynthesisUtterance(story.lines[i].replace(/\(보호자님께:.*\)/, ''))
+    const u = new SpeechSynthesisUtterance(note ? note[1] : line)
     u.lang = 'ko-KR'; u.rate = 0.85; u.pitch = 0.9
     u.onend = () => setSpeaking(false); u.onerror = () => setSpeaking(false)
     setSpeaking(true); synth.speak(u)
   }
 
   return (
-    <Row className="g-3">
-      {/* 폰에서는 그림이 먼저, 넓은 화면에서는 이야기 목록이 왼쪽 */}
-      <Col md={8} className="order-1 order-md-2">
-        <div className="soft-card p-3 d-flex flex-column">
-          <StoryArt storyId={story.id} index={i} label={`${story.title} ${i + 1}번째 장면`} />
-          <div className="d-flex align-items-center gap-2 mt-3 mb-2 flex-wrap">
-            <h3 className="m-0 fs-4">{story.emoji} {story.title}</h3>
-            <Badge bg="light" text="dark"><i className="bi bi-geo-alt me-1" />{story.place}</Badge>
-          </div>
-          {tooYoung && <div className="alert alert-warning py-2 small">{AGE_BANDS[ageIndex(story.minAge)].short} 이상에게 더 어울리는 이야기예요. 짧게 줄여서 들려주세요.</div>}
-          <div className="story-line">{story.lines[i]}</div>
-          <ProgressBar now={((i + 1) / story.lines.length) * 100} className="my-3" style={{ height: 8 }} />
-          <div className="d-flex gap-2 align-items-center">
-            <Button variant="outline-secondary" disabled={i === 0} onClick={() => { stop(); setI(i - 1) }} aria-label="이전"><i className="bi bi-chevron-left" /></Button>
-            <Button variant="outline-secondary" disabled={i === story.lines.length - 1} onClick={() => { stop(); setI(i + 1) }} aria-label="다음"><i className="bi bi-chevron-right" /></Button>
-            <span className="text-muted small">{i + 1} / {story.lines.length}</span>
-            {canSpeak && <Button className="ms-auto" onClick={speak}><i className={`bi bi-${speaking ? 'stop-fill' : 'volume-up-fill'} me-1`} />{speaking ? '멈추기' : '읽어주기'}</Button>}
+    <>
+      {/* 이야기 고르기: 가로로 밀어 보는 큰 버튼 */}
+      <div className="story-picker mb-3" role="tablist" aria-label="이야기 고르기">
+        {STORIES.map((s) => (
+          <button type="button" key={s.id} className={`story-chip ${s.id === id ? 'on' : ''}`} onClick={() => pick(s.id)}>
+            <span className="fs-4">{s.emoji}</span><span>{s.title}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="soft-card p-3">
+        <StoryArt storyId={story.id} index={i} label={`${story.title} ${i + 1}번째 장면`} />
+
+        {/* 자막: 큰 글씨 + 말하는 할망 */}
+        <div className="story-caption mt-3">
+          <HalmangMascot pose="wave" speaking={speaking} className="story-mascot d-none d-md-block" />
+          <div className="flex-grow-1">
+            <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
+              <h3 className="m-0 fs-5">{story.emoji} {story.title}</h3>
+              <Badge bg="light" text="dark" className="border"><i className="bi bi-geo-alt me-1" />{story.place}</Badge>
+              <div className="ms-auto d-flex align-items-center gap-1" role="group" aria-label="글자 크기">
+                <span className="small text-muted me-1">글씨</span>
+                {FONT_SIZES.map(([label], n) => (
+                  <Button key={label} size="sm" variant={fs === n ? 'primary' : 'outline-secondary'} className="rounded-pill px-2" onClick={() => pickSize(n)}>{label}</Button>
+                ))}
+              </div>
+            </div>
+            {tooYoung && <div className="alert alert-warning py-2 small mb-2">{AGE_BANDS[ageIndex(story.minAge)].short} 이상에게 더 어울리는 이야기예요. 짧게 줄여서 들려주세요.</div>}
+            {note
+              ? <div className="story-note"><i className="bi bi-person-heart me-2" /><b>보호자님께</b> {note[1]}</div>
+              : <p className="story-text" style={{ fontSize: `${FONT_SIZES[fs][1]}rem` }}>{line}</p>}
           </div>
         </div>
-      </Col>
-      <Col md={4} className="order-2 order-md-1">
-        <div className="d-grid gap-2">
-          {STORIES.map((s) => (
-            <Button key={s.id} variant={s.id === id ? 'primary' : 'outline-primary'} className="text-start" onClick={() => pick(s.id)}>{s.emoji} {s.title}</Button>
-          ))}
+
+        {/* 진행 점: 눌러서 그 장면으로 */}
+        <div className="story-dots my-3" role="group" aria-label="장면 이동">
+          {story.lines.map((_, n) => <button type="button" key={n} className={n === i ? 'on' : n < i ? 'done' : ''} onClick={() => go(n)} aria-label={`${n + 1}번째 장면`} />)}
+          <span className="small text-muted ms-2">{i + 1} / {story.lines.length}</span>
         </div>
-        <div className="mt-3 d-none d-md-block text-center"><HalmangMascot pose="wave" speaking={speaking} style={{ width: 200 }} /></div>
-      </Col>
-    </Row>
+
+        {/* 큰 버튼 */}
+        <div className="story-controls">
+          <Button size="lg" variant="outline-secondary" disabled={i === 0} onClick={() => go(i - 1)}><i className="bi bi-chevron-left me-1" />이전</Button>
+          {canSpeak && <Button size="lg" variant={speaking ? 'danger' : 'outline-primary'} onClick={speak}><i className={`bi bi-${speaking ? 'stop-fill' : 'volume-up-fill'} me-1`} />{speaking ? '멈추기' : '읽어주기'}</Button>}
+          {last
+            ? <Button size="lg" variant="success" onClick={() => go(0)}><i className="bi bi-arrow-repeat me-1" />처음부터 다시</Button>
+            : <Button size="lg" onClick={() => go(i + 1)}>다음<i className="bi bi-chevron-right ms-1" /></Button>}
+        </div>
+      </div>
+    </>
   )
 }
 

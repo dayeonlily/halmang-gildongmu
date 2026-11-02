@@ -170,3 +170,19 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .hour-chip { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 54px; padding: .35rem .5rem; background: #f6fbfc; border: 1px solid #d3eaf0; border-radius: .9rem; line-height: 1.25; }
 .hour-chip span { font-size: 1.2rem; }
 .hour-chip small { color: #6a8a96; font-size: .7rem; }
+
+/* ── 할망 이야기: 큰 글씨 · 진행 점 · 큰 버튼 ── */
+.story-picker { display: flex; gap: .6rem; overflow-x: auto; padding-bottom: .4rem; scrollbar-width: thin; }
+.story-chip { flex: 0 0 auto; display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; background: #fff; border: 2px solid #f0e2cd; border-radius: 999px; font-weight: 700; color: #5b4a3a; cursor: pointer; white-space: nowrap; }
+.story-chip.on { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; box-shadow: 0 3px 10px rgba(232, 121, 26, .35); }
+.story-caption { display: flex; gap: 1rem; align-items: flex-start; background: #fffaf0; border: 3px solid #6f4b3e; border-radius: 1.2rem; padding: 1rem 1.1rem; }
+.story-mascot { flex: 0 0 96px; width: 96px; height: auto; }
+.story-text { margin: 0; font-weight: 700; line-height: 1.85; color: #3b2a22; word-break: keep-all; min-height: 5.5rem; }
+.story-note { background: var(--hm-orange-soft); border-radius: .9rem; padding: .8rem 1rem; color: #7a4a14; font-size: 1.05rem; line-height: 1.7; }
+.story-dots { display: flex; align-items: center; gap: .5rem; }
+.story-dots button { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #6f4b3e; background: #fff; padding: 0; cursor: pointer; }
+.story-dots button.done { background: #f3c89b; }
+.story-dots button.on { background: var(--hm-orange); transform: scale(1.35); }
+.story-controls { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: .6rem; }
+.story-controls .btn { border-radius: 1rem; font-weight: 700; }
+@media (max-width: 575px) { .story-controls { grid-template-columns: 1fr 1fr; } .story-controls .btn:last-child { grid-column: 1 / -1; } .story-caption { padding: .8rem; } }
