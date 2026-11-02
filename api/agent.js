@@ -140,6 +140,18 @@ async function runClaude({ message, history, profile, steps }) {
   return TOO_MANY
 }
 
+// Anthropic 오류를 보호자가 이해할 수 있는 한국어로 (원문은 서버 로그에 남긴다)
+function friendlyError(e) {
+  console.error('agent error:', e.status, e.message)
+  const msg = String(e.message ?? '')
+  if (/credit balance/i.test(msg)) return '할망의 AI 크레딧이 모두 떨어졌어요. 관리자가 Anthropic 콘솔(Plans & Billing)에서 크레딧을 충전하면 바로 다시 답해요.'
+  if (e.status === 401) return 'AI 키가 올바르지 않아요. ANTHROPIC_API_KEY 를 다시 확인해 주세요.'
+  if (e.status === 404) return '설정한 AI 모델을 찾을 수 없어요. 모델 이름을 확인해 주세요.'
+  if (e.status === 429) return '사용량이 많아요. 1분 뒤 다시 시도하세요.'
+  if (e.status === 529 || e.status >= 500) return 'AI 서버가 잠시 바빠요. 잠시 뒤 다시 시도해 주세요.'
+  return msg
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY 가 설정되지 않았어요 (.env.local 확인)' })
@@ -151,6 +163,6 @@ export default async function handler(req, res) {
     const answer = await runClaude({ message, history: history.slice(-10), profile, steps }) // 최근 10개만 → 비용 절약
     res.status(200).json({ answer, steps })
   } catch (e) {
-    res.status(e.status ?? 500).json({ error: e.status === 429 ? '사용량이 많아요. 1분 뒤 다시 시도하세요.' : e.message })
+    res.status(e.status ?? 500).json({ error: friendlyError(e) })
   }
 }
