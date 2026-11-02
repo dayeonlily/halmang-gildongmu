@@ -251,7 +251,7 @@ export function Seeds({ x, y, n = 9 }) {
 // ── 설문대할망: 마스코트 그림(Mascot.jsx)을 장면 좌표(발끝=(0,0))에 맞춰 놓는다 ──
 export function Halmang2D({ x, y, s = 1, pose = 'stand', flip = false }) {
   const id = useContext(ArtId)
-  const k = s * 0.66 // 새 마스코트는 키가 커져서(300) 장면 안 크기를 맞춘다
+  const k = s * 0.76 // 새 마스코트는 키가 커져서(300) 장면 안 크기를 맞춘다
   return (
     <g transform={`translate(${x} ${y}) scale(${flip ? -k : k} ${k}) translate(-110 -296)`}>
       <MascotId.Provider value={`${id}m`}><MascotArt pose={pose} /></MascotId.Provider>
