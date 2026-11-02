@@ -1,5 +1,6 @@
 // ① 한국관광공사 국문 관광정보 서비스 (KorService2) — "어디에 뭐가 있나"
 import { dataGo, toArray } from './dataGo.js'
+import { snapshotOf } from './placeData.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2'
 const BASE_WITH = 'https://apis.data.go.kr/B551011/KorWithService2' // 무장애 정보가 등록된 장소만
@@ -32,13 +33,18 @@ const memo = new Map()
 const remember = (key, load) => { if (!memo.has(key)) memo.set(key, load().catch((e) => { memo.delete(key); throw e })); return memo.get(key) }
 
 // 소개글(detailCommon2): 장소마다 다른 설명 — 계단·경사·유모차·아이 같은 말이 점수 신호가 된다
-export const getOverview = ({ id }) => remember(`ov:${id}`, async () => {
+export async function fetchOverview({ id }) {
   const body = await dataGo(`${BASE}/detailCommon2`, { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', contentId: String(id) })
   return text(toArray(body?.items?.item)[0]?.overview).slice(0, 2000)
-})
+}
+// 미리 받아 둔 파일에 있으면 공공데이터를 부르지 않는다
+export const getOverview = (p) => {
+  const s = snapshotOf(p.id)
+  return typeof s?.ov === 'string' ? Promise.resolve(s.ov) : remember(`ov:${p.id}`, () => fetchOverview(p))
+}
 
-export const getIntro = (p) => remember(`in:${p.id}`, () => fetchIntro(p))
-async function fetchIntro({ id, type }) {
+export const getIntro = (p) => (snapshotOf(p.id)?.in ? Promise.resolve(snapshotOf(p.id).in) : remember(`in:${p.id}`, () => fetchIntro(p)))
+export async function fetchIntro({ id, type }) {
   const body = await dataGo(`${BASE}/detailIntro2`, { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', contentId: String(id), contentTypeId: String(type) })
   const d = toArray(body?.items?.item)[0] ?? {}
   return {

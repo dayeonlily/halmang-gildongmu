@@ -1,6 +1,7 @@
 // ④ 에어코리아 대기오염정보 · ⑤ 기상청 생활기상지수(자외선) · ⑥ 한국관광공사 관광지 집중률 예측
 // 장소마다가 아니라 "오늘 제주 전체" 또는 "장소 이름"으로 한 번씩 받아 두고 점수 계산에 함께 쓴다.
 import { dataGo, toArray } from './dataGo.js'
+import { crowdSnapshot } from './placeData.js'
 
 const cache = new Map() // 키 → { at, value } (서버가 켜져 있는 동안만 기억)
 async function cached(key, ttlMs, load) {
@@ -54,7 +55,7 @@ export const getUv = (place = '제주시') => cached(`uv:${place}`, 30 * 60e3, a
 // ── 관광지 집중률 예측: 장소 이름 → { 날짜: 집중률(%) } ─────────
 // 값이 클수록 그 장소가 평소보다 붐빌 것으로 예상한다는 뜻 (0~100)
 const normName = (s) => String(s ?? '').replace(/\[[^\]]*\]|\([^)]*\)/g, '').replace(/[\s·・]/g, '').toLowerCase()
-async function loadCrowd() {
+export async function loadCrowd() {
   const U = 'https://apis.data.go.kr/B551011/TatsCnctrRateService/tatsCnctrRatedList'
   const C = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', areaCd: '50', numOfRows: '1000' }
   const map = new Map()
@@ -70,7 +71,8 @@ async function loadCrowd() {
   }
   return map
 }
-export const getCrowdTable = () => cached('crowd', 6 * 3600e3, loadCrowd)
+// 미리 받아 둔 예측이 오늘을 덮으면 그걸 쓰고, 아니면 공공데이터에서 직접 받는다
+export const getCrowdTable = async () => crowdSnapshot(todayYmd()) ?? cached('crowd', 6 * 3600e3, loadCrowd)
 
 // 장소 이름으로 그날의 집중률을 찾는다 (이름이 같거나, 한쪽이 다른 쪽을 포함하는 경우)
 export function crowdFor(table, title, ymd) {

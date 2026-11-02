@@ -1,5 +1,6 @@
 // ② 한국관광공사 무장애 여행정보 (KorWithService2) — 유모차·휠체어·수유실 등
 import { dataGo, toArray } from './dataGo.js'
+import { snapshotOf } from './placeData.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorWithService2'
 const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json' }
@@ -8,9 +9,12 @@ const clean = (v) => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' 
 const has = (v) => { const s = clean(v); return s !== '' && !/^(없음|없습니다|불가|미운영|해당없음)/.test(s) }
 
 const memo = new Map()
-export const getAccess = ({ id }) => { if (!memo.has(id)) memo.set(id, fetchAccess({ id }).catch((e) => { memo.delete(id); throw e })); return memo.get(id) }
+export const getAccess = ({ id }) => {
+  const s = snapshotOf(id) // 미리 받아 둔 파일에 있으면 공공데이터를 부르지 않는다
+  if (s?.ac) return Promise.resolve({ id: String(id), ...s.ac })
+  if (!memo.has(id)) memo.set(id, fetchAccess({ id }).catch((e) => { memo.delete(id); throw e })); return memo.get(id) }
 
-async function fetchAccess({ id }) {
+export async function fetchAccess({ id }) {
   const body = await dataGo(`${BASE}/detailWithTour2`, { ...COMMON, contentId: String(id) })
   const d = toArray(body?.items?.item)[0]
   if (!d) return { id: String(id), registered: false }

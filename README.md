@@ -44,3 +44,14 @@ supabase/schema.sql       profiles · basket_items · mission_stamps (+RLS)
 
 ## 배포 (Vercel)
 `vercel` 로 프로젝트 연결 → Environment Variables 에 위 4개 값 등록 → `vercel --prod`
+
+## 장소 정보 미리 받아 두기 (공공데이터 하루 한도 대응)
+
+공공데이터포털은 API마다 **하루 호출 횟수**가 정해져 있어서(개발 계정), 검색할 때마다 장소 정보를 부르면 금방 바닥납니다.
+그래서 장소별 소개글·소개정보·무장애 정보와 집중률 예측을 파일(`server/data/places.json`, `crowd.json`)에 미리 받아 두고,
+서버는 이 파일을 먼저 읽습니다. 파일에 없는 장소만 공공데이터를 직접 부릅니다.
+
+- **자동:** `.github/workflows/place-cache.yml` 이 매일 한국 시간 00:30(한도 초기화 직후)에 실행되어 조금씩 채우고 저장소에 올립니다. Vercel 이 알아서 다시 배포합니다.
+  GitHub 저장소 → Settings → Secrets and variables → Actions 에 `DATA_GO_KR_KEY`(Decoding 키)를 등록해야 합니다.
+- **손으로:** `npm run cache:places` (옵션: `-- --max 800 --types 12,28,14,15`). 한도에 닿으면 거기서 멈추고 받은 것까지 저장하며, 다음 실행에서 이어서 채웁니다.
+- 제주 장소는 약 1,700곳이라 하루 한도로는 이틀쯤이면 다 채워집니다. 채워지기 전에는 한도 초과 안내가 화면에 나옵니다.

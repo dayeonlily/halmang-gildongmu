@@ -1,0 +1,40 @@
+# 장소 정보·집중률 예측을 미리 받아 저장소에 올린다 → Vercel 이 알아서 다시 배포한다.
+# 공공데이터는 하루 호출 한도가 있어서, 매일 한도가 초기화된 직후(한국 시간 00:30)에 조금씩 채운다.
+name: place-cache
+
+on:
+  schedule:
+    - cron: '30 15 * * *' # 15:30 UTC = 한국 시간 00:30
+  workflow_dispatch: # GitHub 의 Actions 탭에서 손으로도 실행할 수 있다
+
+permissions:
+  contents: write
+
+concurrency:
+  group: place-cache
+  cancel-in-progress: false
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 장소 정보·집중률 받기 (한도에 닿으면 거기서 멈추고 저장)
+        run: node scripts/build-place-cache.mjs --max 900
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+      - name: 바뀐 게 있으면 저장소에 올리기
+        run: |
+          git config user.name "dayeonlily"
+          git config user.email "dayeonlily@gmail.com"
+          git add server/data
+          if git diff --cached --quiet; then
+            echo "바뀐 게 없어요"
+          else
+            git commit -m "chore: 장소 정보·집중률 예측 갱신"
+            git push
+          fi
