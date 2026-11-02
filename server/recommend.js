@@ -6,6 +6,9 @@ import { getAccess } from './access.js'
 import { getWeather, placeByLat } from './weather.js'
 import { crowdFor, getAir, getCrowdTable, getUv, todayYmd } from './environment.js'
 
+// 장소 하나의 조회가 늦어져도 전체를 기다리게 하지 않는다: ms 안에 못 받으면 fallback 값으로 계속 진행
+const soft = (promise, fallback, ms = 6000) => Promise.race([promise.catch(() => fallback), new Promise((r) => setTimeout(() => r(fallback), ms))])
+
 const INDOOR = new Set(['14', '38', '39']) // 문화시설·쇼핑·음식점
 const BUDGET_LIMIT = { free: 0, low: 10000, mid: 30000, any: Infinity }
 export const WEIGHTS = { access: 30, kids: 25, safety: 20, price: 15, theme: 10, near: 15, crowd: 12 }
@@ -217,7 +220,7 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
   const ymd = /^\d{8}$/.test(date) && date >= today ? date : today
   const [found, air, uvJeju, uvSeogwipo, crowdTable] = await Promise.all([
     searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly }),
-    getAir(), getUv('제주시'), getUv('서귀포시'), getCrowdTable(),
+    soft(getAir(), null, 7000), soft(getUv('제주시'), null, 7000), soft(getUv('서귀포시'), null, 7000), soft(getCrowdTable(), null, 7000), // 환경 정보가 늦으면 그 항목만 빼고 진행
   ])
   const allCandidates = found.items.filter((p) => p.lat && p.lng)
   const candidates = allCandidates.filter((p) => !isAdultOnly(p.title)) // 이름으로 먼저 거른다 (소개글은 아래에서 한 번 더)
@@ -226,10 +229,10 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
 
   const enriched = await Promise.all(candidates.map(async (p) => {
     const [access, intro, wx, overview] = await Promise.all([
-      getAccess({ id: p.id }).catch(() => ({ id: p.id, registered: false })),
-      getIntro(p).catch(() => ({})),
-      getW(placeByLat(p.lat)),
-      getOverview(p).catch(() => ''),
+      soft(getAccess({ id: p.id }), { id: p.id, registered: false }),
+      soft(getIntro(p), {}),
+      soft(getW(placeByLat(p.lat)), null),
+      soft(getOverview(p), ''),
     ])
     if (isAdultOnly(p.title, overview)) return null // 소개글에 성인 전용·미성년자 출입 금지 등이 있는 곳
     const ts = textSignals(overview, age, needs)

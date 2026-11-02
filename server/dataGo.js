@@ -3,7 +3,10 @@ export async function dataGo(url, params) {
   const key = process.env.DATA_GO_KR_KEY
   if (!key) throw new Error('DATA_GO_KR_KEY 가 설정되지 않았어요 (.env.local 확인)')
   const qs = new URLSearchParams({ serviceKey: key, ...params })
-  const r = await fetch(`${url}?${qs}`)
+  // 응답이 없이 매달리는 요청 하나가 전체를 막지 않게: 8초 안에 못 받으면 끊고 한 번 더 시도한다
+  const get = () => fetch(`${url}?${qs}`, { signal: AbortSignal.timeout(8000) })
+  let r
+  try { r = await get() } catch { r = await get() }
   const text = await r.text()
   let data
   try { data = JSON.parse(text) }
