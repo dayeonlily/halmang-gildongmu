@@ -11,6 +11,8 @@ export default function Intro() {
 
   return (
     <div className="intro">
+      {/* 넓은 화면: 창이 화면 정중앙, 할망은 창 왼쪽 옆. 좁은 화면: 할망이 창 위 */}
+      <div className="intro-stage">
       <div className="intro-halmang"><HalmangMascot pose="wave" speaking={speaking} /></div>
 
       <div className="intro-bubble">
@@ -22,6 +24,7 @@ export default function Intro() {
           <Button as={Link} to="/login?mode=up" size="lg" variant="outline-primary" className="px-4 bg-white"><i className="bi bi-person-plus me-2" />회원가입</Button>
         </div>
         <Link to="/explore" className="d-inline-block mt-3 small text-muted">로그인 없이 먼저 둘러볼래요</Link>
+      </div>
       </div>
       <Waves />
     </div>

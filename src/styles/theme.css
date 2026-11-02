@@ -104,7 +104,8 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 /* ── 시작 화면(인트로): 할망이 제주어로 말을 건다 ── */
 .intro { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1.5rem 1rem 9rem; background: linear-gradient(#fff6e0 0%, #ffe4bd 55%, #cdeef0 100%); }
 .intro-halmang { width: min(260px, 62vw); position: relative; z-index: 1; margin-bottom: -.4rem; animation: introPop .7s ease-out both; }
-.intro-bubble { position: relative; z-index: 2; background: #fff; border: 3px solid #ffd596; border-radius: 2rem; padding: 1.5rem 1.6rem 1.3rem; width: min(560px, 100%); box-shadow: 0 12px 34px rgba(120, 80, 20, .18); animation: introUp .8s .25s ease-out both; }
+.intro-stage { position: relative; z-index: 1; width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; }
+.intro-bubble { position: relative; z-index: 2; background: #fff; border: 3px solid #ffd596; border-radius: 2rem; padding: 1.5rem 1.6rem 1.3rem; width: 100%; box-shadow: 0 12px 34px rgba(120, 80, 20, .18); animation: introUp .8s .25s ease-out both; }
 .intro-bubble::before { content: ''; position: absolute; top: -13px; left: 50%; width: 22px; height: 22px; background: #fff; border-left: 3px solid #ffd596; border-top: 3px solid #ffd596; transform: translateX(-50%) rotate(45deg); }
 .intro-jeju { font-family: 'Jua', 'Pretendard', sans-serif; font-size: clamp(1.9rem, 6.2vw, 3rem); line-height: 1.25; color: var(--hm-orange); }
 .intro-ko { margin-top: .4rem; font-size: .95rem; color: #7a6f66; }
@@ -222,3 +223,10 @@ small, .small { font-size: .92rem; }
 .how-row.off { opacity: .6; }
 .how-w { flex: 0 0 3rem; font-weight: 800; color: var(--hm-orange); text-align: right; }
 @media (max-width: 767.98px) { .cat-row { grid-template-columns: repeat(4, 1fr); } .cat-btn { font-size: .85rem; padding: .6rem .1rem; } .cat-btn i { font-size: 1.4rem; } }
+
+/* 넓은 화면: 창은 화면 정중앙, 할망은 창 왼쪽 옆에 서서 말을 건다 (꼬리도 할망 쪽) */
+@media (min-width: 992px) {
+  .intro { padding: 1.5rem 1rem; }
+  .intro-halmang { position: absolute; right: calc(100% + 14px); bottom: -8px; width: min(280px, calc((100vw - 560px) / 2 - 40px)); margin: 0; }
+  .intro-bubble::before { top: 62%; left: -13px; transform: translateY(-50%) rotate(-45deg); }
+}
