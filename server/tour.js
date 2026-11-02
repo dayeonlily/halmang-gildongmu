@@ -2,18 +2,24 @@
 import { dataGo, toArray } from './dataGo.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2'
-const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', areaCode: '39' } // 39 = 제주
+const BASE_WITH = 'https://apis.data.go.kr/B551011/KorWithService2' // 무장애 정보가 등록된 장소만
+// 제주 = 법정동 코드 50. (구버전 areaCode=39 는 제주 데이터의 일부만 돌려줘서 lDongRegnCd 를 씁니다)
+const COMMON = { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', lDongRegnCd: '50' }
 
-export async function searchTour({ keyword = '', contentTypeId = '', rows = 12 } = {}) {
-  const params = { ...COMMON, numOfRows: String(rows), pageNo: '1' }
+// 장소 목록 검색. accessibleOnly=true 면 무장애 여행정보에 등록된 장소만.
+// 반환: { items, total }  (total = 조건에 맞는 전체 건수 → "더보기" 판단용)
+async function searchOne({ keyword = '', contentTypeId = '', page = 1, rows = 12, accessibleOnly = false } = {}) {
+  const params = { ...COMMON, numOfRows: String(rows), pageNo: String(page), arrange: 'O' } // O = 제목순(대표이미지 있는 것)
   if (contentTypeId) params.contentTypeId = String(contentTypeId)
   if (keyword) params.keyword = keyword
-  const body = await dataGo(`${BASE}/${keyword ? 'searchKeyword2' : 'areaBasedList2'}`, params)
-  return toArray(body?.items?.item).map((p) => ({
+  const base = accessibleOnly ? BASE_WITH : BASE
+  const body = await dataGo(`${base}/${keyword ? 'searchKeyword2' : 'areaBasedList2'}`, params)
+  const items = toArray(body?.items?.item).map((p) => ({
     id: String(p.contentid), type: String(p.contenttypeid), title: p.title,
-    addr: p.addr1, image: p.firstimage || p.firstimage2 || '',
+    addr: [p.addr1, p.addr2].filter(Boolean).join(' '), image: p.firstimage || p.firstimage2 || '',
     lng: Number(p.mapx), lat: Number(p.mapy), tel: p.tel || '',
   }))
+  return { items, total: Number(body?.totalCount ?? items.length) }
 }
 
 // 문화시설(14)만 이용요금 필드가 있어 "무료/유료" 가격 기준에 사용
@@ -22,4 +28,21 @@ export async function getUseFee({ id, type }) {
   const body = await dataGo(`${BASE}/detailIntro2`, { ...COMMON, contentId: String(id), contentTypeId: '14' })
   const fee = toArray(body?.items?.item)[0]?.usefee ?? ''
   return String(fee).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+// 검색어를 쉼표로 이어 쓰면(예: "숲길,둘레길,곶자왈") 각각 검색해 번갈아 섞어 돌려준다 → 테마 검색
+export async function searchTour(opts = {}) {
+  const kws = String(opts.keyword ?? '').split(',').map((k) => k.trim()).filter(Boolean)
+  if (kws.length <= 1) return searchOne({ ...opts, keyword: kws[0] ?? '' })
+  // 검색어마다 rows/검색어수 개씩만 받아 합치면 한 페이지가 rows 개 안팎이 되고, 다음 페이지도 빠짐없이 이어진다
+  const rows = Math.max(2, Math.ceil((opts.rows ?? 12) / kws.length))
+  const parts = await Promise.all(kws.map((keyword) => searchOne({ ...opts, keyword, rows }).catch(() => ({ items: [], total: 0 }))))
+  const seen = new Set(), items = []
+  for (let i = 0; parts.some((p) => i < p.items.length); i++) {
+    for (const p of parts) {
+      const it = p.items[i]
+      if (it && !seen.has(it.id)) { seen.add(it.id); items.push(it) }
+    }
+  }
+  return { items, total: parts.reduce((n, p) => n + p.total, 0) }
 }

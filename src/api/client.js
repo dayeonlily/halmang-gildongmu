@@ -16,9 +16,10 @@ const post = async (path, body) => readJson(await fetch(path, {
 
 export const ping = () => get('/api/hello')
 
-export const fetchSpots = ({ keyword = '', type = '', needs = [], budget = 'any' } = {}) =>
-  get(`/api/spots?keyword=${encodeURIComponent(keyword)}&type=${type}&needs=${needs.join(',')}&budget=${budget}`)
-export const fetchAccess = (id) => get(`/api/access?id=${encodeURIComponent(id)}`)
+export const fetchSpots = ({ keyword = '', type = '', needs = [], budget = 'any', page = 1, accessible = false } = {}) =>
+  get(`/api/spots?keyword=${encodeURIComponent(keyword)}&type=${type}&needs=${needs.join(',')}&budget=${budget}&page=${page}&accessible=${accessible ? 1 : 0}`)
+export const fetchDetail = (id, type = '12') => get(`/api/detail?id=${encodeURIComponent(id)}&type=${type}`)
+export const fetchAccess =(id) => get(`/api/access?id=${encodeURIComponent(id)}`)
 export const fetchWeather = (place = '제주시') => get(`/api/weather?place=${encodeURIComponent(place)}`)
 
 export const askHalmang = (message, history, profile) => post('/api/agent', { message, history, profile })

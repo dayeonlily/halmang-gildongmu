@@ -19,6 +19,8 @@ const tools = [
         contentTypeId: { type: 'string', description: '12 관광지, 14 문화시설, 15 축제·행사, 39 음식점. 비우면 전체' },
         needs: { type: 'array', items: { type: 'string', enum: ['stroller', 'wheelchair', 'nursing', 'sensory'] } },
         budget: { type: 'string', enum: ['free', 'low', 'mid', 'any'] },
+        accessibleOnly: { type: 'boolean', description: '무장애 여행정보에 등록된 장소만 보고 싶을 때 true' },
+        page: { type: 'integer', description: '더 많은 결과가 필요할 때 2, 3...' },
       },
     },
   },
@@ -51,7 +53,7 @@ const tools = [
 // ② 도구 이름 → 실제 실행 함수
 const runTool = {
   search_spots: async (i) => {
-    const r = await recommend({ keyword: i.keyword, contentTypeId: i.contentTypeId, needs: i.needs ?? [], budget: i.budget ?? 'any', limit: 6 })
+    const r = await recommend({ keyword: i.keyword, contentTypeId: i.contentTypeId, needs: i.needs ?? [], budget: i.budget ?? 'any', page: i.page ?? 1, accessibleOnly: Boolean(i.accessibleOnly), limit: 6 })
     return r.items.map((p) => ({
       id: p.id, title: p.title, addr: p.addr, type: p.type, indoor: p.indoor, price: p.price,
       scores: p.scores, notes: p.notes,

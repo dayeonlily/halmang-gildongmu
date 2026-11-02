@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Badge, Button, Col, ProgressBar, Row, Tab, Tabs } from 'react-bootstrap'
 import PageTitle from '../components/PageTitle'
 import { HalmangBuddy } from '../scene/JejuScene'
@@ -24,7 +25,8 @@ function AgePicker() {
 // ── 이야기: 할망이 한 줄씩 들려주고, 브라우저 음성(TTS)으로 읽어 줌 ──
 function StoryTab() {
   const ageBand = useAppStore((s) => s.ageBand)
-  const [id, setId] = useState(STORIES[0].id)
+  const [params] = useSearchParams()
+  const [id, setId] = useState(STORIES.some((x) => x.id === params.get('story')) ? params.get('story') : STORIES[0].id) // 장소 상세에서 넘어온 이야기
   const [i, setI] = useState(0)
   const [speaking, setSpeaking] = useState(false)
   const story = STORIES.find((s) => s.id === id)

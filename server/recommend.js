@@ -46,8 +46,9 @@ function priceScore(fee, budget) {
   return { score, label: `${won.toLocaleString()}원~`, won }
 }
 
-export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', limit = 9 } = {}) {
-  const candidates = (await searchTour({ keyword, contentTypeId, rows: 20 })).filter((p) => p.lat && p.lng).slice(0, limit)
+export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', page = 1, limit = 12, accessibleOnly = false } = {}) {
+  const found = await searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly })
+  const candidates = found.items.filter((p) => p.lat && p.lng)
   const weatherByPlace = {}
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
 
@@ -68,5 +69,5 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
   }))
   items.sort((x, y) => y.scores.total - x.scores.total)
   const w = await getW('제주시')
-  return { weather: w?.summary ?? null, items }
+  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total }
 }

@@ -190,3 +190,16 @@ export const FIRST_AID = [
 
 export const findStory = (id) => STORIES.find((s) => s.id === id)
 export const missionsFor = (ageKey) => MISSIONS.filter((m) => m.age.includes(ageKey))
+
+// 장소 이름·소개글에서 어울리는 할망 이야기를 찾는다 (상세 창의 "이 장소와 어울리는 이야기")
+const STORY_KEYWORDS = [
+  ['haenyeo', ['해녀', '물질', '숨비', '테왁']],
+  ['ohbaek', ['영실', '오백장군', '오백']],
+  ['hareubang', ['돌하르방', '하르방', '돌문화', '돌담', '현무암']],
+  ['yeongdeung', ['영등', '바람', '풍어']],
+  ['seolmundae', ['설문대', '한라산', '오름', '물장오리', '산방산', '화산']],
+]
+export function storyFor(text = '') {
+  const hit = STORY_KEYWORDS.find(([, words]) => words.some((w) => text.includes(w)))
+  return hit ? findStory(hit[0]) : null
+}
