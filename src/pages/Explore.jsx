@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Badge, Button, Col, Form, InputGroup, Row } from 'react-bootstrap'
 import PageTitle from '../components/PageTitle'
 import ScoreBars, { ScorePill } from '../components/ScoreBars'
@@ -53,8 +54,10 @@ export default function Explore() {
   const profile = useAppStore((s) => s.profile)
   const basket = useAppStore((s) => s.basket)
   const addToBasket = useAppStore((s) => s.addToBasket)
-  const [q, setQ] = useState('')
-  const [type, setType] = useState('12') // 첫 화면은 관광지부터 (전체는 음식점이 많아 식당 위주로 보임)
+  const [params] = useSearchParams()
+  const initQ = params.get('q') ?? '' // 역사 스탬프 투어 등에서 넘어온 검색어
+  const [q, setQ] = useState(initQ)
+  const [type, setType] = useState(initQ ? '' : '12') // 첫 화면은 관광지부터 (전체는 음식점이 많아 식당 위주로 보임)
   const [needs, setNeeds] = useState(null)   // null = 프로필 값 사용
   const [budget, setBudget] = useState(null)
   const [data, setData] = useState(null)

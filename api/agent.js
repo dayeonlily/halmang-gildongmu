@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { recommend } from '../server/recommend.js'
 import { getAccess } from '../server/access.js'
 import { getWeather } from '../server/weather.js'
+import { HISTORY_COURSES, ERAS } from '../shared/history.js'
 import { STORIES, CHECKLISTS, AGE_BANDS, missionsFor, wordsFor, findStory } from '../shared/lore.js'
 
 const MODEL = 'claude-sonnet-5-5'
@@ -48,6 +49,18 @@ const tools = [
       required: ['ageBand'],
     },
   },
+  {
+    name: 'get_history_tour',
+    description: '제주 역사 스탬프 투어 코스(선사→탐라→고려→조선→근현대)를 연령대별로 가져온다. 역사 체험·박물관·유적지 추천 요청에 사용',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ageGroup: { type: 'string', enum: ['young', 'upper'], description: 'young=미취학~초등 저학년, upper=초등 고학년' },
+        era: { type: 'string', enum: ERAS.map((e) => e.key), description: '특정 시대만 보고 싶을 때' },
+      },
+      required: ['ageGroup'],
+    },
+  },
 ]
 
 // ② 도구 이름 → 실제 실행 함수
@@ -65,6 +78,9 @@ const runTool = {
     const s = i.id && findStory(i.id)
     return s ? { title: s.title, place: s.place, lines: s.lines } : STORIES.map((x) => ({ id: x.id, title: x.title, place: x.place }))
   },
+  get_history_tour: (i) => (HISTORY_COURSES[i.ageGroup] ?? HISTORY_COURSES.young)
+    .filter((c) => !i.era || c.era === i.era)
+    .map((c) => ({ era: c.era, place: c.place, area: c.area, title: c.title, mission: c.mission, theme: c.theme.name })),
   get_kids_content: (i) => ({
     missions: missionsFor(i.ageBand).map((m) => ({ title: m.title, text: m.text })),
     words: wordsFor(i.ageBand).slice(0, 4), // 연령에 맞는 제주어 카드

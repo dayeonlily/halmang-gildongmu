@@ -132,3 +132,19 @@ body.kids .card { border-width: 2px; border-color: #ffd596; }
 /* ── 할망 이야기 그림 ── */
 .story-art { width: 100%; height: auto; display: block; border-radius: 1rem; background: #f7efdc; animation: artIn .6s ease-out both; }
 @keyframes artIn { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+
+/* ── 제주 역사 스탬프 투어 ── */
+.era-tag { display: inline-block; color: #fff; font-weight: 700; font-size: .78rem; border-radius: 999px; padding: .15rem .7rem; }
+.h-card { position: relative; height: 100%; overflow: hidden; padding: 1.1rem 1.1rem 1.1rem 1.35rem; border-left: 6px solid var(--era, var(--hm-orange)); transition: background .3s, box-shadow .2s; }
+.h-card:hover { box-shadow: 0 6px 18px rgba(120, 80, 20, .14); }
+.h-card.stamped { background: #fbfff7; }
+.h-mission { background: var(--hm-orange-soft); border-radius: 1rem; padding: .7rem .9rem; }
+.stamp-mark { position: absolute; top: .7rem; right: .7rem; width: 74px; height: 74px; border-radius: 50%; border: 3px dashed var(--era); color: var(--era); background: rgba(255,255,255,.75); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; transform: rotate(-14deg); animation: stampIn .5s cubic-bezier(.2, 1.7, .4, 1) both; pointer-events: none; }
+.stamp-mark span { font-size: 1.5rem; }
+.stamp-mark b { font-size: .62rem; margin-top: 2px; }
+@keyframes stampIn { 0% { transform: rotate(-30deg) scale(2.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: rotate(-14deg) scale(1); opacity: 1; } }
+.era-strip { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: thin; }
+.era-step { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; min-width: 76px; background: #fff; border: 2px solid #f0e2cd; border-radius: 1rem; padding: .35rem .8rem; color: #5b4a3a; font-weight: 600; cursor: pointer; }
+.era-step small { font-weight: 400; color: #8a7b6c; }
+.era-step.on { border-color: var(--era, var(--hm-orange)); background: var(--hm-orange-soft); }
+@media (prefers-reduced-motion: reduce) { .stamp-mark { animation: none; } }
