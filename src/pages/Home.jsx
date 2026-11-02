@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Col, ProgressBar, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { fetchPicks, fetchWeather } from '../api/client'
+import DataNotice from '../components/DataNotice'
 import { ScorePill } from '../components/ScoreBars'
 import { IslandScene } from '../scene/JejuScene'
 import Intro from './Intro'
@@ -51,6 +52,7 @@ export default function Home() {
   const ageBand = useAppStore((s) => s.ageBand)
   const addToBasket = useAppStore((s) => s.addToBasket)
   const [spots, setSpots] = useState(null)
+  const [pickNotice, setPickNotice] = useState(null) // 공공데이터를 못 불러온 항목
   const [spotErr, setSpotErr] = useState('')
   const [flip, setFlip] = useState(false)
 
@@ -62,7 +64,7 @@ export default function Home() {
     let off = false
     setSpots(null); setSpotErr('')
     fetchPicks({ needs: needsKey ? needsKey.split(',') : [], budget: profile?.budget ?? 'any', age: familyAge })
-      .then((r) => { if (!off) setSpots(r.items) })
+      .then((r) => { if (!off) { setSpots(r.items); setPickNotice(r.degraded) } })
       .catch((e) => { if (!off) setSpotErr(e.message) })
     return () => { off = true }
   }, [user, profileLoaded, needsKey, profile?.budget, familyAge])
@@ -137,6 +139,7 @@ export default function Home() {
         <Badge bg="light" text="dark" className="border">예산 {BUDGETS.find((x) => x.key === (profile?.budget ?? 'any'))?.label}</Badge>
         {!profile && <Link to="/profile" className="ms-1">가족 정보를 입력하면 더 잘 맞춰요</Link>}
       </div>
+      <DataNotice degraded={pickNotice} />
       <Row xs={1} md={3} className="g-3 mb-4">
         {!spots && !spotErr && [0, 1, 2].map((i) => <Col key={i}><div className="soft-card p-3 text-muted small" style={{ minHeight: 170 }}><i className="bi bi-hourglass-split me-1" />추천을 고르는 중...</div></Col>)}
         {spotErr && <Col xs={12}><div className="soft-card p-3 small text-muted">추천을 불러오지 못했어요. <Link to="/explore">길동무 찾기</Link>에서 직접 찾아보세요.</div></Col>}

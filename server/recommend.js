@@ -7,7 +7,11 @@ import { getWeather, placeByLat } from './weather.js'
 import { crowdFor, getAir, getCrowdTable, getUv, todayYmd } from './environment.js'
 
 // 장소 하나의 조회가 늦어져도 전체를 기다리게 하지 않는다: ms 안에 못 받으면 fallback 값으로 계속 진행
-const soft = (promise, fallback, ms = 6000) => Promise.race([promise.catch(() => fallback), new Promise((r) => setTimeout(() => r(fallback), ms))])
+// 못 불러온 정보를 issues 에 기록한다 (한도 초과 'quota' / 오류 'error' / 시간 초과 'slow') → 결과에 알려서 점수가 덜 정확하다는 걸 숨기지 않는다
+const makeSoft = (issues) => (promise, fallback, label, ms = 6000) => new Promise((resolve) => {
+  const timer = setTimeout(() => { if (!issues.has(label)) issues.set(label, 'slow'); resolve(fallback) }, ms)
+  promise.then((v) => { clearTimeout(timer); resolve(v) }, (e) => { clearTimeout(timer); issues.set(label, e?.quota ? 'quota' : 'error'); resolve(fallback) })
+})
 
 const INDOOR = new Set(['14', '38', '39']) // 문화시설·쇼핑·음식점
 const BUDGET_LIMIT = { free: 0, low: 10000, mid: 30000, any: Infinity }
@@ -229,14 +233,23 @@ const distKm = (a, b) => { const x = rad(b.lat - a.lat), y = rad(b.lng - a.lng);
 // ⑥ 가까움: 머무는 곳(또는 내 여행 바구니 중심)에서 8km 이내면 만점, 50km 가까이 멀면 20점
 const nearScore = (km) => Math.max(10, Math.min(100, Math.round(100 - Math.max(0, km - 8) * (80 / 42))))
 
+// 못 불러온 정보를 화면에 알릴 형태로: { quota: [한도 초과로 못 받은 것], other: [그 밖의 이유로 못 받은 것] }
+const degradedOf = (issues) => {
+  if (!issues.size) return null
+  const pick = (f) => [...issues].filter(([, v]) => f(v)).map(([k]) => k)
+  return { quota: pick((v) => v === 'quota'), other: pick((v) => v !== 'quota') }
+}
+
 export async function recommend({ keyword = '', contentTypeId = '', needs = [], budget = 'any', age = 'preschool', near = null, date = '', page = 1, limit = 12, accessibleOnly = false } = {}) {
   // 방문 날짜: 집중률 예측과 정기 휴무 판단에 쓴다 (지난 날짜나 이상한 값이면 오늘)
   const W = needs.includes('sensory') ? { ...WEIGHTS, crowd: WEIGHTS.crowd * 2 } : WEIGHTS // 조용한 환경 선호: 덜 붐비는 곳을 더 중요하게
+  const issues = new Map()
+  const soft = makeSoft(issues)
   const today = todayYmd()
   const ymd = /^\d{8}$/.test(date) && date >= today ? date : today
   const [found, air, uvJeju, uvSeogwipo, crowdTable] = await Promise.all([
     searchTour({ keyword, contentTypeId, page, rows: limit, accessibleOnly }),
-    soft(getAir(), null, 7000), soft(getUv('제주시'), null, 7000), soft(getUv('서귀포시'), null, 7000), soft(getCrowdTable(), null, 7000), // 환경 정보가 늦으면 그 항목만 빼고 진행
+    soft(getAir(), null, '미세먼지', 7000), soft(getUv('제주시'), null, '자외선', 7000), soft(getUv('서귀포시'), null, '자외선', 7000), soft(getCrowdTable(), null, '혼잡 예측', 7000), // 환경 정보가 늦으면 그 항목만 빼고 진행
   ])
   const allCandidates = found.items.filter((p) => p.lat && p.lng)
   const candidates = allCandidates.filter((p) => !isAdultOnly(p.title) && !isAgeBlocked(p.title, age)) // 이름으로 먼저 거른다 (소개글은 아래에서 한 번 더)
@@ -245,10 +258,10 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
 
   const enriched = await Promise.all(candidates.map(async (p) => {
     const [access, intro, wx, overview] = await Promise.all([
-      soft(getAccess({ id: p.id }), { id: p.id, registered: false }),
-      soft(getIntro(p), {}),
-      soft(getW(placeByLat(p.lat)), null),
-      soft(getOverview(p), ''),
+      soft(getAccess({ id: p.id }), { id: p.id, registered: false }, '무장애 정보'),
+      soft(getIntro(p), {}, '요금·주차 정보'),
+      soft(getW(placeByLat(p.lat)), null, '기상 예보'),
+      soft(getOverview(p), '', '소개글'),
     ])
     if (isAdultOnly(p.title, overview)) return null // 소개글에 성인 전용·미성년자 출입 금지 등이 있는 곳
     const ts = textSignals(`${p.title}. ${overview}`, age, needs)
@@ -277,5 +290,5 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
   items.sort((x, y) => y.rank - x.rank)
   const w = await getW('제주시')
   const weights = Object.fromEntries(Object.entries(W).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
-  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, hiddenAdult, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
+  return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, hiddenAdult, degraded: degradedOf(issues), basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }
 }

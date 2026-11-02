@@ -4,6 +4,7 @@ import { Badge, Button, Col, Collapse, Form, InputGroup, Row } from 'react-boots
 import PageTitle from '../components/PageTitle'
 import ScoreBars, { ScorePill } from '../components/ScoreBars'
 import SpotDetail from '../components/SpotDetail'
+import DataNotice from '../components/DataNotice'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchSpots } from '../api/client'
 import { IslandScene } from '../scene/JejuScene'
@@ -117,7 +118,7 @@ export default function Explore() {
 
   const search = useCallback(async (keyword) => {
     setLoading(true); setErr('')
-    try { setData(await fetchSpots({ keyword, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 24 })); setSel(null) }
+    try { setData(await fetchSpots({ keyword, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 12 })); setSel(null) }
     catch (e) { setErr(e.message) }
     finally { setLoading(false) }
   }, [type, effNeeds, effBudget, ageBand, nearKey, date, accessible])
@@ -126,7 +127,7 @@ export default function Explore() {
   async function loadMore() {
     setMore(true)
     try {
-      const next = await fetchSpots({ keyword: q, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 24, page: data.page + 1 })
+      const next = await fetchSpots({ keyword: q, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 12, page: data.page + 1 })
       const seen = new Set(data.items.map((x) => x.id))
       setData({ ...next, items: [...data.items, ...next.items.filter((x) => !seen.has(x.id))] })
     } catch (e) { setErr(e.message) }
@@ -263,6 +264,7 @@ export default function Explore() {
           )}
         </div>
       )}
+      <DataNotice degraded={data?.degraded} />
       <ErrorAlert error={err} />
 
       <div className="explore-grid">

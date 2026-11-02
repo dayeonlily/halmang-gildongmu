@@ -28,7 +28,7 @@ export const getAir = () => cached('air', 20 * 60e3, async () => {
   const pm10 = median(items.map((x) => Number(x.pm10Value))), pm25 = median(items.map((x) => Number(x.pm25Value)))
   const grade = Math.max(grade10(pm10), grade25(pm25))
   return { pm10, pm25, grade, label: GRADE_LABEL[grade], time: items[0]?.dataTime ?? '' }
-}).catch(() => null)
+})
 
 // ── 기상청 자외선지수: 오늘 낮(9~17시) 가장 센 값 ───────────────
 const UV_AREA = { '제주시': '5011000000', '서귀포시': '5013000000' }
@@ -49,7 +49,7 @@ export const getUv = (place = '제주시') => cached(`uv:${place}`, 30 * 60e3, a
   const day = slots.some((s) => s.day === ymd && s.hour >= 9 && s.hour <= 17) ? ymd : slots.find((s) => s.hour >= 9 && s.hour <= 17)?.day
   const max = Math.max(0, ...slots.filter((s) => s.day === day && s.hour >= 9 && s.hour <= 17).map((s) => s.v))
   return { max, label: uvLabel(max) }
-}).catch(() => null)
+})
 
 // ── 관광지 집중률 예측: 장소 이름 → { 날짜: 집중률(%) } ─────────
 // 값이 클수록 그 장소가 평소보다 붐빌 것으로 예상한다는 뜻 (0~100)
@@ -70,7 +70,7 @@ async function loadCrowd() {
   }
   return map
 }
-export const getCrowdTable = () => cached('crowd', 6 * 3600e3, loadCrowd).catch(() => null)
+export const getCrowdTable = () => cached('crowd', 6 * 3600e3, loadCrowd)
 
 // 장소 이름으로 그날의 집중률을 찾는다 (이름이 같거나, 한쪽이 다른 쪽을 포함하는 경우)
 export function crowdFor(table, title, ymd) {
