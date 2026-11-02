@@ -28,7 +28,17 @@ const SUFFIX = ['', 'culture', 'leports', 'food', 'lodging', 'shopping']
 const pick = (d, base) => { for (const s of SUFFIX) { const v = d[base + s]; if (v) return v } return '' }
 const text = (v) => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 const yesNo = (v) => { const s = text(v); return !s ? '' : /^(가능|있음|유|무료|예)/.test(s) ? 'yes' : /^(불가|없음|무|안)/.test(s) ? 'no' : '' }
-export async function getIntro({ id, type }) {
+const memo = new Map()
+const remember = (key, load) => { if (!memo.has(key)) memo.set(key, load().catch((e) => { memo.delete(key); throw e })); return memo.get(key) }
+
+// 소개글(detailCommon2): 장소마다 다른 설명 — 계단·경사·유모차·아이 같은 말이 점수 신호가 된다
+export const getOverview = ({ id }) => remember(`ov:${id}`, async () => {
+  const body = await dataGo(`${BASE}/detailCommon2`, { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', contentId: String(id) })
+  return text(toArray(body?.items?.item)[0]?.overview).slice(0, 2000)
+})
+
+export const getIntro = (p) => remember(`in:${p.id}`, () => fetchIntro(p))
+async function fetchIntro({ id, type }) {
   const body = await dataGo(`${BASE}/detailIntro2`, { MobileOS: 'ETC', MobileApp: 'HalmangGildongmu', _type: 'json', contentId: String(id), contentTypeId: String(type) })
   const d = toArray(body?.items?.item)[0] ?? {}
   return {

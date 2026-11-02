@@ -76,7 +76,7 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .spot-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(120,80,20,.14); }
 .spot-card.selected { outline: 3px solid var(--hm-orange); }
 .spot-img { height: 130px; width: 100%; object-fit: cover; background: #f3e7d4; display: grid; place-items: center; color: #c9b79d; font-size: 2rem; }
-.score-pill { font-weight: 800; color: #fff; border-radius: 999px; padding: .1rem .65rem; font-size: .95rem; }
+.score-pill { white-space: nowrap; font-weight: 800; color: #fff; border-radius: 999px; padding: .1rem .65rem; font-size: .95rem; }
 .score-hi { background: #43a047; } .score-mid { background: #f9a825; } .score-lo { background: #e53935; }
 .mini-bar { display: grid; grid-template-columns: 74px 1fr 30px; align-items: center; gap: .4rem; font-size: .85rem; color: #5b4a3a; }
 .mini-bar .progress { height: 6px; }

@@ -1,7 +1,7 @@
 // 세 API를 묶어 "우리 가족 맞춤 점수"를 매긴다 (각 0~100 → 가중 합산)
 //   접근성 30 · 아이 맞춤 25 · 날씨 안전 20 · 비용 15 · 테마 일치 10(테마를 골랐을 때) · 가까움 15(머무는 곳을 골랐을 때)
 // 점수는 가족 설정(아이 나이·유모차/휠체어/수유·예산)과 지금 누른 테마에 따라 달라진다.
-import { searchTour, getIntro } from './tour.js'
+import { searchTour, getIntro, getOverview } from './tour.js'
 import { getAccess } from './access.js'
 import { getWeather, placeByLat } from './weather.js'
 import { crowdFor, getAir, getCrowdTable, getUv, todayYmd } from './environment.js'
@@ -124,6 +124,32 @@ function envPenalty(indoor, age, { air, uv }) {
   return { delta, notes }
 }
 
+// 소개글에서 읽는 신호: 장소마다 설명이 달라서 같은 해변·오름이라도 점수가 갈린다
+const hits = (re, text) => (text.match(re) ?? []).length
+const T_KID = /아이|어린이|유아|가족|놀이|체험|동물|먹이|그네|잔디|모래놀이|물놀이/g
+const T_EASY = /평탄|평지|완만|산책로|데크|산책하기 좋|걷기 좋|넓은 주차|쉬엄쉬엄|그늘/g
+const T_HARD = /가파|급경사|경사가|계단|험한|험준|오르막|암벽|절벽|미끄|위험|등반|바위|돌길|자갈/g
+const T_ACC = /유모차|휠체어|장애인|엘리베이터|경사로|편의시설|수유/g
+const T_HIST = /역사|유적|설화|전설|유네스코|세계|문화재|4·3|해녀|돌하르방/g
+function textSignals(text, age, needs) {
+  const kid = Math.min(3, hits(T_KID, text)), easy = Math.min(2, hits(T_EASY, text)), hard = Math.min(2, hits(T_HARD, text))
+  const acc = Math.min(2, hits(T_ACC, text)), hist = Math.min(2, hits(T_HIST, text))
+  const needsEase = needs.includes('stroller') || needs.includes('wheelchair')
+  const young = age === 'infant' || age === 'toddler'
+  let kids = 0
+  const notes = []
+  if (young) { kids += easy * 5 - hard * 7 + kid * 3 }
+  else if (age === 'upper') { kids += hist * 4 + kid * 2 - (hard ? 0 : 0) }
+  else { kids += kid * 4 + easy * 2 - hard * 3 }
+  if (hard && (young || needsEase)) notes.push('소개글에 계단·경사 언급')
+  else if (easy && (young || needsEase)) notes.push('걷기 편한 곳')
+  let access = 0
+  if (needsEase) access += easy * 4 - hard * 6
+  access += acc * 5
+  if (acc) notes.push('소개글에 유모차·편의시설 언급')
+  return { kids, access, notes, len: text.length }
+}
+
 // ③ 날씨·운영 안전 (기상청 예보 + 미세먼지 + 자외선 + 정기 휴무)
 function safetyScore(p, w, intro = {}, { ymd, age, env = {} } = {}) {
   const indoor = INDOOR.has(p.type)
@@ -192,28 +218,34 @@ export async function recommend({ keyword = '', contentTypeId = '', needs = [], 
   const getW = (place) => (weatherByPlace[place] ??= getWeather({ place }).catch(() => null))
 
   const items = await Promise.all(candidates.map(async (p) => {
-    const [access, intro, wx] = await Promise.all([
+    const [access, intro, wx, overview] = await Promise.all([
       getAccess({ id: p.id }).catch(() => ({ id: p.id, registered: false })),
       getIntro(p).catch(() => ({})),
       getW(placeByLat(p.lat)),
+      getOverview(p).catch(() => ''),
     ])
-    const a = accessScore(access, needs, intro)
+    const ts = textSignals(overview, age, needs)
+    const a0 = accessScore(access, needs, intro)
+    const a = { score: Math.max(0, Math.min(100, a0.score + ts.access)), notes: a0.notes }
     const s = safetyScore(p, wx?.summary ?? {}, intro, { ymd, age, env: { air, uv: placeByLat(p.lat) === '서귀포시' ? uvSeogwipo : uvJeju } })
     const rate = crowdFor(crowdTable, p.title, ymd) // 집중률: 클수록 붐빈다
     const crowdNote = rate == null ? [] : rate >= 80 ? [`붐빌 예정(${Math.round(rate)}%)`] : rate <= 30 ? ['한산할 예정'] : []
-    const k = kidsScore(p, access, age, s.indoor, intro)
+    const k0 = kidsScore(p, access, age, s.indoor, intro)
+    const k = { score: Math.max(0, Math.min(100, k0.score + ts.kids)), notes: k0.notes }
     const c = priceScore(intro.fee, budget, { ...p, menu: intro.menu })
     const t = themeScore(p, keyword)
     const km = near ? distKm(near, p) : null
     const parts = { access: a.score, kids: k.score, safety: s.score, price: c.score, ...(t == null ? {} : { theme: t }), ...(km == null ? {} : { near: nearScore(km) }), ...(rate == null ? {} : { crowd: Math.max(0, Math.min(100, Math.round(100 - rate))) }) }
     const wsum = Object.keys(parts).reduce((n, key) => n + WEIGHTS[key], 0)
-    const total = Math.round(Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum)
+    const exact = Object.entries(parts).reduce((n, [key, v]) => n + v * WEIGHTS[key], 0) / wsum
+    const total = Math.round(exact * 10) / 10 // 소수 첫째 자리까지: 계산값이 거의 같은 장소도 구분되게
     return {
       ...p, access, indoor: s.indoor, price: c.label,
-      scores: { ...parts, total }, notes: [...(s.closed ? [ymd === today ? '오늘 휴무' : '그날 휴무'] : []), ...s.notes, ...crowdNote, ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes].slice(0, 5), distanceKm: km == null ? null : Math.round(km * 10) / 10,
+      rank: exact + Math.min(overview.length, 1500) / 1e5, // 정렬용(같은 점수면 소개 정보가 충실한 곳이 앞에)
+      scores: { ...parts, total }, notes: [...(s.closed ? [ymd === today ? '오늘 휴무' : '그날 휴무'] : []), ...s.notes, ...crowdNote, ...(km == null ? [] : [`${km < 10 ? km.toFixed(1) : Math.round(km)}km`]), ...a.notes, ...k.notes, ...ts.notes].slice(0, 5), distanceKm: km == null ? null : Math.round(km * 10) / 10,
     }
   }))
-  items.sort((x, y) => y.scores.total - x.scores.total)
+  items.sort((x, y) => y.rank - x.rank)
   const w = await getW('제주시')
   const weights = Object.fromEntries(Object.entries(WEIGHTS).filter(([key]) => (key !== 'theme' || String(keyword).trim()) && (key !== 'near' || near)))
   return { weather: w?.summary ?? null, items, total: found.total, page, hasMore: page * limit < found.total, basis: { age, needs, budget, weights, date: ymd }, env: { air, uv: uvJeju } }

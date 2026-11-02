@@ -3,7 +3,7 @@ import { ProgressBar } from 'react-bootstrap'
 export const scoreClass = (s) => (s >= 70 ? 'score-hi' : s >= 50 ? 'score-mid' : 'score-lo')
 
 export function ScorePill({ score }) {
-  return <span className={`score-pill ${scoreClass(score)}`}>{score}</span>
+  return <span className={`score-pill ${scoreClass(score)}`}>{Number(score).toFixed(1)}</span>
 }
 
 // 우리 가족 맞춤 점수의 기준별 막대 (테마를 골랐을 때만 '테마' 막대가 붙는다)
