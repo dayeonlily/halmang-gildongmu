@@ -197,63 +197,67 @@ export default function Home() {
         ))}
       </Row>
 
-      {/* ③ 내 여행 · 도장 현황 · 오늘의 한 장 */}
+      {/* ③ 내 여행 · 도장 현황 · 오늘의 제주어 */}
       <Row className="g-3 mb-3">
         <Col md={6} lg={4}>
-          <div className="soft-card p-3 h-100">
-            <h3 className="fs-5"><i className="bi bi-calendar2-check text-primary me-2" />내 여행 일정</h3>
+          <div className="hb-card h-100">
+            <div className="hb-head"><span className="hb-ico trip"><i className="bi bi-calendar2-check" /></span><h3>내 여행 일정</h3>{basket.length > 0 && <span className="hb-count">{basket.length}곳</span>}</div>
             {basket.length === 0 ? (
-              <div className="small text-muted">아직 담은 곳이 없어요. 위의 추천에서 마음에 드는 곳을 담아 보세요.</div>
+              <div className="hb-empty"><i className="bi bi-bag-plus" /><span>아직 담은 곳이 없어요.<br />위 추천에서 마음에 드는 곳을 담아 보세요.</span></div>
             ) : (
-              days.slice(0, 3).map((d) => (
-                <div key={d} className="mb-2">
-                  <span className="chip me-1">{d < 1 ? '미정' : `${d}일차`}</span>
-                  <span className="small">{placed(d).slice(0, 3).map((b) => b.title).join(' · ')}{placed(d).length > 3 ? ` 외 ${placed(d).length - 3}곳` : ''}</span>
-                </div>
-              ))
+              <div className="hb-days">
+                {days.slice(0, 3).map((d) => (
+                  <div key={d} className="hb-day">
+                    <span className="hb-daytag">{d < 1 ? '미정' : `${d}일차`}</span>
+                    <span className="hb-places">{placed(d).slice(0, 3).map((b) => b.title).join(' · ')}{placed(d).length > 3 ? ` 외 ${placed(d).length - 3}곳` : ''}</span>
+                  </div>
+                ))}
+              </div>
             )}
-            <Button as={Link} to="/basket" variant="outline-primary" className="mt-2">일정 짜러 가기</Button>
+            <Button as={Link} to="/basket" className="hb-cta">일정 짜러 가기 <i className="bi bi-arrow-right ms-1" /></Button>
           </div>
         </Col>
         <Col md={6} lg={4}>
-          <div className="soft-card p-3 h-100">
-            <h3 className="fs-5"><i className="bi bi-stamp text-primary me-2" />도장 현황 <small className="text-muted fs-6">({age?.short})</small></h3>
-            <div className="small d-flex justify-content-between"><span>역사 배우기 (스탬프 투어)</span><b>{histDone}/{courses.length}</b></div>
-            <ProgressBar now={(histDone / courses.length) * 100} className="mb-2" style={{ height: 8 }} />
-            <div className="small d-flex justify-content-between"><span>미션 카드</span><b>{missionDone}/{missions.length}</b></div>
-            <ProgressBar now={missions.length ? (missionDone / missions.length) * 100 : 0} className="mb-3" style={{ height: 8 }} />
+          <div className="hb-card h-100">
+            <div className="hb-head"><span className="hb-ico stamp"><i className="bi bi-stamp" /></span><h3>도장 현황</h3><span className="hb-count">{age?.short}</span></div>
+            <div className="hb-stats">
+              <div className="hb-stat"><b>{histDone}<small>/{courses.length}</small></b><span>역사 도장</span><ProgressBar now={(histDone / courses.length) * 100} /></div>
+              <div className="hb-stat"><b>{missionDone}<small>/{missions.length}</small></b><span>미션 카드</span><ProgressBar now={missions.length ? (missionDone / missions.length) * 100 : 0} /></div>
+            </div>
             {next ? (
-              <div className="h-mission small" style={{ '--era': eraOf(next.era).color }}>
-                <div className="fw-bold mb-1">다음 도장 👉 {eraOf(next.era).emoji} {next.place}</div>
-                <div className="text-muted">{next.mission}</div>
+              <div className="hb-next" style={{ '--era': eraOf(next.era).color }}>
+                <div className="hb-next-t"><span>다음 도장</span>{eraOf(next.era).emoji} {next.place}</div>
+                <div className="hb-next-d">{next.mission}</div>
               </div>
             ) : <div className="small fw-bold text-success">🏅 역사 도장을 모두 모았어요!</div>}
-            <div className="d-flex gap-2 mt-2">
-              <Button as={Link} to="/history" size="sm" variant="outline-primary">도장 찍으러 가기</Button>
-              <Button as={Link} to="/kids" size="sm" variant="outline-secondary">미션 카드</Button>
+            <div className="d-flex gap-2 mt-auto pt-3">
+              <Button as={Link} to="/history" className="hb-cta flex-fill">도장 찍으러 가기</Button>
+              <Button as={Link} to="/kids" variant="outline-secondary" className="hb-ghost">미션 카드</Button>
             </div>
           </div>
         </Col>
         <Col lg={4}>
-          <div className="soft-card p-3 h-100">
-            <h3 className="fs-5"><i className="bi bi-chat-heart text-primary me-2" />오늘의 제주어</h3>
-            <div className={`word-card mb-2 ${flip ? 'flip' : ''}`} style={{ height: 120 }} onClick={() => setFlip(!flip)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setFlip(!flip)}>
+          <div className="hb-card h-100">
+            <div className="hb-head"><span className="hb-ico word"><i className="bi bi-chat-heart" /></span><h3>오늘의 제주어</h3></div>
+            <div className={`word-card mb-3 ${flip ? 'flip' : ''}`} style={{ height: 130 }} onClick={() => setFlip(!flip)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setFlip(!flip)}>
               <div className="inner">
-                <div className="face front"><div style={{ fontSize: '1.6rem' }}>{word.emoji}</div><div className="display-font fs-5">{word.jeju}</div><div className="small text-muted">눌러서 뜻 보기</div></div>
-                <div className="face back"><div className="fw-bold fs-5">{word.ko}</div><div className="small mt-1">{word.tip}</div></div>
+                <div className="face front"><div style={{ fontSize: '1.8rem' }}>{word.emoji}</div><div className="display-font fs-4">{word.jeju}</div><div className="small text-muted"><i className="bi bi-hand-index me-1" />눌러서 뜻 보기</div></div>
+                <div className="face back"><div className="fw-bold fs-4">{word.ko}</div><div className="small mt-1">{word.tip}</div></div>
               </div>
             </div>
-            <div className="small"><b>{story.emoji} 오늘의 이야기</b> {story.title}</div>
-            <Button as={Link} to={`/kids?story=${story.id}`} size="sm" variant="outline-primary" className="mt-2">들으러 가기</Button>
+            <div className="hb-story"><span>{story.emoji} 오늘의 이야기</span><b>{story.title}</b></div>
+            <Button as={Link} to={`/kids?story=${story.id}`} className="hb-cta">들으러 가기 <i className="bi bi-arrow-right ms-1" /></Button>
           </div>
         </Col>
       </Row>
 
-      {/* ④ 안전: 응급 번호 한 줄 */}
-      <div className="soft-card p-3 d-flex flex-wrap align-items-center gap-2">
-        <span className="fw-bold me-2"><i className="bi bi-heart-pulse text-danger me-1" />급할 때</span>
-        {EMERGENCY.slice(0, 3).map((e) => <Button key={e.tel} as="a" href={`tel:${e.tel}`} size="sm" variant={e.tone}><i className="bi bi-telephone-fill me-1" />{e.name} <span className="d-none d-sm-inline small">{e.desc.split(' ')[0]}</span></Button>)}
-        <Button as={Link} to="/care" size="sm" variant="outline-secondary" className="ms-auto">보호자 노트</Button>
+      {/* ④ 안전: 응급 번호 */}
+      <div className="hb-sos">
+        <span className="hb-sos-t"><i className="bi bi-heart-pulse-fill" />급할 때</span>
+        <div className="hb-sos-btns">
+          {EMERGENCY.slice(0, 3).map((e) => <a key={e.tel} href={`tel:${e.tel}`} className={`hb-sos-btn ${e.tone}`}><i className="bi bi-telephone-fill" /><b>{e.tel}</b><span>{e.name}</span></a>)}
+        </div>
+        <Button as={Link} to="/care" variant="outline-secondary" className="ms-auto hb-ghost"><i className="bi bi-journal-heart me-1" />보호자 노트</Button>
       </div>
       <div className="small text-muted mt-3"><i className="bi bi-database-check me-1" />한국관광공사 관광정보·베리어프리·집중률, 기상청 단기예보·자외선지수, 한국환경공단 에어코리아(공공데이터포털)를 사용해요.</div>
     </>

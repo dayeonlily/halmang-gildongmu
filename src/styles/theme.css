@@ -492,3 +492,39 @@ small, .small { font-size: .92rem; }
 
 .home-wx-title { font-size: 1.15rem; font-weight: 800; color: #3d2a17; margin-bottom: .8rem; }
 .home-wx-title i { color: var(--hm-orange); }
+
+/* 홈 하단 카드 */
+.hb-card { display: flex; flex-direction: column; background: #fff; border: 1px solid #f0e3cc; border-radius: 20px; padding: 1.1rem 1.2rem 1.2rem; box-shadow: 0 2px 10px rgba(120, 80, 20, .07); }
+.hb-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .9rem; }
+.hb-head h3 { font-size: 1.1rem; font-weight: 800; margin: 0; color: #3d2a17; }
+.hb-ico { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 1.15rem; color: #fff; }
+.hb-ico.trip { background: linear-gradient(135deg, #f0a04b, #d9772b); } .hb-ico.stamp { background: linear-gradient(135deg, #6fb37a, #3f8f55); } .hb-ico.word { background: linear-gradient(135deg, #5fb4d6, #3a8db5); }
+.hb-count { margin-left: auto; font-size: .8rem; font-weight: 800; color: #9a6a2a; background: #fdf0d9; border-radius: 999px; padding: .15rem .65rem; }
+.hb-empty { display: flex; align-items: center; gap: .8rem; background: #fcf7ee; border: 1px dashed #e5d3b4; border-radius: 14px; padding: .9rem 1rem; color: #7a6650; font-size: .92rem; line-height: 1.5; }
+.hb-empty i { font-size: 1.6rem; color: #d9a35e; }
+.hb-days { display: grid; gap: .5rem; }
+.hb-day { display: flex; align-items: center; gap: .6rem; background: #fcf7ee; border-radius: 12px; padding: .55rem .7rem; }
+.hb-daytag { flex: none; background: #d9772b; color: #fff; font-weight: 800; font-size: .8rem; border-radius: 999px; padding: .15rem .6rem; }
+.hb-places { font-size: .92rem; font-weight: 600; color: #4a3a2a; }
+.hb-cta.btn { border-radius: 12px; font-weight: 800; padding: .6rem 1rem; background: #fdf0d9; border: 0; color: #a85b1c; }
+.hb-cta.btn:hover { background: #f9e2bb; color: #8a4510; }
+.hb-card > .hb-cta { margin-top: auto; }
+.hb-days + .hb-cta, .hb-empty + .hb-cta { margin-top: 1rem; }
+.hb-story + .hb-cta { margin-top: auto; }
+.hb-ghost.btn { border-radius: 12px; font-weight: 700; padding: .6rem 1rem; }
+.hb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: .9rem; }
+.hb-stat { background: #fcf7ee; border-radius: 14px; padding: .7rem .8rem; }
+.hb-stat b { display: block; font-size: 1.7rem; line-height: 1.1; color: #3d2a17; } .hb-stat b small { font-size: .95rem; color: #9a8a76; font-weight: 700; }
+.hb-stat span { display: block; font-size: .85rem; font-weight: 700; color: #7a6650; margin: .1rem 0 .4rem; }
+.hb-stat .progress { height: 8px; border-radius: 999px; background: #eadfcb; }
+.hb-next { border-left: 5px solid var(--era, #d9772b); background: #fcf7ee; border-radius: 12px; padding: .65rem .85rem; }
+.hb-next-t { font-weight: 800; color: #3d2a17; } .hb-next-t span { display: inline-block; margin-right: .5rem; font-size: .75rem; font-weight: 800; color: #fff; background: var(--era, #d9772b); border-radius: 999px; padding: .1rem .55rem; vertical-align: 1px; }
+.hb-next-d { font-size: .88rem; color: #6a5a48; margin-top: .25rem; line-height: 1.45; }
+.hb-story { background: #fcf7ee; border-radius: 12px; padding: .65rem .85rem; margin-bottom: 1rem; }
+.hb-story span { display: block; font-size: .78rem; font-weight: 800; color: #9a6a2a; } .hb-story b { color: #3d2a17; line-height: 1.4; }
+.hb-sos { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1rem; background: #fff; border: 1px solid #f0e3cc; border-radius: 20px; padding: .8rem 1.1rem; box-shadow: 0 2px 10px rgba(120, 80, 20, .07); }
+.hb-sos-t { font-weight: 800; color: #3d2a17; } .hb-sos-t i { color: #d23b3b; margin-right: .4rem; font-size: 1.2rem; }
+.hb-sos-btns { display: flex; flex-wrap: wrap; gap: .5rem; }
+.hb-sos-btn { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .4rem .95rem; color: #fff; text-decoration: none; font-weight: 600; font-size: .9rem; }
+.hb-sos-btn b { font-size: 1.02rem; } .hb-sos-btn.danger { background: #d23b3b; } .hb-sos-btn.warning { background: #d99a12; } .hb-sos-btn.primary { background: #d9772b; }
+.hb-sos-btn:hover { color: #fff; filter: brightness(.93); }

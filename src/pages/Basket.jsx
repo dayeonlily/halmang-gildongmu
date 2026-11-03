@@ -120,11 +120,12 @@ export default function Basket() {
           <div className="mb-4"><IslandScene spots={spots} height={360} /></div>
 
           <div className="basket-days">
-            <div {...zone(0)}>
-              <h5 className="mb-2"><span className="chip me-2"><i className="bi bi-inbox" />아직 안 정했어요</span><small className="text-muted fs-6">{unplaced.length}곳</small></h5>
-              {unplaced.length === 0 && <div className="small text-muted ps-1">여기에 두면 나중에 일차를 정할 수 있어요.</div>}
-              {unplaced.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
-            </div>
+            {unplaced.length > 0 && (
+              <div {...zone(0)}>
+                <h5 className="mb-2"><span className="chip me-2"><i className="bi bi-inbox" />아직 안 정했어요</span><small className="text-muted fs-6">{unplaced.length}곳</small></h5>
+                {unplaced.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
+              </div>
+            )}
 
             {dayList.map((d) => {
               const items = basket.filter((b) => b.day === d)
