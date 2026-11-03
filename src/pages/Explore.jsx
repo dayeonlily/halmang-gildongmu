@@ -152,25 +152,33 @@ export default function Explore() {
         </InputGroup>
       </Form>
 
-      {/* 방문 조건: 언제 · 어디서 머무는지 + 지금 날씨 (검색창 바로 아래) */}
-      <div className="d-flex flex-wrap align-items-end gap-3 mb-3">
-        <div>
-          <div className="small text-muted mb-1">언제 가세요?</div>
-          <Form.Control size="sm" type="date" value={date} min={isoDay(0)} max={isoDay(29)} onChange={(e) => setDate(e.target.value)} />
+      {/* 방문 조건 패널: 언제 · 머무는 곳 · 베리어프리 + 지금 날씨 (검색창 바로 아래) */}
+      <section className="ex-panel mb-3">
+        <div className="ex-fields">
+          <label className="ex-field">
+            <span><i className="bi bi-calendar-event me-1" />언제 가세요?</span>
+            <Form.Control type="date" value={date} min={isoDay(0)} max={isoDay(29)} onChange={(e) => setDate(e.target.value)} />
+          </label>
+          <label className="ex-field">
+            <span><i className="bi bi-geo-alt me-1" />머무는 곳</span>
+            <Form.Select value={base} onChange={(e) => setBase(e.target.value)}>
+              <option value="">상관없어요</option>
+              {placed.length > 0 && <option value="basket">내 여행 일정 근처</option>}
+              {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
+            </Form.Select>
+          </label>
+          <button type="button" className={`ex-toggle ${accessible ? 'on' : ''}`} aria-pressed={accessible} onClick={() => setAccessible(!accessible)} title="베리어프리 = 유모차·휠체어도 계단 없이 편하게 다닐 수 있도록 갖춘 곳">
+            <i className="bi bi-universal-access" /><span><b>베리어프리만 보기</b><small>유모차·휠체어 편한 곳</small></span><i className={`bi bi-${accessible ? 'toggle-on' : 'toggle-off'} ex-sw`} />
+          </button>
         </div>
-        <div>
-          <div className="small text-muted mb-1">머무는 곳</div>
-          <Form.Select size="sm" value={base} onChange={(e) => setBase(e.target.value)}>
-            <option value="">상관없어요</option>
-            {placed.length > 0 && <option value="basket">내 여행 일정 근처</option>}
-            {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
-          </Form.Select>
-        </div>
-        <Form.Check type="switch" id="acc-only" className="pb-1" title="베리어프리 = 유모차·휠체어도 계단 없이 편하게 다닐 수 있도록 갖춘 곳" label="베리어프리 등록 장소만 (유모차·휠체어 편한 곳)" checked={accessible} onChange={(e) => setAccessible(e.target.checked)} />
-        <Button variant="link" size="sm" className="ms-auto p-0" onClick={() => setHow(!how)} aria-expanded={how}>
-          <i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?
-        </Button>
-      </div>
+        {data?.weather && (
+          <div className="ex-wx">
+            <span className="ex-wx-chip main"><i className="bi bi-cloud-sun" />{data.weather.advice}</span>
+            {data.env?.air && <span className={`ex-wx-chip ${data.env.air.grade >= 3 ? 'bad' : ''}`}><i className="bi bi-wind" />미세먼지 {data.env.air.label}{data.env.air.pm10 != null && ` · ${data.env.air.pm10}`}</span>}
+            {data.env?.uv && <span className={`ex-wx-chip ${data.env.uv.max >= 6 ? 'bad' : ''}`}><i className="bi bi-brightness-high" />자외선 {data.env.uv.label}</span>}
+          </div>
+        )}
+      </section>
       {!profile && <div className="small text-muted mb-3"><i className="bi bi-people me-1" /><Link to="/profile">가족 정보</Link>를 입력하면 아이 나이·필요한 것·예산에 맞춰 점수를 매겨요.</div>}
       <Collapse in={how}>
         <div>
@@ -190,19 +198,8 @@ export default function Explore() {
         </div>
       </Collapse>
 
-      {data?.weather && (
-        <div className="alert alert-light border py-2">
-          <div><i className="bi bi-cloud-sun me-1" />지금 날씨: {data.weather.advice}</div>
-          {data.env && (data.env.air || data.env.uv) && (
-            <div className="mt-1">
-              {data.env.air && <span className={`me-3 ${data.env.air.grade >= 3 ? 'text-danger fw-bold' : ''}`}><i className="bi bi-wind me-1" />미세먼지 {data.env.air.label}{data.env.air.pm10 != null && ` (PM10 ${data.env.air.pm10})`}</span>}
-              {data.env.uv && <span className={data.env.uv.max >= 6 ? 'text-danger fw-bold' : ''}><i className="bi bi-brightness-high me-1" />자외선 {data.env.uv.label}</span>}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* ① 무엇을 찾나요? */}
+      <div className="ex-label">무엇을 찾나요?</div>
       <div className="cat-row mb-3" role="tablist" aria-label="장소 종류">
         {CATEGORIES.map(([k, label, icon]) => (
           <button type="button" key={k || 'all'} className={`cat-btn ${type === k ? 'on' : ''}`} onClick={() => pickType(k)} role="tab" aria-selected={type === k}>
@@ -230,7 +227,10 @@ export default function Explore() {
         <div>
           {loading ? <Loading text="우리 가족 점수를 계산하는 중..." /> : !data || data.items.length === 0 ? (!err && <Empty text="조건에 맞는 곳이 없어요. 테마를 바꿔 보세요" icon="search" />) : (
             <>
-              <div className="small text-muted mb-2">조건에 맞는 곳 <b>{data.total.toLocaleString()}</b>곳 중 {data.items.length}곳을 맞춤 점수 높은 순으로 보여드려요</div>
+              <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <div className="small text-muted">조건에 맞는 곳 <b>{data.total.toLocaleString()}</b>곳 중 {data.items.length}곳을 맞춤 점수 높은 순으로 보여드려요</div>
+                <Button variant="link" size="sm" className="p-0" onClick={() => setHow(!how)} aria-expanded={how}><i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?</Button>
+              </div>
               <Row xs={1} md={2} className="g-3">
                 {data.items.map((s) => (
                   <Col key={s.id}><SpotCard s={s} selected={s.id === sel} onOpen={(x) => { setSel(x.id); setOpen(x) }} onAdd={addToBasket} inBasket={basket.some((b) => b.content_id === s.id)} /></Col>
