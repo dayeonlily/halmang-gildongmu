@@ -110,6 +110,25 @@ export const useAppStore = create(
         const { error } = await supabase.from('basket_items').update(patch).eq('id', id)
         if (error) { set({ basket: prev }); get().toast(error.message, 'danger') }
       },
+      // 같은 일차 안에서 위(-1)·아래(+1)로 순서를 바꾼다. 순서는 담은 시각(created_at)으로 정해지므로 이웃과 시각을 맞바꾼다
+      moveBasketItem: async (id, dir) => {
+        const prev = get().basket
+        const me = prev.find((b) => b.id === id)
+        if (!me) return
+        const group = prev.filter((b) => b.day === me.day)
+        const at = group.findIndex((b) => b.id === id), other = group[at + dir]
+        if (!other) return
+        const next = prev.map((b) => (b.id === me.id ? { ...b, created_at: other.created_at } : b.id === other.id ? { ...b, created_at: me.created_at } : b))
+        const i = prev.indexOf(me), j = prev.indexOf(other);
+        [next[i], next[j]] = [next[j], next[i]]
+        set({ basket: next })
+        const results = await Promise.all([
+          supabase.from('basket_items').update({ created_at: other.created_at }).eq('id', me.id),
+          supabase.from('basket_items').update({ created_at: me.created_at }).eq('id', other.id),
+        ])
+        const err = results.find((r) => r.error)?.error
+        if (err) { set({ basket: prev }); get().toast(err.message, 'danger') }
+      },
       removeFromBasket: async (id) => {
         const prev = get().basket
         set({ basket: prev.filter((b) => b.id !== id) })

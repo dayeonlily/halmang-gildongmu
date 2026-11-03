@@ -15,11 +15,15 @@ const MAX_DAYS = 30
 const loadDays = () => { try { return Math.min(MAX_DAYS, Math.max(1, Number(localStorage.getItem(KEY)) || 2)) } catch { return 2 } }
 const tripLabel = (n) => (n <= 1 ? '당일치기' : `${n - 1}박 ${n}일`)
 
-function BasketItem({ b, dayList, update, remove }) {
+function BasketItem({ b, dayList, update, remove, no, count, move }) {
   return (
     <div className="soft-card p-3 mb-2" draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(b.id)); e.dataTransfer.effectAllowed = 'move' }} style={{ cursor: 'grab' }}>
       <div className="d-flex align-items-start gap-2">
-        <i className="bi bi-grip-vertical text-muted d-none d-md-inline mt-1" title="끌어서 다른 일차로 옮겨요" />
+        <div className="basket-order">
+          <button type="button" onClick={() => move(b.id, -1)} disabled={no === 1} aria-label="위로"><i className="bi bi-chevron-up" /></button>
+          <span>{no}</span>
+          <button type="button" onClick={() => move(b.id, 1)} disabled={no === count} aria-label="아래로"><i className="bi bi-chevron-down" /></button>
+        </div>
         <div className="flex-grow-1" style={{ minWidth: 0 }}>
           <div className="fw-bold">{b.title} {b.score != null && <ScorePill score={b.score} />}</div>
           <div className="small text-muted text-truncate">{b.addr}</div>
@@ -54,6 +58,7 @@ export default function Basket() {
   const basket = useAppStore((s) => s.basket)
   const update = useAppStore((s) => s.updateBasketItem)
   const remove = useAppStore((s) => s.removeFromBasket)
+  const move = useAppStore((s) => s.moveBasketItem)
   const sendMessage = useAppStore((s) => s.sendMessage)
   const reviews = useAppStore((s) => s.reviews)
   const nav = useNavigate()
@@ -123,7 +128,7 @@ export default function Basket() {
             {unplaced.length > 0 && (
               <div {...zone(0)}>
                 <h5 className="mb-2"><span className="chip me-2"><i className="bi bi-inbox" />아직 안 정했어요</span><small className="text-muted fs-6">{unplaced.length}곳</small></h5>
-                {unplaced.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
+                {unplaced.map((b, i) => <BasketItem key={b.id} b={b} no={i + 1} count={unplaced.length} move={move} dayList={dayList} update={update} remove={remove} />)}
               </div>
             )}
 
@@ -136,7 +141,7 @@ export default function Basket() {
                     {total > 1 && <Button size="sm" variant="link" className="ms-auto text-muted" onClick={() => removeDay(d)}><i className="bi bi-x-circle me-1" />이 일차 삭제</Button>}
                   </h4>
                   {items.length === 0 && <div className="small text-muted ps-1">비어 있어요. 장소를 끌어다 놓거나, 다른 일차에서 옮겨 보세요.</div>}
-                  {items.map((b) => <BasketItem key={b.id} b={b} dayList={dayList} update={update} remove={remove} />)}
+                  {items.map((b, i) => <BasketItem key={b.id} b={b} no={i + 1} count={items.length} move={move} dayList={dayList} update={update} remove={remove} />)}
                   <DayReview day={d} count={items.length} review={reviews.find((r) => r.day === d)} onOpen={(review) => setReviewing({ day: d, review })} />
                 </div>
               )
