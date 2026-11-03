@@ -198,6 +198,8 @@ export default function Home() {
       </Row>
 
       {/* ③ 내 여행 · 도장 현황 · 오늘의 제주어 */}
+      <div className="home-divider" />
+      <div className="home-section-row"><h2 className="home-section">내 여행과 배움</h2><span className="small text-muted">일정 · 도장 · 오늘의 제주어</span></div>
       <Row className="g-3 mb-3">
         <Col md={6} lg={4}>
           <div className="hb-card h-100">
@@ -219,7 +221,7 @@ export default function Home() {
         </Col>
         <Col md={6} lg={4}>
           <div className="hb-card h-100">
-            <div className="hb-head"><span className="hb-ico stamp"><i className="bi bi-stamp" /></span><h3>도장 현황</h3><span className="hb-count">{age?.short}</span></div>
+            <div className="hb-head"><span className="hb-ico stamp"><i className="bi bi-award-fill" /></span><h3>도장 현황</h3><span className="hb-count">{age?.short}</span></div>
             <div className="hb-stats">
               <div className="hb-stat"><b>{histDone}<small>/{courses.length}</small></b><span>역사 도장</span><ProgressBar now={(histDone / courses.length) * 100} /></div>
               <div className="hb-stat"><b>{missionDone}<small>/{missions.length}</small></b><span>미션 카드</span><ProgressBar now={missions.length ? (missionDone / missions.length) * 100 : 0} /></div>

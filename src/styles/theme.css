@@ -563,3 +563,6 @@ small, .small { font-size: .92rem; }
 .fam-avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: .6rem; margin: .4rem 0 1rem; }
 .fam-avatars button { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .5rem .3rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 16px; font-weight: 700; color: #4a3a2c; cursor: pointer; }
 .fam-avatars button.on { border-color: var(--hm-orange); background: #fff; box-shadow: 0 3px 10px rgba(232, 121, 26, .3); }
+
+.home-divider { height: 1px; margin: 2.2rem 0 1.6rem; background: linear-gradient(90deg, transparent, #e5d3b4 15%, #e5d3b4 85%, transparent); }
+.home-section-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .9rem; margin-bottom: 1rem; }
