@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Accordion, Button, Col, Form, ProgressBar, Row } from 'react-bootstrap'
+import { Accordion, Col, Row } from 'react-bootstrap'
 import PageTitle from '../components/PageTitle'
 import { ACCESS_CHECK, AGE_BANDS, CHECKLISTS, EMERGENCY, FIRST_AID } from '../../shared/lore'
 import { useAppStore } from '../store/useAppStore'
@@ -22,41 +22,47 @@ export default function Care() {
     try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* 저장 실패는 무시 */ }
   }
 
-  const Item = ({ t }) => <Form.Check type="checkbox" id={`${ageBand}-${t}`} label={t} checked={!!checks[`${ageBand}:${t}`]} onChange={() => tick(t)} className="mb-2" />
+  const Item = ({ t }) => {
+    const on = !!checks[`${ageBand}:${t}`]
+    return (
+      <button type="button" className={`care-item ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => tick(t)}>
+        <span className="care-box"><i className="bi bi-check-lg" /></span><span>{t}</span>
+      </button>
+    )
+  }
+  const pct = Math.round((doneCount / all.length) * 100)
 
   return (
     <>
-      <PageTitle icon="clipboard2-heart" title="보호자 노트" sub="발달단계별 체크리스트와 응급 정보" />
+      <PageTitle icon="clipboard2-heart" title="보호자 노트" sub="아이 나이에 맞는 준비물 체크와 응급 정보를 한곳에" />
 
-      <div className="d-flex flex-wrap gap-2 mb-3">
-        {AGE_BANDS.map((a) => (
-          <Button key={a.key} size="sm" className="rounded-pill" variant={ageBand === a.key ? 'primary' : 'outline-primary'} onClick={() => setAgeBand(a.key)}>{a.label}</Button>
-        ))}
+      <div className="care-top mb-3">
+        <div className="fam-seg" role="group" aria-label="아이 연령대">
+          {AGE_BANDS.map((a) => <button type="button" key={a.key} className={ageBand === a.key ? 'on' : ''} aria-pressed={ageBand === a.key} onClick={() => setAgeBand(a.key)}>{a.short}</button>)}
+        </div>
+        <div className="care-progress">
+          <div className="care-ring" style={{ '--p': pct }}><b>{pct}%</b></div>
+          <div className="care-progress-t"><b>준비 {doneCount}/{all.length}</b><span>{doneCount === all.length ? '준비 끝! 즐거운 여행 되세요' : '하나씩 눌러 체크해요 (이 기기에 저장돼요)'}</span></div>
+        </div>
       </div>
 
-      <div className="soft-card p-3 mb-3">
-        <div className="mb-2"><i className="bi bi-lightbulb me-1 text-primary" />{list.focus}</div>
-        <ProgressBar now={(doneCount / all.length) * 100} label={`${doneCount}/${all.length}`} />
-      </div>
+      <div className="care-focus mb-3"><i className="bi bi-lightbulb-fill" /><span>{list.focus}</span></div>
 
       <Row className="g-3 mb-4">
         {list.groups.map((g) => (
-          <Col md={6} key={g.title}><div className="soft-card p-3 h-100"><h5>{g.title}</h5>{g.items.map((t) => <Item key={t} t={t} />)}</div></Col>
+          <Col md={6} key={g.title}><section className="hb-card h-100"><h3 className="care-h">{g.title}</h3><div className="care-list">{g.items.map((t) => <Item key={t} t={t} />)}</div></section></Col>
         ))}
-        <Col md={12}><div className="soft-card p-3"><h5><i className="bi bi-universal-access me-1" />접근성 확인 (유모차·휠체어)</h5>{ACCESS_CHECK.map((t) => <Item key={t} t={t} />)}</div></Col>
+        <Col md={12}><section className="hb-card"><h3 className="care-h"><i className="bi bi-universal-access me-2" />접근성 확인 <small>유모차·휠체어</small></h3><div className="care-list two">{ACCESS_CHECK.map((t) => <Item key={t} t={t} />)}</div></section></Col>
       </Row>
 
-      <h3 className="mb-3"><i className="bi bi-heart-pulse me-2 text-danger" />응급 정보</h3>
-      <Row xs={2} md={3} lg={5} className="g-2 mb-3">
+      <h3 className="care-sec"><i className="bi bi-heart-pulse-fill me-2" />응급 정보</h3>
+      <div className="care-sos mb-3">
         {EMERGENCY.map((e) => (
-          <Col key={e.tel}>
-            <a href={`tel:${e.tel}`} className={`btn btn-${e.tone} w-100 h-100 text-start py-3`}>
-              <div className="display-font fs-3 lh-1"><i className="bi bi-telephone-fill me-2 fs-5" />{e.name}</div>
-              <div className="small mt-1">{e.desc}</div>
-            </a>
-          </Col>
+          <a key={e.tel} href={`tel:${e.tel}`} className={`care-sos-card ${e.tone}`}>
+            <i className="bi bi-telephone-fill" /><b>{e.name}</b><span>{e.desc}</span>
+          </a>
         ))}
-      </Row>
+      </div>
       <Accordion className="mb-3">
         {FIRST_AID.map((f, i) => (
           <Accordion.Item eventKey={String(i)} key={f.title}><Accordion.Header>{f.title}</Accordion.Header><Accordion.Body>{f.body}</Accordion.Body></Accordion.Item>
