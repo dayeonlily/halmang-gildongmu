@@ -50,7 +50,7 @@ export default function Profile() {
     setBusy(false)
     if (!ok) return
     setAgeBand(base)
-    if (wasNew) nav('/explore') // 처음 입력한 뒤에만 추천 화면으로. 수정할 때는 이 화면에 머문다
+    if (wasNew) nav('/') // 처음 입력한 뒤에만 홈으로. 수정할 때는 이 화면에 머문다
   }
 
   return (

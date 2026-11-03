@@ -18,10 +18,13 @@ export default function Login() {
   const [msg, setMsg] = useState('')
 
   // 로그인·회원가입이 끝나면 홈으로. (로그인이 필요한 페이지에서 튕겨 온 경우만 원래 가려던 곳으로)
-  // 가족 정보가 아직 없는 새 가입자에게는 홈 위쪽에 입력 안내 카드가 뜬다
+  // 가족 정보가 아직 없는 새 가입자는 바로 '우리 가족' 입력 화면으로 (서버에서 가족 정보를 다 불러온 뒤에 판단)
+  const profileLoaded = useAppStore((s) => s.profileLoaded)
+  const hasProfile = useAppStore((s) => !!s.profile)
   useEffect(() => {
-    if (user) nav(from ?? '/', { replace: true })
-  }, [user, from, nav])
+    if (!user || !profileLoaded) return
+    nav(hasProfile ? (from ?? '/') : '/profile', { replace: true })
+  }, [user, profileLoaded, hasProfile, from, nav])
 
   async function submit(e) {
     e.preventDefault()
