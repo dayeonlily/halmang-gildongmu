@@ -120,18 +120,21 @@ export default function Home() {
         </div>
       )}
 
-      {/* ① 인사 + 오늘 날씨 + 바로가기 / 3D 지도(오늘의 추천 핀) */}
+      {/* ① 왼쪽: 인사 + 제주 3D 지도(오늘의 추천 핀) / 오른쪽: 오늘 날씨 */}
       <Row className="g-3 mb-3">
         <Col lg={7}>
-          <div className="soft-card p-3 p-md-4 h-100">
+          <div className="soft-card p-3 p-md-4 h-100 d-flex flex-column">
             <div className="small text-muted">{today}</div>
             <h1 className="home-hello mb-3">{name}, <span className="text-primary">오늘 제주</span>는 이래요</h1>
-            <TodayWeather />
+            <div className="home-map"><IslandScene spots={spots ?? []} hero height="100%" /></div>
+            <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />아래 추천 장소 1~3번이 지도에 번호 핀으로 보여요</div>
           </div>
         </Col>
-        <Col lg={5} className="d-flex flex-column">
-          <div className="home-map"><IslandScene spots={spots ?? []} hero height="100%" /></div>
-          <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />아래 추천 장소 1~3번이 지도에 번호 핀으로 보여요</div>
+        <Col lg={5}>
+          <div className="soft-card p-3 p-md-4 h-100">
+            <div className="home-wx-title"><i className="bi bi-cloud-sun-fill me-2" />오늘 제주 날씨</div>
+            <TodayWeather />
+          </div>
         </Col>
       </Row>
 

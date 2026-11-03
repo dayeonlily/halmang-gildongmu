@@ -61,14 +61,15 @@ function SpotCard({ s, selected, onOpen, onAdd, inBasket }) {
       {s.image ? <img className="spot-img" src={s.image} alt={s.title} loading="lazy" /> : <div className="spot-img"><i className="bi bi-image" /></div>}
       <div className="p-3">
         <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
-          <div className="fw-bold">{s.title}</div>
+          <div className="spot-title">{s.title}</div>
           <span title="우리 가족 맞춤 점수"><ScorePill score={s.scores.total} /></span>
         </div>
         <div className="small text-muted mb-2 text-truncate">{s.addr}</div>
-        <div className="d-flex flex-wrap gap-1 mb-2">
+        <div className="spot-tags mb-3">
           <Badge bg={s.indoor ? 'info' : 'success'}>{s.indoor ? '실내' : '야외'}</Badge>
           <Badge bg="light" text="dark">{s.price}</Badge>
-          {s.notes.map((n) => <Badge key={n} bg="warning" text="dark">{n}</Badge>)}
+          {s.notes.slice(0, 3).map((n) => <Badge key={n} bg="warning" text="dark">{n}</Badge>)}
+          {s.notes.length > 3 && <Badge bg="light" text="dark">+{s.notes.length - 3}</Badge>}
         </div>
         <ScoreBars scores={s.scores} />
         <div className="d-flex gap-2 mt-3">
@@ -247,7 +248,6 @@ export default function Explore() {
         </div>
         <div className="sticky-scene">
           <IslandScene spots={data?.items ?? []} selectedId={sel} onSelect={setSel} height={440} />
-          <div className="small text-muted mt-2"><span className="text-success">●</span> 70점 이상 <span style={{ color: '#f9a825' }}>●</span> 50점 이상 <span className="text-danger">●</span> 그 아래 — 핀을 눌러 보세요</div>
           {selected && (
             <div className="soft-card p-3 mt-3 d-flex align-items-center gap-3">
               <div className="flex-grow-1"><div className="fw-bold">{selected.title} <ScorePill score={selected.scores.total} /></div><div className="small text-muted text-truncate">{selected.addr}</div></div>
