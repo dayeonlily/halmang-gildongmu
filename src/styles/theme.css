@@ -37,7 +37,7 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 .rail .nav-link, .drawer .nav-link { color: #d9cfc4; border-radius: .8rem; padding: .55rem .8rem; display: flex; align-items: center; gap: .6rem; }
 .rail .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
 .rail .nav-link.active, .drawer .nav-link.active { background: var(--hm-orange); color: #fff; }
-.rail .rail-foot { margin-top: auto; font-size: .85rem; }
+.rail .rail-foot { font-size: .85rem; }
 .main-area { padding: 4.4rem 0 5.6rem; }
 .topbar { position: fixed; inset: 0 0 auto 0; height: 3.5rem; background: var(--hm-basalt); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; z-index: 1030; }
 .tabbar { position: fixed; inset: auto 0 0 0; background: #fff; border-top: 1px solid #eadfce; display: flex; z-index: 1030; padding-bottom: env(safe-area-inset-bottom); }
@@ -560,9 +560,17 @@ small, .small { font-size: .92rem; }
 .rail-user-me:hover { background: rgba(255, 255, 255, .16); color: #fff; }
 .rail-logout { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .08); color: #fff; display: grid; place-items: center; }
 .rail-logout:hover { background: rgba(255, 255, 255, .2); }
-.fam-avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: .6rem; margin: .4rem 0 1rem; }
-.fam-avatars button { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .5rem .3rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 16px; font-weight: 700; color: #4a3a2c; cursor: pointer; }
+.fam-avatars { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .7rem; text-align: center; }
+.fam-avatars button { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .4rem .2rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 14px; font-weight: 700; font-size: .85rem; color: #4a3a2c; cursor: pointer; }
 .fam-avatars button.on { border-color: var(--hm-orange); background: #fff; box-shadow: 0 3px 10px rgba(232, 121, 26, .3); }
 
 .home-divider { height: 1px; margin: 2.2rem 0 1.6rem; background: linear-gradient(90deg, transparent, #e5d3b4 15%, #e5d3b4 85%, transparent); }
 .home-section-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .9rem; margin-bottom: 1rem; }
+
+.fam-avatar-wrap { text-align: center; }
+.fam-avatar-btn { position: relative; display: inline-block; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+.fam-avatar-edit { position: absolute; right: 2px; bottom: 4px; width: 32px; height: 32px; border-radius: 50%; background: var(--hm-orange); color: #fff; display: grid; place-items: center; border: 3px solid #fff; font-size: .8rem; box-shadow: 0 2px 6px rgba(0, 0, 0, .2); }
+.fam-avatar-link { display: block; margin: .2rem auto 0; background: none; border: 0; color: #a85b1c; font-weight: 700; font-size: .9rem; text-decoration: underline; cursor: pointer; }
+.fam-avatars-note { grid-column: 1 / -1; font-size: .8rem; color: #8a7760; }
+.rail .rail-foot { padding-top: 1rem; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, .12); }
+.rail-user { margin-top: .2rem; }
