@@ -308,3 +308,7 @@ small, .small { font-size: .92rem; }
 .kids-steps { display: grid; gap: 1rem; }
 @media (min-width: 992px) { .kids-steps { grid-template-columns: 1.15fr 1fr; align-items: stretch; } .kids-age-btn small { display: none; } .kids-age-btn { padding: .6rem .2rem; } .kids-step-sub { display: none; } }
 .story-caption { min-height: 9rem; }
+
+/* 이야기 바꾸기: 줄 대신 작은 글자 링크 */
+.story-switch { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; margin-top: .3rem; font-size: 1rem; color: #65513d; }
+.story-switch button { background: none; border: 0; padding: 0; color: #9a4c0b; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }

@@ -11,9 +11,11 @@ export default function StoryArt({ storyId, index, label }) {
     <ArtId.Provider value={id}>
       <svg key={`${storyId}-${index}`} className="story-art" viewBox="0 0 400 280" role="img" aria-label={label}>
         <Defs id={id} />
+        <defs><radialGradient id={`vg-${id}`} cx="50%" cy="50%" r="75%"><stop offset="62%" stopColor="#fff" stopOpacity="0" /><stop offset="100%" stopColor="#c9a37a" stopOpacity=".3" /></radialGradient></defs>
         <g><Scene /></g>
         <rect width="400" height="280" filter={`url(#grain-${id})`} opacity=".5" style={{ pointerEvents: 'none' }} />
-        <rect x="3" y="3" width="394" height="274" rx="10" fill="none" stroke="#6f4b3e" strokeWidth="5" />
+        <rect width="400" height="280" fill={`url(#vg-${id})`} style={{ pointerEvents: 'none' }} />
+        <rect x="2" y="2" width="396" height="276" rx="14" fill="none" stroke="#a88468" strokeOpacity=".75" strokeWidth="3" />
       </svg>
     </ArtId.Provider>
   )

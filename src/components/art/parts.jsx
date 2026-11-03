@@ -23,6 +23,13 @@ export function Defs({ id }) {
         <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="9" />
         <feColorMatrix values="0 0 0 0 0.42  0 0 0 0 0.35  0 0 0 0 0.28  0 0 0 0.1 0" />
       </filter>
+      {/* 캐릭터 윤곽선: 부분마다 선을 두르지 않고 몸 전체 바깥에 하나만 */}
+      <filter id={`ol-${id}`} filterUnits="userSpaceOnUse" x="-90" y="-150" width="180" height="170">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="d" />
+        <feFlood floodColor="#7a5444" result="c" />
+        <feComposite in="c" in2="d" operator="in" result="o" />
+        <feMerge><feMergeNode in="o" /><feMergeNode in="SourceGraphic" /></feMerge>
+      </filter>
       {Object.entries(SKY).map(([k, [a, b]]) => (
         <linearGradient key={k} id={`sky-${id}-${k}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={a} /><stop offset="1" stopColor={b} /></linearGradient>
       ))}
@@ -36,25 +43,20 @@ export function Sky({ tone = 'day' }) {
 }
 
 // 같은 얼굴 틀: 반짝이는 큰 눈, 볼터치, 작은 웃음 (cx,cy = 얼굴 중심, u = 크기)
-function CuteFace({ cx = 0, cy, u = 1, open = false }) {
+function CuteFace({ cx = 0, cy, u = 1, open = false, happy = false }) {
   return (
     <g>
-      <ellipse cx={cx - 8 * u} cy={cy} rx={3.5 * u} ry={4.5 * u} fill="#3b2a26" /><ellipse cx={cx + 8 * u} cy={cy} rx={3.5 * u} ry={4.5 * u} fill="#3b2a26" />
-      <circle cx={cx - 6.8 * u} cy={cy - 1.8 * u} r={1.5 * u} fill="#fff" /><circle cx={cx + 9.2 * u} cy={cy - 1.8 * u} r={1.5 * u} fill="#fff" />
+      {happy ? ( // 웃어서 감긴 눈
+        <path d={`M${cx - 12 * u} ${cy + 1 * u} Q${cx - 8 * u} ${cy - 6 * u} ${cx - 4 * u} ${cy + 1 * u} M${cx + 4 * u} ${cy + 1 * u} Q${cx + 8 * u} ${cy - 6 * u} ${cx + 12 * u} ${cy + 1 * u}`} stroke="#3b2a26" strokeWidth={2.2 * u} fill="none" strokeLinecap="round" />
+      ) : (
+        <>
+          <ellipse cx={cx - 8 * u} cy={cy} rx={3.9 * u} ry={5 * u} fill="#3b2a26" /><ellipse cx={cx + 8 * u} cy={cy} rx={3.9 * u} ry={5 * u} fill="#3b2a26" />
+          <circle cx={cx - 6.6 * u} cy={cy - 2 * u} r={1.7 * u} fill="#fff" /><circle cx={cx + 9.4 * u} cy={cy - 2 * u} r={1.7 * u} fill="#fff" />
+          <circle cx={cx - 9.4 * u} cy={cy + 2 * u} r={0.9 * u} fill="#fff" /><circle cx={cx + 6.6 * u} cy={cy + 2 * u} r={0.9 * u} fill="#fff" />
+        </>
+      )}
       <ellipse cx={cx - 15 * u} cy={cy + 6 * u} rx={5 * u} ry={3.2 * u} fill="#ff8f9c" opacity=".6" /><ellipse cx={cx + 15 * u} cy={cy + 6 * u} rx={5 * u} ry={3.2 * u} fill="#ff8f9c" opacity=".6" />
       {open ? <ellipse cx={cx} cy={cy + 8 * u} rx={3.4 * u} ry={3 * u} fill="#c9453f" /> : <path d={`M${cx - 4 * u} ${cy + 6 * u} Q${cx} ${cy + 11 * u} ${cx + 4 * u} ${cy + 6 * u}`} stroke={OUTLINE} strokeWidth={1.8 * u} fill="none" strokeLinecap="round" />}
-    </g>
-  )
-}
-
-// 윤곽선이 있는 통통한 팔다리
-function Limb({ d, color, w = 8, hand }) {
-  const W = Number(w) // 문자열로 넘어와도 숫자로 ("8"+3.6 이 "83.6" 이 되는 실수 방지)
-  return (
-    <g>
-      <path d={d} stroke={OUTLINE} strokeWidth={W + 3.6} strokeLinecap="round" fill="none" />
-      <path d={d} stroke={color} strokeWidth={W} strokeLinecap="round" fill="none" />
-      {hand && <circle cx={hand[0]} cy={hand[1]} r="4.6" fill={SKIN} {...O} strokeWidth="1.6" />}
     </g>
   )
 }
@@ -249,6 +251,12 @@ export function Seeds({ x, y, n = 9 }) {
 }
 
 // ── 설문대할망: 마스코트 그림(Mascot.jsx)을 장면 좌표(발끝=(0,0))에 맞춰 놓는다 ──
+// 몸 전체에 윤곽선 하나만 두르는 묶음 (마스코트 그림과 같은 방식)
+function Sticker({ children }) {
+  const id = useContext(ArtId)
+  return <g filter={`url(#ol-${id})`}>{children}</g>
+}
+
 export function Halmang2D({ x, y, s = 1, pose = 'stand', flip = false }) {
   const id = useContext(ArtId)
   const k = s * 0.68 // 새 마스코트는 키가 커져서(300) 장면 안 크기를 맞춘다
@@ -259,67 +267,114 @@ export function Halmang2D({ x, y, s = 1, pose = 'stand', flip = false }) {
   )
 }
 
-// ── 해녀 (오리지널): 같은 얼굴 틀, 흰 수건과 물안경, 물옷 ──
+// ── 해녀: 웃는 눈, 이마 위 물안경, 흰 수건, 짙은 물옷 ──
 export function Haenyeo2D({ x, y, s = 1, pose = 'stand', flip = false, clipBelow }) {
   const id = useContext(ArtId)
   const k = s * 1.6
-  const suit = '#5f7a8c'
+  const suit = '#4d6b82', lt = '#6f93ad'
+  const arm = (d, hand) => (
+    <g><path d={d} stroke={suit} strokeWidth="9" strokeLinecap="round" fill="none" /><path d={d} stroke={lt} strokeOpacity=".5" strokeWidth="2.4" strokeLinecap="round" fill="none" transform="translate(-1.6 -1)" /><circle cx={hand[0]} cy={hand[1]} r="4.4" fill={SKIN} /></g>
+  )
   const arms = {
-    stand: <><Limb d="M-14 -40 Q-24 -32 -19 -22" color={suit} w="8" hand={[-19, -19]} /><Limb d="M14 -40 Q24 -32 19 -22" color={suit} w="8" hand={[19, -19]} /></>,
-    wave: <><Limb d="M-14 -40 Q-24 -32 -19 -22" color={suit} w="8" hand={[-19, -19]} /><Limb d="M14 -40 Q38 -44 40 -66" color={suit} w="8" hand={[40, -70]} /></>,
-    pray: <><Limb d="M-14 -40 Q-20 -30 -3 -28" color={suit} w="8" hand={[-2, -28]} /><Limb d="M14 -40 Q20 -30 3 -28" color={suit} w="8" hand={[2, -28]} /></>,
+    stand: <>{arm('M-15 -44 Q-26 -35 -21 -22', [-21, -19])}{arm('M15 -44 Q26 -35 21 -22', [21, -19])}</>,
+    wave: <>{arm('M-15 -44 Q-26 -35 -21 -22', [-21, -19])}{arm('M15 -44 Q40 -48 42 -70', [42, -74])}</>,
+    pray: <>{arm('M-15 -44 Q-22 -33 -4 -30', [-3, -30])}{arm('M15 -44 Q22 -33 4 -30', [3, -30])}</>,
   }
   return (
     <g transform={`translate(${x} ${y}) scale(${flip ? -k : k} ${k})`} clipPath={clipBelow ? `url(#clip-${id})` : undefined}>
       {clipBelow && <clipPath id={`clip-${id}`}><rect x="-90" y="-260" width="180" height={260 + clipBelow} /></clipPath>}
-      <ellipse cx="0" cy="1" rx="22" ry="4" fill="#3a2a1c" opacity=".2" />
-      <ellipse cx="-7" cy="-1" rx="8" ry="4" fill={SKIN} {...O} strokeWidth="1.8" /><ellipse cx="7" cy="-1" rx="8" ry="4" fill={SKIN} {...O} strokeWidth="1.8" />
-      <path d="M-7 -4 V-16 M7 -4 V-16" stroke={OUTLINE} strokeWidth="11.6" strokeLinecap="round" /><path d="M-7 -4 V-16 M7 -4 V-16" stroke={suit} strokeWidth="8" strokeLinecap="round" />
-      <ellipse cx="0" cy="-30" rx="17" ry="18" fill={suit} {...O} />
-      <path d="M-9 -24 Q0 -20 9 -24" stroke="#fff" strokeOpacity=".4" strokeWidth="2" fill="none" strokeLinecap="round" />
-      {arms[pose]}
-      <circle cx="0" cy="-64" r="23" fill={SKIN} {...O} />
-      <path d="M-24 -68 C-28 -104 28 -104 24 -68 C16 -84 -16 -84 -24 -68Z" fill="#fff" {...O} />
-      <path d="M-24 -70 l-10 6 l6 5 M24 -70 l10 6 l-6 5" fill="#fff" {...O} strokeWidth="1.8" />
-      <ellipse cx="0" cy="-84" rx="15" ry="6.5" fill="#d9f1f8" {...O} strokeWidth="2" />
-      <CuteFace cy={-62} u={1.05} />
+      <ellipse cx="0" cy="1" rx="22" ry="4" fill="#3a2a1c" opacity=".18" />
+      <Sticker>
+        <ellipse cx="-8" cy="-1.5" rx="8.5" ry="4" fill={SKIN} /><ellipse cx="8" cy="-1.5" rx="8.5" ry="4" fill={SKIN} />
+        <path d="M-8 -5 V-20 M8 -5 V-20" stroke={suit} strokeWidth="10" strokeLinecap="round" />
+        <path d="M-17 -62 Q-20 -40 -15 -24 Q0 -19 15 -24 Q20 -40 17 -62 Q0 -69 -17 -62Z" fill={suit} />
+        <path d="M-12 -57 Q-15 -42 -11 -30" stroke={lt} strokeOpacity=".55" strokeWidth="3" fill="none" strokeLinecap="round" />
+        {arms[pose]}
+        <ellipse cx="0" cy="-47" rx="12" ry="3.4" fill="#000" opacity=".12" />
+        {/* 머리: 귀 + 얼굴 + 흰 수건 + 이마 위 물안경 */}
+        <circle cx="-21" cy="-64" r="4" fill={SKIN} /><circle cx="21" cy="-64" r="4" fill={SKIN} />
+        <ellipse cx="0" cy="-64" rx="21.5" ry="20" fill={SKIN} />
+        <path d="M-24 -70 C-28 -105 28 -105 24 -70 C16 -84 -16 -84 -24 -70Z" fill="#fbf7ec" />
+        <path d="M-13 -88 Q-4 -96 7 -93 M-6 -80 Q8 -89 18 -83" stroke="#e1d8c4" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d="M22 -78 q9 -4 12 3 q-6 5 -10 4Z M23 -76 q8 6 7 14 q-6 -2 -9 -12Z" fill="#fbf7ec" />
+        <path d="M-23 -80 Q0 -92 23 -80" stroke="#2f6177" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+        <ellipse cx="-9" cy="-84" rx="7.6" ry="5.2" fill="#c7edf5" /><ellipse cx="9" cy="-84" rx="7.6" ry="5.2" fill="#c7edf5" />
+        <ellipse cx="-9" cy="-84" rx="7.6" ry="5.2" fill="none" stroke="#3f8ca3" strokeWidth="1.8" /><ellipse cx="9" cy="-84" rx="7.6" ry="5.2" fill="none" stroke="#3f8ca3" strokeWidth="1.8" />
+        <path d="M-13 -86 q2 -2 5 -1 M5 -86 q2 -2 5 -1" stroke="#fff" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <CuteFace cy={-62} u={1.05} happy />
+        <path d="M-18 -53 q-2.4 3 0 5.4 M18 -53 q2.4 3 0 5.4" stroke="#e0a888" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+      </Sticker>
     </g>
   )
 }
 
-// ── 돌하르방: 같은 얼굴 틀, 벙거지, 배 위의 두 손 ──
-const SPECKS = Array.from({ length: 22 }, (_, i) => [((i * 37) % 44) - 22, -((i * 53) % 74) - 4, 0.8 + (i % 3) * 0.4])
+// ── 돌하르방: 벙거지, 툭 튀어나온 큰 눈, 큰 코, 배 위의 두 손, 현무암 구멍과 이끼 ──
+const PORES = Array.from({ length: 34 }, (_, i) => [((i * 41) % 52) - 26, -((i * 59) % 96) - 4, 0.9 + (i % 3) * 0.5])
 export function Hareubang2D({ x, y, s = 1 }) {
   const k = s * 1.6
   return (
     <g transform={tr(x, y, k)}>
-      <ellipse cx="0" cy="1" rx="26" ry="4.5" fill="#3a2a1c" opacity=".2" />
-      <path d="M-22 -2 Q-26 -26 -20 -46 Q0 -40 20 -46 Q26 -26 22 -2 Q0 4 -22 -2Z" fill="#c9c5be" {...O} />
-      <ellipse cx="-7" cy="-26" rx="10" ry="6" fill="#ddd9d2" {...O} strokeWidth="1.8" /><ellipse cx="8" cy="-28" rx="10" ry="6" fill="#e3dfd8" {...O} strokeWidth="1.8" />
-      <circle cx="0" cy="-66" r="26" fill="#d6d2cb" {...O} />
-      <path d="M-29 -74 Q-26 -104 0 -105 Q26 -104 29 -74 Q0 -82 -29 -74Z" fill="#a8a39b" {...O} />
-      <path d="M-34 -74 Q0 -85 34 -74" stroke={OUTLINE} strokeWidth="3.4" fill="none" strokeLinecap="round" />
-      <path d="M-4 -64 Q0 -52 4 -64 Q8 -50 0 -48 Q-8 -50 -4 -64Z" fill="#c3beb6" {...O} strokeWidth="1.6" />
-      <CuteFace cy={-64} u={1.15} />
-      {SPECKS.map(([a, b, r], i) => <circle key={i} cx={a} cy={b} r={r * 0.55} fill="#8a857c" opacity=".3" />)}
+      <ellipse cx="0" cy="1" rx="28" ry="4.6" fill="#3a2a1c" opacity=".2" />
+      <Sticker>
+        {/* 몸 */}
+        <path d="M-25 0 Q-31 -24 -23 -52 Q0 -45 23 -52 Q31 -24 25 0 Q0 6 -25 0Z" fill="#c4bfb7" />
+        <path d="M14 -48 Q27 -26 22 -2 Q16 2 10 1 Q18 -24 8 -47Z" fill="#9d978e" opacity=".28" />
+        {/* 두 손: 위쪽 손은 가슴, 아래쪽 손은 배 */}
+        <path d="M-17 -41 Q-6 -49 5 -42 Q7 -34 -2 -33 Q-14 -32 -17 -41Z" fill="#d6d1c9" />
+        <path d="M-12 -38 v3 M-7 -39 v3.4 M-2 -38.6 v3" stroke="#8d877e" strokeWidth="1.3" strokeLinecap="round" />
+        <path d="M-2 -30 Q9 -37 21 -30 Q22 -22 12 -20 Q-1 -20 -2 -30Z" fill="#dcd7cf" />
+        <path d="M5 -27 v3.4 M10 -28 v3.6 M15 -27.4 v3.2" stroke="#8d877e" strokeWidth="1.3" strokeLinecap="round" />
+        {/* 머리 */}
+        <ellipse cx="-29" cy="-66" rx="4.5" ry="8" fill="#c4bfb7" /><ellipse cx="29" cy="-66" rx="4.5" ry="8" fill="#c4bfb7" />
+        <ellipse cx="0" cy="-67" rx="29" ry="25" fill="#d3cec6" />
+        {/* 벙거지: 둥근 모자 + 넓은 챙 */}
+        <path d="M-27 -80 Q-29 -111 0 -112 Q29 -111 27 -80 Q0 -88 -27 -80Z" fill="#aaa49b" />
+        <path d="M-12 -104 Q-4 -109 6 -107" stroke="#fff" strokeOpacity=".35" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M-40 -78 Q0 -93 40 -78 Q32 -71 0 -71 Q-32 -71 -40 -78Z" fill="#938d84" />
+        {/* 얼굴: 큰 눈, 큰 코, 넓은 미소 */}
+        <ellipse cx="-12" cy="-64" rx="7.6" ry="8" fill="#f4f1ec" /><ellipse cx="12" cy="-64" rx="7.6" ry="8" fill="#f4f1ec" />
+        <circle cx="-11.5" cy="-63.5" r="4.6" fill="#3f342f" /><circle cx="12.5" cy="-63.5" r="4.6" fill="#3f342f" />
+        <circle cx="-10" cy="-65.4" r="1.7" fill="#fff" /><circle cx="14" cy="-65.4" r="1.7" fill="#fff" />
+        <path d="M-5.5 -62 Q0 -49 5.5 -62 Q10 -47 0 -45 Q-10 -47 -5.5 -62Z" fill="#c1bcb3" />
+        <path d="M-2.4 -49 q2.4 2 4.8 0" stroke="#8d877e" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+        <path d="M-12 -42 Q0 -32 12 -42" stroke="#6e655d" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+        <ellipse cx="-20" cy="-52" rx="5.4" ry="3.4" fill="#f2a5a5" opacity=".42" /><ellipse cx="20" cy="-52" rx="5.4" ry="3.4" fill="#f2a5a5" opacity=".42" />
+        {/* 현무암의 구멍과 이끼 */}
+        {PORES.map(([a, b, r], i) => <ellipse key={i} cx={a} cy={b} rx={r * 0.7} ry={r * 0.5} fill="#7d776e" opacity=".3" />)}
+        <ellipse cx="-14" cy="-3" rx="9" ry="3" fill="#8fbf7a" opacity=".5" /><ellipse cx="16" cy="-4" rx="7" ry="2.6" fill="#8fbf7a" opacity=".45" /><ellipse cx="-24" cy="-79" rx="6" ry="1.8" fill="#8fbf7a" opacity=".5" />
+      </Sticker>
     </g>
   )
 }
 
-// ── 아이(보호자): 같은 머리 큰 비율과 얼굴 틀 ──
+// ── 아이: 신발·소매·손이 있는 몸, 머리모양 3가지(셔츠 색으로 정해진다) ──
 export function Kid2D({ x, y, s = 1, color = '#8ec5e6', hair = '#5a4034', pants = '#8a98b8', walk = false, flip = false, point = false }) {
+  const style = ['bob', 'pony', 'short'][parseInt(color.slice(1, 3), 16) % 3]
+  const arm = (d, hand) => <g><path d={d} stroke={color} strokeWidth="7.4" strokeLinecap="round" fill="none" /><circle cx={hand[0]} cy={hand[1]} r="3.9" fill={SKIN} /></g>
   return (
     <g transform={tr(x, y, s, flip)}>
-      <ellipse cx="0" cy="1" rx="18" ry="3.6" fill="#3a2a1c" opacity=".2" />
-      <ellipse cx={walk ? -6 : -5} cy="0" rx="6.5" ry="3.2" fill="#8b6a55" {...O} strokeWidth="1.6" /><ellipse cx={walk ? 11 : 5} cy={walk ? -3 : 0} rx="6.5" ry="3.2" fill="#8b6a55" {...O} strokeWidth="1.6" />
-      <Limb d={walk ? 'M-6 -3 L-4 -16' : 'M-5 -3 L-5 -16'} color={pants} w="8" />
-      <Limb d={walk ? 'M9 -6 L5 -16' : 'M5 -3 L5 -16'} color={pants} w="8" />
-      <ellipse cx="0" cy="-28" rx="15" ry="16" fill={color} {...O} />
-      <Limb d="M-12 -34 Q-21 -28 -17 -20" color={color} w="7" hand={[-17, -18]} />
-      <Limb d={point ? 'M12 -34 Q26 -40 34 -48' : 'M12 -34 Q21 -28 17 -20'} color={color} w="7" hand={point ? [35, -50] : [17, -18]} />
-      <circle cx="0" cy="-60" r="21" fill={SKIN} {...O} />
-      <path d="M-21 -62 C-24 -88 24 -88 21 -62 C14 -74 -14 -74 -21 -62Z" fill={hair} {...O} />
-      <CuteFace cy={-58} u={1} />
+      <ellipse cx="0" cy="1" rx="19" ry="3.6" fill="#3a2a1c" opacity=".18" />
+      <Sticker>
+        {/* 다리·신발 */}
+        <path d={walk ? 'M-8 -26 L-12 -7' : 'M-7.5 -26 L-8 -7'} stroke={pants} strokeWidth="7.6" strokeLinecap="round" fill="none" />
+        <path d={walk ? 'M8 -26 L11 -7' : 'M7.5 -26 L8 -7'} stroke={pants} strokeWidth="7.6" strokeLinecap="round" fill="none" />
+        <ellipse cx={walk ? -14 : -9.5} cy="-2.6" rx="7.2" ry="3.8" fill="#a8745a" /><ellipse cx={walk ? 12.5 : 9.5} cy="-2.8" rx="7.2" ry="3.8" fill="#a8745a" />
+        {/* 몸 */}
+        <path d="M-13 -52 Q-16 -36 -13 -24 Q0 -20 13 -24 Q16 -36 13 -52 Q0 -58 -13 -52Z" fill={color} />
+        <path d="M-11 -31 Q0 -27 11 -31" stroke="#fff" strokeOpacity=".4" strokeWidth="2" fill="none" strokeLinecap="round" />
+        {walk ? <>{arm('M-12 -48 Q-22 -42 -24 -33', [-24, -30])}{arm('M12 -48 Q20 -42 19 -33', [19, -30])}</>
+          : <>{arm('M-12 -48 Q-20 -40 -17 -30', [-17, -27])}{point ? arm('M12 -48 Q26 -54 33 -63', [34, -65]) : arm('M12 -48 Q20 -40 17 -30', [17, -27])}</>}
+        <ellipse cx="0" cy="-50" rx="11" ry="3.2" fill="#000" opacity=".1" />
+        {/* 머리 */}
+        {style === 'pony' && <><circle cx="-24" cy="-69" r="5.8" fill={hair} /><circle cx="24" cy="-69" r="5.8" fill={hair} /><circle cx="-21" cy="-72" r="1.9" fill="#ff8fa3" /><circle cx="21" cy="-72" r="1.9" fill="#ff8fa3" /></>}
+        <circle cx="-19" cy="-65" r="3.7" fill={SKIN} /><circle cx="19" cy="-65" r="3.7" fill={SKIN} />
+        <ellipse cx="0" cy="-66" rx="19" ry="17.5" fill={SKIN} />
+        <path d="M-20.5 -67 C-23 -91 23 -91 20.5 -67 C15 -77 8 -79 0 -75 C-8 -79 -15 -77 -20.5 -67Z" fill={hair} />
+        {style === 'bob' && <><path d="M-20.5 -67 Q-23.5 -58 -19 -52 Q-16.5 -58 -17 -65Z" fill={hair} /><path d="M20.5 -67 Q23.5 -58 19 -52 Q16.5 -58 17 -65Z" fill={hair} /></>}
+        {style === 'short' && <path d="M-3 -88 Q1 -96 5 -88Z" fill={hair} />}
+        <ellipse cx="-8" cy="-83" rx="7" ry="2.4" fill="#fff" opacity=".26" transform="rotate(-18 -8 -83)" />
+        <CuteFace cy={-63} u={0.95} />
+      </Sticker>
     </g>
   )
 }

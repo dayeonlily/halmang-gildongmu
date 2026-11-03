@@ -48,6 +48,8 @@ function StoryTab() {
   const line = story.lines[i]
   const note = NOTE.exec(line)
   const last = i === story.lines.length - 1
+  const idx = STORIES.findIndex((s) => s.id === id)
+  const goStory = (d) => pick(STORIES[(idx + d + STORIES.length) % STORIES.length].id) // 이야기 목록을 돌아가며
 
   useEffect(() => () => window.speechSynthesis?.cancel(), [])
 
@@ -66,15 +68,6 @@ function StoryTab() {
 
   return (
     <>
-      {/* 이야기 고르기: 가로로 밀어 보는 큰 버튼 */}
-      <div className="story-picker mb-3" role="tablist" aria-label="이야기 고르기">
-        {STORIES.map((s) => (
-          <button type="button" key={s.id} className={`story-chip ${s.id === id ? 'on' : ''}`} onClick={() => pick(s.id)}>
-            <span className="fs-4">{s.emoji}</span><span>{s.title}</span>
-          </button>
-        ))}
-      </div>
-
       {/* 넓은 화면: 그림은 왼쪽, 글과 버튼은 오른쪽 → 스크롤 없이 한 화면에서 읽는다. 좁은 화면: 그림 위, 글 아래 */}
       <div className="story-layout">
         <div className="story-art-box"><StoryArt storyId={story.id} index={i} label={`${story.title} ${i + 1}번째 장면`} /></div>
@@ -85,6 +78,11 @@ function StoryTab() {
             <div>
               <h3 className="story-title">{story.emoji} {story.title}</h3>
               <div className="story-place"><i className="bi bi-geo-alt me-1" />{story.place}</div>
+              <div className="story-switch">
+                <button type="button" onClick={() => goStory(-1)}>‹ 이전 이야기</button>
+                <span>{idx + 1} / {STORIES.length}</span>
+                <button type="button" onClick={() => goStory(1)}>다음 이야기 ›</button>
+              </div>
             </div>
           </div>
 
@@ -113,7 +111,7 @@ function StoryTab() {
             <Button size="lg" variant="outline-secondary" disabled={i === 0} onClick={() => go(i - 1)}><i className="bi bi-chevron-left me-1" />이전</Button>
             {canSpeak && <Button size="lg" variant={speaking ? 'danger' : 'outline-primary'} onClick={speak}><i className={`bi bi-${speaking ? 'stop-fill' : 'volume-up-fill'} me-1`} />{speaking ? '멈추기' : '읽어주기'}</Button>}
             {last
-              ? <Button size="lg" variant="success" onClick={() => go(0)}><i className="bi bi-arrow-repeat me-1" />처음부터 다시</Button>
+              ? <Button size="lg" variant="success" onClick={() => goStory(1)}>다음 이야기<i className="bi bi-chevron-right ms-1" /></Button>
               : <Button size="lg" onClick={() => go(i + 1)}>다음<i className="bi bi-chevron-right ms-1" /></Button>}
           </div>
         </div>
