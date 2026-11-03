@@ -3,7 +3,7 @@ import { Badge, Button, Form, Modal } from 'react-bootstrap'
 import Stars from './Stars'
 import { useAppStore } from '../store/useAppStore'
 
-// 일차별 후기 쓰기·고치기. route = 그날 돌아다닌 장소 [{id, title}] (후기와 함께 저장돼서 나중에 바구니가 바뀌어도 남는다)
+// 일차별 후기 쓰기·고치기. route = 그날 돌아다닌 장소 [{id, title}] (후기와 함께 저장돼서 나중에 일정이 바뀌어도 남는다)
 export default function ReviewModal({ day, route, review, onHide }) {
   const saveReview = useAppStore((s) => s.saveReview)
   const deleteReview = useAppStore((s) => s.deleteReview)

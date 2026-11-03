@@ -312,3 +312,129 @@ small, .small { font-size: .92rem; }
 /* 이야기 바꾸기: 줄 대신 작은 글자 링크 */
 .story-switch { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem; margin-top: .3rem; font-size: 1rem; color: #65513d; }
 .story-switch button { background: none; border: 0; padding: 0; color: #9a4c0b; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* 이야기 고르기: 그림 아래 버튼 5개 */
+.story-pick { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; margin-top: .6rem; }
+.story-pick button { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .45rem .2rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: .9rem; color: #4a3a2c; font-weight: 700; font-size: .95rem; line-height: 1.2; cursor: pointer; transition: transform .15s; }
+.story-pick button:hover { transform: translateY(-2px); }
+.story-pick button span:first-child { font-size: 1.5rem; line-height: 1.1; }
+.story-pick button.on { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; box-shadow: 0 4px 12px rgba(232, 121, 26, .35); }
+@media (max-width: 575.98px) { .story-pick { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 992px) { .kids-age-btn { padding: .5rem .2rem; } .kids-panel-btn { padding: .6rem .3rem; } .kids-step { padding: .85rem 1rem; } }
+
+/* ── 할망에게 묻기 ── */
+.ask-layout { display: grid; gap: 1.1rem; align-items: start; }
+@media (min-width: 992px) { .ask-layout { grid-template-columns: 300px minmax(0, 1fr); } .ask-side { position: sticky; top: 1.2rem; } }
+.ask-side { background: #fff; border: 1.5px solid #ead7b8; border-radius: 1.2rem; padding: 1.1rem; text-align: center; box-shadow: 0 3px 14px rgba(120, 80, 20, .08); }
+.ask-mascot { background: linear-gradient(#fff6e0, #ffe9c9); border-radius: 1rem; padding: .6rem 0 0; }
+.ask-mascot-img { width: min(210px, 58%); height: auto; display: block; margin: 0 auto; }
+.ask-name { font-size: 1.3rem; font-weight: 800; color: #3d2a17; margin-top: .7rem; }
+.ask-status { display: inline-block; margin-top: .3rem; padding: .25rem .9rem; border-radius: 999px; background: #eaf7ea; color: #2e6b3a; font-weight: 700; font-size: 1rem; }
+.ask-status.busy { background: #fff1d6; color: #9a4c0b; }
+.ask-knows { text-align: left; margin-top: 1rem; border-top: 1.5px dashed #ead7b8; padding-top: .9rem; }
+.ask-knows-title { font-weight: 800; color: #3d2a17; margin-bottom: .5rem; }
+.ask-know { display: flex; align-items: center; gap: .7rem; padding: .35rem 0; }
+.ask-know > i { flex: 0 0 2.2rem; height: 2.2rem; display: grid; place-items: center; border-radius: 50%; background: var(--hm-orange-soft); color: var(--hm-orange); font-size: 1.1rem; }
+.ask-know b { display: block; font-size: 1rem; color: #3d2a17; line-height: 1.25; }
+.ask-know small { color: #65513d; font-size: .88rem; }
+@media (max-width: 991.98px) { .ask-knows { display: none; } .ask-mascot-img { width: 120px; } .ask-side { display: grid; grid-template-columns: auto 1fr; align-items: center; text-align: left; gap: 0 1rem; padding: .8rem 1rem; } .ask-mascot { grid-row: span 2; padding: .3rem .4rem 0; } .ask-name { margin-top: 0; } .ask-status { justify-self: start; } }
+
+.ask-chat { background: #fff; border: 1.5px solid #ead7b8; border-radius: 1.2rem; box-shadow: 0 3px 14px rgba(120, 80, 20, .08); overflow: hidden; display: flex; flex-direction: column; }
+.ask-chat-head { display: flex; align-items: center; justify-content: space-between; padding: .7rem 1.1rem; background: var(--hm-orange-soft); font-weight: 800; color: #3d2a17; font-size: 1.1rem; }
+.ask-clear { background: #fff; border: 1.5px solid #e8c79a; border-radius: 999px; padding: .25rem .8rem; color: #9a4c0b; font-weight: 700; font-size: .95rem; cursor: pointer; }
+.ask-clear:disabled { opacity: .5; cursor: default; }
+.ask-scroll { height: min(58vh, 560px); min-height: 320px; overflow-y: auto; padding: 1.1rem; background: #fffdf8; }
+.ask-row { display: flex; gap: .7rem; align-items: flex-start; margin-bottom: 1rem; }
+.ask-row.user { flex-direction: row-reverse; }
+.ask-col { min-width: 0; max-width: min(88%, 640px); display: flex; flex-direction: column; }
+.ask-row.user .ask-col { align-items: flex-end; }
+.ask-avatar { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: #fff3dc center 8% / 175% no-repeat; border: 2px solid #f0d9b4; }
+.ask-avatar.user { display: grid; place-items: center; background: #dbeafe; border-color: #b9d3f5; color: #3a6ea5; font-size: 1.4rem; }
+.ask-bubble { padding: .8rem 1.05rem; border-radius: 1.2rem; font-size: 1.1rem; line-height: 1.7; white-space: pre-wrap; word-break: keep-all; color: #3b2a22; }
+.ask-bubble.assistant { background: #fff1de; border-top-left-radius: .3rem; }
+.ask-bubble.user { background: var(--hm-orange); color: #fff; border-top-right-radius: .3rem; font-weight: 600; }
+.ask-bubble.error { background: #fdecec; border: 1.5px solid #f2b8b8; color: #7a2a2a; }
+.ask-err-title { font-weight: 800; margin-bottom: .25rem; color: #b32d2d; }
+.ask-steps { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-bottom: .45rem; }
+.ask-steps-label { font-size: .88rem; font-weight: 800; color: #65513d; margin-right: .2rem; }
+.ask-step { display: inline-flex; align-items: center; padding: .2rem .65rem; background: #e9f4ee; color: #24603d; border-radius: 999px; font-size: .9rem; font-weight: 700; }
+.ask-step.err { background: #fdecec; color: #b32d2d; }
+.ask-note { margin-top: .35rem; font-size: .9rem; color: #65513d; }
+.ask-typing { display: inline-flex; align-items: center; gap: .35rem; }
+.ask-typing span { width: 9px; height: 9px; border-radius: 50%; background: #e0a96a; animation: askDot 1.1s ease-in-out infinite; }
+.ask-typing span:nth-child(2) { animation-delay: .18s; } .ask-typing span:nth-child(3) { animation-delay: .36s; }
+.ask-typing em { font-style: normal; margin-left: .5rem; font-size: 1rem; color: #65513d; }
+@keyframes askDot { 0%, 80%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-6px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ask-typing span { animation: none; } }
+
+.ask-suggest-title { font-weight: 800; color: #3d2a17; margin: .3rem 0 .6rem; font-size: 1.1rem; }
+.ask-suggest { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+@media (max-width: 575.98px) { .ask-suggest { grid-template-columns: 1fr; } }
+.ask-card { display: flex; align-items: flex-start; gap: .8rem; text-align: left; padding: .8rem .9rem; background: #fff; border: 2px solid #f0dcc0; border-radius: 1rem; cursor: pointer; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.ask-card:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--hm-orange); box-shadow: 0 4px 12px rgba(232, 121, 26, .18); }
+.ask-card > i { flex: 0 0 2.4rem; height: 2.4rem; display: grid; place-items: center; border-radius: 50%; background: var(--hm-orange-soft); color: var(--hm-orange); font-size: 1.2rem; }
+.ask-card b { display: block; font-size: 1.05rem; color: #3d2a17; line-height: 1.3; }
+.ask-card small { display: block; color: #65513d; font-size: .9rem; line-height: 1.4; margin-top: .15rem; }
+.ask-card:disabled { opacity: .6; cursor: default; }
+
+.ask-form { display: flex; gap: .6rem; align-items: stretch; padding: .8rem 1.1rem 0; border-top: 1.5px solid #f0e2cd; background: #fff; }
+.ask-input { flex: 1 1 auto; resize: none; border: 2px solid #ead7b8; border-radius: 1rem; padding: .6rem .9rem; font-size: 1.1rem; line-height: 1.5; background: #fffdf8; color: #3b2a22; }
+.ask-input:focus { outline: none; border-color: var(--hm-orange); box-shadow: 0 0 0 3px rgba(232, 121, 26, .18); }
+.ask-send { flex: 0 0 auto; border-radius: 1rem; font-weight: 800; padding: 0 1.3rem; }
+.ask-disclaimer { padding: .5rem 1.1rem .8rem; font-size: .88rem; color: #65513d; background: #fff; }
+@media (max-width: 575.98px) { .ask-send { padding: 0 .9rem; } .ask-send i { margin-right: 0 !important; } .ask-send { font-size: 0; } .ask-send i { font-size: 1.3rem; } }
+
+/* 메뉴 묶음 제목 (여행 · 배움 · 도움) */
+.nav-group { margin: .9rem .75rem .25rem; font-size: .78rem; font-weight: 800; letter-spacing: .04em; color: rgba(255, 255, 255, .55); }
+/* 배움 탭: 문화 배우기 · 역사 배우기 */
+.learn-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+.learn-label { font-weight: 800; color: #3d2a17; font-size: 1rem; margin-right: .3rem; }
+.learn-label i { color: var(--hm-orange); }
+.learn-tabs a { display: inline-flex; align-items: baseline; gap: .1rem; padding: .45rem 1rem; background: #fff; border: 2px solid #ead7b8; border-radius: 999px; color: #4a3a2c; font-weight: 800; font-size: 1.05rem; text-decoration: none; }
+.learn-tabs a small { margin-left: .45rem; font-size: .85rem; font-weight: 600; color: #65513d; }
+.learn-tabs a.active { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; }
+.learn-tabs a.active small { color: #fff; }
+@media (max-width: 575.98px) { .learn-tabs a small { display: none; } }
+
+/* ── 홈 날씨: 큰 숫자와 날씨 색 카드 ── */
+.wx-now { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem 1.2rem; margin-bottom: .8rem; }
+.wx-big { display: flex; align-items: center; gap: .7rem; }
+.wx-big-icon { font-size: 3.4rem; line-height: 1; }
+.wx-big-temp { font-size: 3.2rem; font-weight: 800; line-height: 1; color: #3d2a17; font-family: 'Jua', 'Pretendard', sans-serif; }
+.wx-big-sky { font-size: 1.15rem; font-weight: 700; color: #65513d; align-self: flex-end; padding-bottom: .35rem; }
+.wx-places { display: flex; gap: .6rem; }
+.wx-places > div { display: flex; flex-direction: column; align-items: center; min-width: 84px; padding: .4rem .8rem; background: #f6fbfc; border: 1.5px solid #cfe5ec; border-radius: .9rem; line-height: 1.25; }
+.wx-places small { font-size: .85rem; font-weight: 700; color: #4d6f7c; }
+.wx-places b { font-size: 1.4rem; color: #2f4650; }
+.wx-places span { font-size: .85rem; color: #4d6f7c; }
+.wx-advice { display: flex; align-items: center; gap: .6rem; padding: .6rem .9rem; border-radius: .9rem; font-weight: 800; font-size: 1.05rem; margin-bottom: .8rem; }
+.wx-advice i { font-size: 1.3rem; }
+.wx-advice.good { background: #e8f6ea; color: #1f6b34; border: 1.5px solid #bfe3c6; }
+.wx-advice.bad { background: #fdeceb; color: #a82a22; border: 1.5px solid #f3bdb8; }
+.wx-strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(82px, 1fr); gap: .5rem; overflow-x: auto; padding: .2rem .1rem .5rem; scroll-snap-type: x proximity; }
+.wx-cell { scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .55rem .4rem .6rem; border-radius: 1rem; border: 2px solid; line-height: 1.2; }
+.wx-cell.sun { background: linear-gradient(#fffbe6, #ffedb0); border-color: #f4d572; }
+.wx-cell.cloud { background: linear-gradient(#f6f9fc, #e3ebf3); border-color: #cbd8e5; }
+.wx-cell.rain { background: linear-gradient(#eaf5ff, #cfe5fb); border-color: #9cc6ec; }
+.wx-cell.now { border-color: var(--hm-orange); box-shadow: 0 3px 12px rgba(232, 121, 26, .3); }
+.wx-time { font-size: .95rem; font-weight: 800; color: #4a3a2c; }
+.wx-cell.now .wx-time { color: var(--hm-orange); }
+.wx-icon { font-size: 2.2rem; line-height: 1.15; }
+.wx-temp { font-size: 1.45rem; font-weight: 800; color: #2f3a3f; }
+.wx-rain { width: 100%; display: flex; flex-direction: column; align-items: center; gap: .2rem; margin-top: .15rem; }
+.wx-bar { width: 80%; height: 7px; border-radius: 99px; background: rgba(255, 255, 255, .85); overflow: hidden; border: 1px solid rgba(80, 130, 180, .25); }
+.wx-bar i { display: block; height: 100%; background: #4a9de0; border-radius: 99px; }
+.wx-rain em { font-style: normal; font-size: .9rem; font-weight: 700; color: #2f6ea8; }
+
+/* ── 3D 지도: 지역 이름 · 번호 핀 · 안내 ── */
+.scene-label { background: rgba(47, 58, 63, .94); color: #fff; padding: 3px 11px; border-radius: 999px; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); display: inline-flex; align-items: center; gap: 5px; }
+.scene-label.hot { background: #e8791a; }
+.scene-label b { color: #ffe08a; margin-left: 2px; }
+.scene-rank { font-style: normal; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #e8791a; font-size: 12px; font-weight: 900; }
+.scene-region { color: #fff; font-size: 12px; font-weight: 800; opacity: .92; letter-spacing: .02em; white-space: nowrap; text-shadow: 0 0 3px rgba(20, 40, 50, .95), 0 1px 4px rgba(20, 40, 50, .9), 0 0 8px rgba(20, 40, 50, .6); }
+.scene-region.mount { font-size: 14px; color: #fff3c9; }
+.scene-legend { position: absolute; left: .6rem; bottom: .6rem; display: flex; gap: .7rem; padding: .3rem .7rem; background: rgba(255, 255, 255, .9); border-radius: 999px; font-size: .85rem; font-weight: 700; color: #3d2a17; box-shadow: 0 2px 8px rgba(0, 0, 0, .15); pointer-events: none; }
+.scene-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: .3rem; vertical-align: -1px; }
+.scene-hint { position: absolute; right: .6rem; top: .6rem; padding: .25rem .7rem; background: rgba(255, 255, 255, .85); border-radius: 999px; font-size: .85rem; font-weight: 700; color: #4a3a2c; pointer-events: none; }
+@media (max-width: 575.98px) { .scene-legend { font-size: .78rem; gap: .5rem; } .scene-hint { display: none; } .wx-big-temp { font-size: 2.6rem; } .wx-big-icon { font-size: 2.8rem; } }
+@media (max-width: 575.98px) { .ask-scroll { height: 42vh; min-height: 230px; } .ask-mascot-img { width: 96px; } .ask-side { padding: .6rem .8rem; } .ask-name { font-size: 1.1rem; } }

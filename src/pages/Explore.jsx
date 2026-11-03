@@ -44,7 +44,7 @@ const CRITERIA = {
   safety: ['날씨 안전', '기상청 예보(비·더위·바람) · 에어코리아 미세먼지 · 기상청 자외선지수 · 정기 휴무 — 야외일수록, 아이가 어릴수록 크게 반영'],
   crowd: ['한산함', '한국관광공사 관광지 집중률 예측 — 고른 날짜에 덜 붐빌수록 높게 (예측이 있는 장소만)'],
   price: ['비용', '입장료가 예산 안인지 (예산을 정하지 않아도 저렴할수록 높게)'],
-  near: ['가까움', '머무는 곳(또는 내 여행 바구니 중심)에서 가까울수록 높게 — 아이와는 이동 시간이 짧은 곳이 좋아요'],
+  near: ['가까움', '머무는 곳(또는 내 여행 일정 중심)에서 가까울수록 높게 — 아이와는 이동 시간이 짧은 곳이 좋아요'],
   theme: ['테마 일치', '내가 고른 테마·검색어가 장소 이름·주소에 들어 있는지'],
 }
 
@@ -62,7 +62,7 @@ function SpotCard({ s, selected, onOpen, onAdd, inBasket }) {
       <div className="p-3">
         <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
           <div className="fw-bold">{s.title}</div>
-          <div className="text-center lh-1" title="우리 가족 맞춤 점수"><ScorePill score={s.scores.total} /><div className="text-muted" style={{ fontSize: '.7rem' }}>맞춤</div></div>
+          <span title="우리 가족 맞춤 점수"><ScorePill score={s.scores.total} /></span>
         </div>
         <div className="small text-muted mb-2 text-truncate">{s.addr}</div>
         <div className="d-flex flex-wrap gap-1 mb-2">
@@ -75,7 +75,7 @@ function SpotCard({ s, selected, onOpen, onAdd, inBasket }) {
           <Button size="sm" variant="outline-primary" className="flex-fill"><i className="bi bi-card-text me-1" />자세히</Button>
           <Button size="sm" className="flex-fill" variant={inBasket ? 'secondary' : 'primary'} disabled={inBasket}
             onClick={(e) => { e.stopPropagation(); onAdd(s) }}>
-            <i className={`bi bi-${inBasket ? 'check2' : 'basket2'} me-1`} />{inBasket ? '담았어요' : '담기'}
+            <i className={`bi bi-${inBasket ? 'check2' : 'calendar2-plus'} me-1`} />{inBasket ? '담았어요' : '담기'}
           </Button>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function Explore() {
   const [open, setOpen] = useState(null) // 상세 창에 띄울 장소
   const [how, setHow] = useState(false)  // 점수 기준 설명 펼치기
   const [date, setDate] = useState('')      // 방문 날짜 ('' = 오늘): 집중률 예측과 휴무일에 쓴다
-  const [base, setBase] = useState('')      // 머무는 곳 ('' = 상관없음, 'basket' = 내 여행 바구니 중심)
+  const [base, setBase] = useState('')      // 머무는 곳 ('' = 상관없음, 'basket' = 내 여행 일정 중심)
 
   // 아이 나이·필요한 것·예산은 가족 정보(프로필)에서 가져온다 (아이 나이는 ageBand 에 이미 맞춰져 있다)
   const effNeeds = profile?.needs ?? []
@@ -143,6 +143,14 @@ export default function Explore() {
     <>
       <PageTitle icon="compass" title="길동무 찾기" sub="우리 가족 정보와 고른 종류·테마에 맞춰 점수를 매겨요" />
 
+      {/* 검색창: 가장 위 */}
+      <Form onSubmit={(e) => { e.preventDefault(); search(q) }} className="mb-3">
+        <InputGroup size="lg">
+          <Form.Control placeholder="장소 이름이나 키워드로 찾아보세요 (예: 오름, 박물관, 해변)" value={q} onChange={(e) => setQ(e.target.value)} aria-label="장소 검색" />
+          <Button type="submit" aria-label="검색"><i className="bi bi-search me-1" />검색</Button>
+        </InputGroup>
+      </Form>
+
       {/* ① 무엇을 찾나요? */}
       <div className="cat-row mb-3" role="tablist" aria-label="장소 종류">
         {CATEGORIES.map(([k, label, icon]) => (
@@ -152,8 +160,8 @@ export default function Explore() {
         ))}
       </div>
 
-      {/* ② 어떤 곳을 원하나요? (종류에 맞는 테마) */}
-      <div className="mb-3">
+      {/* ② 어떤 곳을 원하나요? (종류에 맞는 테마) — 종류를 고른 경우에만 */}
+      {type !== '' && <div className="mb-3">
         <div className="fw-bold mb-2">어떤 곳을 원하세요? <span className="small text-muted fw-normal">눌러서 고르고, 다시 누르면 풀려요</span></div>
         <div className="d-flex flex-wrap gap-2">
           {themes.map(([label, kw, icon]) => (
@@ -162,14 +170,7 @@ export default function Explore() {
             </Button>
           ))}
         </div>
-      </div>
-
-      <Form onSubmit={(e) => { e.preventDefault(); search(q) }} className="mb-3">
-        <InputGroup>
-          <Form.Control placeholder="직접 검색 (쉼표로 여러 개: 숲길,둘레길)" value={q} onChange={(e) => setQ(e.target.value)} />
-          <Button type="submit"><i className="bi bi-search" /></Button>
-        </InputGroup>
-      </Form>
+      </div>}
 
       {/* ③ 방문 조건: 가족 정보와 별개로 이번 검색에만 쓰는 것들 */}
       <div className="d-flex flex-wrap align-items-end gap-3 mb-3">
@@ -181,7 +182,7 @@ export default function Explore() {
           <div className="small text-muted mb-1">머무는 곳</div>
           <Form.Select size="sm" value={base} onChange={(e) => setBase(e.target.value)}>
             <option value="">상관없어요</option>
-            {placed.length > 0 && <option value="basket">내 여행 바구니 근처</option>}
+            {placed.length > 0 && <option value="basket">내 여행 일정 근처</option>}
             {BASES.map((b) => <option key={b.key} value={b.key}>{b.label} 근처</option>)}
           </Form.Select>
         </div>

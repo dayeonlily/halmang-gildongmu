@@ -113,7 +113,7 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
               </div>
               {reviews === null ? <div className="small text-muted">후기를 불러오는 중...</div> : reviews.length === 0 ? (
                 <div className="soft-card p-3 small text-muted" style={{ background: 'var(--hm-orange-soft)' }}>
-                  아직 후기가 없어요. 이곳에 다녀온 뒤 <b>여행 바구니</b>에서 일차별로 후기를 남기면 여기에 보여요. (후기는 모두 공개돼요)
+                  아직 후기가 없어요. 이곳에 다녀온 뒤 <b>여행 일정</b>에서 일차별로 후기를 남기면 여기에 보여요. (후기는 모두 공개돼요)
                 </div>
               ) : reviews.map((r) => (
                 <div key={r.id} className="soft-card p-3 mb-2">
@@ -140,7 +140,7 @@ export default function SpotDetail({ spot, inBasket, onAdd, onHide }) {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={onHide}>닫기</Button>
-        <Button disabled={inBasket} onClick={() => onAdd(spot)}><i className={`bi bi-${inBasket ? 'check2' : 'basket2'} me-1`} />{inBasket ? '담았어요' : '바구니에 담기'}</Button>
+        <Button disabled={inBasket} onClick={() => onAdd(spot)}><i className={`bi bi-${inBasket ? 'check2' : 'calendar2-plus'} me-1`} />{inBasket ? '담았어요' : '일정에 담기'}</Button>
       </Modal.Footer>
     </Modal>
   )

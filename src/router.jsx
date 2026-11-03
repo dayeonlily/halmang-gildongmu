@@ -16,14 +16,15 @@ import NotFound from './pages/NotFound'
 // 메뉴 목록 — 레일(데스크톱) · 서랍(모바일)에 모두 표시. tab: true 인 항목은 모바일 하단 탭에도 표시
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house-heart', tab: true },
-  { to: '/explore', label: '길동무 찾기', icon: 'compass', tab: true },
-  { to: '/basket', label: '여행 바구니', icon: 'basket2', tab: true },
-  { to: '/kids', label: '아이와 함께', icon: 'balloon-heart', tab: true },
-  { to: '/history', label: '역사 스탬프 투어', icon: 'hourglass-split' },
-  { to: '/halmang', label: '할망에게 묻기', icon: 'chat-heart', tab: true },
-  { to: '/reviews', label: '여행 후기', icon: 'journal-richtext' },
-  { to: '/care', label: '보호자 노트', icon: 'clipboard2-heart' },
-  { to: '/profile', label: '우리 가족', icon: 'people' },
+  { to: '/explore', group: '여행', label: '길동무 찾기', short: '찾기', icon: 'compass', tab: true },
+  { to: '/basket', group: '여행', label: '여행 일정', short: '일정', icon: 'calendar2-check', tab: true },
+  { to: '/reviews', group: '여행', label: '여행 후기', icon: 'journal-richtext' },
+  // 배움(교육): 문화와 역사를 같은 말로 묶는다 — 놀멍 배우멍 걸으멍
+  { to: '/kids', group: '배움', label: '문화 배우기', short: '배우기', icon: 'balloon-heart', tab: true },
+  { to: '/history', group: '배움', label: '역사 배우기', icon: 'hourglass-split' },
+  { to: '/halmang', group: '도움', label: '할망에게 묻기', short: '묻기', icon: 'chat-heart', tab: true },
+  { to: '/care', group: '도움', label: '보호자 노트', icon: 'clipboard2-heart' },
+  { to: '/profile', group: '도움', label: '우리 가족', icon: 'people' },
 ]
 
 export const router = createBrowserRouter([

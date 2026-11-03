@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap'
+import LearnTabs from '../components/LearnTabs'
 import PageTitle from '../components/PageTitle'
 import StoryArt from '../components/StoryArt'
 import { Empty } from '../components/Status'
@@ -30,6 +31,7 @@ function AgePicker() {
 }
 
 // ── 이야기: 한 줄마다 그림이 바뀌고, 큰 글씨로 읽기 쉽게, 할망이 음성(TTS)으로 읽어 줌 ──
+const SHORT_NAME = { seolmundae: '설문대할망', ohbaek: '오백 장군', haenyeo: '해녀 할망', hareubang: '돌하르방', yeongdeung: '영등할망' }
 const FS_KEY = 'halmang-story-fs'
 const FONT_SIZES = [['보통', 1.3], ['크게', 1.6], ['아주 크게', 2]]
 const readFs = () => { try { const v = Number(localStorage.getItem(FS_KEY)); return v >= 0 && v < 3 ? v : 1 } catch { return 1 } }
@@ -70,7 +72,17 @@ function StoryTab() {
     <>
       {/* 넓은 화면: 그림은 왼쪽, 글과 버튼은 오른쪽 → 스크롤 없이 한 화면에서 읽는다. 좁은 화면: 그림 위, 글 아래 */}
       <div className="story-layout">
-        <div className="story-art-box"><StoryArt storyId={story.id} index={i} label={`${story.title} ${i + 1}번째 장면`} /></div>
+        <div className="story-art-box">
+          <StoryArt storyId={story.id} index={i} label={`${story.title} ${i + 1}번째 장면`} />
+          {/* 이야기 고르기: 그림 바로 아래 버튼 5개 (옆으로 밀 필요 없이 한눈에) */}
+          <div className="story-pick" role="tablist" aria-label="이야기 고르기">
+            {STORIES.map((x) => (
+              <button type="button" key={x.id} role="tab" aria-selected={x.id === id} className={x.id === id ? 'on' : ''} onClick={() => pick(x.id)}>
+                <span>{x.emoji}</span><span>{SHORT_NAME[x.id] ?? x.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="story-side">
           <div className="story-head">
@@ -78,11 +90,6 @@ function StoryTab() {
             <div>
               <h3 className="story-title">{story.emoji} {story.title}</h3>
               <div className="story-place"><i className="bi bi-geo-alt me-1" />{story.place}</div>
-              <div className="story-switch">
-                <button type="button" onClick={() => goStory(-1)}>‹ 이전 이야기</button>
-                <span>{idx + 1} / {STORIES.length}</span>
-                <button type="button" onClick={() => goStory(1)}>다음 이야기 ›</button>
-              </div>
             </div>
           </div>
 
@@ -206,7 +213,8 @@ export default function Kids() {
   const [panel, setPanel] = useState('story')
   return (
     <>
-      <PageTitle icon="balloon-heart" title="아이와 함께" sub="놀이 속에서 제주 문화를 배워요" />
+      <LearnTabs />
+      <PageTitle icon="balloon-heart" title="문화 배우기" sub="아이와 함께 놀며 제주 문화를 배워요 — 할망 이야기 · 미션 · 제주어" />
       {/* 넓은 화면에서는 1·2단계를 나란히 놓아 이야기가 한 화면에 들어오게 */}
       <div className="kids-steps mb-3">
       <AgePicker />
@@ -214,7 +222,7 @@ export default function Kids() {
       {/* 2단계: 무엇을 할까요 */}
       <div className="kids-step">
         <div className="kids-step-title"><span className="kids-no">2</span>무엇을 해 볼까요?</div>
-        <div className="kids-panels" role="tablist" aria-label="아이와 함께 메뉴">
+        <div className="kids-panels" role="tablist" aria-label="문화 배우기 메뉴">
           {PANELS.map(([key, emoji, name, desc]) => (
             <button type="button" key={key} role="tab" aria-selected={panel === key} className={`kids-panel-btn ${panel === key ? 'on' : ''}`} onClick={() => setPanel(key)}>
               <span className="kids-panel-emoji">{emoji}</span><b>{name}</b><small>{desc}</small>

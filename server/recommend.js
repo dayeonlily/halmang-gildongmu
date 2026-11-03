@@ -230,7 +230,7 @@ function themeScore(p, keyword) {
 
 const rad = (d) => (d * Math.PI) / 180
 const distKm = (a, b) => { const x = rad(b.lat - a.lat), y = rad(b.lng - a.lng); const h = Math.sin(x / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(y / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)) }
-// ⑥ 가까움: 머무는 곳(또는 내 여행 바구니 중심)에서 8km 이내면 만점, 50km 가까이 멀면 20점
+// ⑥ 가까움: 머무는 곳(또는 내 여행 일정 중심)에서 8km 이내면 만점, 50km 가까이 멀면 20점
 const nearScore = (km) => Math.max(10, Math.min(100, Math.round(100 - Math.max(0, km - 8) * (80 / 42))))
 
 // 못 불러온 정보를 화면에 알릴 형태로: { quota: [한도 초과로 못 받은 것], other: [그 밖의 이유로 못 받은 것] }

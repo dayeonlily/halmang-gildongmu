@@ -101,8 +101,25 @@ function Cloud({ x, y, z, s = 1, speed = 0.05 }) {
   )
 }
 
+// ── 지역 이름표: 어디가 어디인지 알 수 있게 항상 보인다 ─────────
+const REGIONS = [
+  ['한라산', 33.362, 126.533, 'mount'], ['제주시', 33.4996, 126.5312], ['애월', 33.463, 126.329], ['한림', 33.41, 126.265],
+  ['서귀포', 33.2541, 126.5601], ['중문', 33.248, 126.41], ['성산', 33.459, 126.935], ['함덕', 33.543, 126.669],
+]
+function Regions() {
+  const list = useMemo(() => REGIONS.map(([name, lat, lng, kind]) => {
+    const [x, z] = toXZ(lat, lng)
+    return { name, kind, pos: [x, Math.max(terrainHeight(x, z), 0.12) + (kind === 'mount' ? 0.55 : 0.32), z] }
+  }), [])
+  return list.map((r) => (
+    <Html key={r.name} center position={r.pos} zIndexRange={[8, 0]} style={{ pointerEvents: 'none' }}>
+      <div className={`scene-region ${r.kind ?? ''}`}>{r.kind === 'mount' && <i className="bi bi-triangle-fill me-1" />}{r.name}</div>
+    </Html>
+  ))
+}
+
 // ── 추천 스팟 핀: 지형 위에 서고, 점수 색 + 퍼지는 링 ─────────
-function Pin({ spot, selected, onSelect }) {
+function Pin({ spot, selected, onSelect, rank = null }) {
   const body = useRef(), ring = useRef()
   const [hover, setHover] = useState(false)
   const [x, z] = useMemo(() => toXZ(spot.lat, spot.lng), [spot.lat, spot.lng])
@@ -118,15 +135,15 @@ function Pin({ spot, selected, onSelect }) {
       <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
         <ringGeometry args={[0.07, 0.09, 32]} /><meshBasicMaterial color={color} transparent opacity={0.4} depthWrite={false} />
       </mesh>
-      <group ref={body} scale={selected || hover ? 1.4 : 1}
+      <group ref={body} scale={selected || hover ? 1.5 : 1.2}
         onClick={(e) => { e.stopPropagation(); onSelect?.(spot.id) }}
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); document.body.style.cursor = 'pointer' }}
         onPointerOut={() => { setHover(false); document.body.style.cursor = '' }}>
         <mesh position={[0, 0.22, 0]} castShadow><sphereGeometry args={[0.095, 24, 18]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={selected ? 0.55 : 0.2} roughness={0.35} /></mesh>
         <mesh position={[0, 0.07, 0]} rotation={[Math.PI, 0, 0]} castShadow><coneGeometry args={[0.06, 0.2, 16]} /><meshStandardMaterial color={color} roughness={0.4} /></mesh>
-        {(selected || hover) && (
-          <Html center distanceFactor={4.5} position={[0, 0.55, 0]} style={{ pointerEvents: 'none' }}>
-            <div className="scene-label">{spot.title} <b>{spot.scores?.total}</b></div>
+        {(selected || hover || rank) && (
+          <Html center position={[0, 0.95, 0]} zIndexRange={[30, 10]} style={{ pointerEvents: 'none' }}>
+            <div className={`scene-label ${selected || hover ? 'hot' : ''}`}>{rank && <i className="scene-rank">{rank}</i>}{spot.title} <b>{spot.scores?.total}</b></div>
           </Html>
         )}
       </group>
@@ -191,11 +208,19 @@ export function IslandScene({ spots = [], selectedId, onSelect, hero = false, he
         <Cloud x={-2.4} y={2.6} z={-1.6} s={1.2} />
         <Cloud x={2.6} y={3.0} z={0.4} s={1.5} speed={0.07} />
         <Cloud x={0.4} y={3.4} z={-2.8} s={1.0} speed={0.04} />
-        {spots.map((s) => <Pin key={s.id} spot={s} selected={s.id === selectedId} onSelect={onSelect} />)}
+        <Regions />
+        {spots.map((s, i) => <Pin key={s.id} spot={s} selected={s.id === selectedId} onSelect={onSelect} rank={hero && i < 3 ? i + 1 : null} />)}
         <OrbitControls ref={controls} enablePan={false} enableDamping minDistance={2.2} maxDistance={11} maxPolarAngle={Math.PI / 2.1}
           autoRotate={hero && !selectedId} autoRotateSpeed={0.45} target={[HALLA[0] * 0.2, 0.15, HALLA[1] * 0.2]} />
         <CameraRig controls={controls} focus={focus} />
       </Canvas>
+      {/* 지도 안의 안내: 핀 색 의미와 조작법 */}
+      <div className="scene-legend" aria-hidden="true">
+        <span><i style={{ background: '#43a047' }} />70점 이상</span>
+        <span><i style={{ background: '#f9a825' }} />50점 이상</span>
+        <span><i style={{ background: '#e53935' }} />그 아래</span>
+      </div>
+      <div className="scene-hint" aria-hidden="true"><i className="bi bi-hand-index-thumb me-1" />끌어서 돌려 보고, 핀을 눌러 보세요</div>
     </div>
   )
 }

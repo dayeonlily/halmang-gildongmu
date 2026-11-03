@@ -66,7 +66,7 @@ export default function Reviews() {
       {tab === 'mine' && (!user
         ? <Empty icon="person-heart" text={<><Link to="/login">로그인</Link>하면 내 후기를 볼 수 있어요</>} />
         : reviews.length === 0
-          ? <Empty icon="journal-plus" text={<>아직 쓴 후기가 없어요. <Link to="/basket">여행 바구니</Link>의 일차마다 후기를 남길 수 있어요</>} />
+          ? <Empty icon="journal-plus" text={<>아직 쓴 후기가 없어요. <Link to="/basket">여행 일정</Link>의 일차마다 후기를 남길 수 있어요</>} />
           : reviews.map((r) => <ReviewCard key={r.id} r={r} mine onEdit={setEditing} />))}
 
       {editing && <ReviewModal key={editing.id} review={editing} route={editing.route ?? []} day={editing.day} onHide={() => setEditing(null)} />}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Badge, Button, Container, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import NewVersionBanner from '../components/NewVersionBanner'
@@ -9,11 +9,14 @@ function NavList({ onPick }) {
   const basketCount = useAppStore((s) => s.basket.length)
   return (
     <nav className="nav flex-column gap-1">
-      {NAV_ITEMS.map((n) => (
-        <NavLink key={n.to} to={n.to} end={n.to === '/'} className="nav-link" onClick={onPick}>
-          <i className={`bi bi-${n.icon}`} />{n.label}
-          {n.to === '/basket' && basketCount > 0 && <Badge bg="light" text="dark" pill className="ms-auto">{basketCount}</Badge>}
-        </NavLink>
+      {NAV_ITEMS.map((n, i) => (
+        <Fragment key={n.to}>
+          {n.group && n.group !== NAV_ITEMS[i - 1]?.group && <div className="nav-group">{n.group}</div>}
+          <NavLink to={n.to} end={n.to === '/'} className="nav-link" onClick={onPick}>
+            <i className={`bi bi-${n.icon}`} />{n.label}
+            {n.to === '/basket' && basketCount > 0 && <Badge bg="light" text="dark" pill className="ms-auto">{basketCount}</Badge>}
+          </NavLink>
+        </Fragment>
       ))}
     </nav>
   )
@@ -91,7 +94,7 @@ export default function RootLayout() {
       <nav className="tabbar">
         {NAV_ITEMS.filter((n) => n.tab).map((n) => (
           <NavLink key={n.to} to={n.to} end={n.to === '/'}>
-            <i className={`bi bi-${n.icon}`} />{n.label.replace('할망에게 ', '').replace('여행 ', '').replace('길동무 ', '')}
+            <i className={`bi bi-${n.icon}`} />{n.short ?? n.label}
             {n.to === '/basket' && basket > 0 && <Badge bg="danger" pill className="count">{basket}</Badge>}
           </NavLink>
         ))}

@@ -16,7 +16,7 @@ const needSupabase = (get) => {
 }
 
 // ── 앱 전체가 함께 쓰는 상태(store) ──────────────────────
-// 인증 · 가족 프로필 · 여행 바구니 · 미션 스탬프 · 할망 대화 · 아이 모드
+// 인증 · 가족 프로필 · 여행 일정 · 미션 스탬프 · 할망 대화 · 아이 모드
 export const useAppStore = create(
   persist(
     (set, get) => ({
@@ -84,7 +84,7 @@ export const useAppStore = create(
         return true
       },
 
-      // ④ 여행 바구니
+      // ④ 여행 일정
       basket: [],
       loadBasket: async () => {
         const { data, error } = await supabase.from('basket_items').select('*').order('day').order('created_at')
@@ -93,7 +93,7 @@ export const useAppStore = create(
       },
       addToBasket: async (spot) => {
         if (needSupabase(get)) return
-        if (!get().user) return get().toast('로그인하면 바구니에 담을 수 있어요', 'warning')
+        if (!get().user) return get().toast('로그인하면 일정에 담을 수 있어요', 'warning')
         if (get().basket.some((b) => b.content_id === spot.id)) return get().toast('이미 담았어요', 'warning')
         const row = {
           content_id: spot.id, content_type: spot.type ?? '', title: spot.title, addr: spot.addr ?? '',
@@ -102,7 +102,7 @@ export const useAppStore = create(
         const { data, error } = await supabase.from('basket_items').insert(row).select().single()
         if (error) return get().toast(error.message, 'danger')
         set({ basket: [...get().basket, data] })
-        get().toast(`'${spot.title}' 바구니에 담았어요`)
+        get().toast(`'${spot.title}' 일정에 담았어요`)
       },
       updateBasketItem: async (id, patch) => {
         const prev = get().basket
@@ -196,17 +196,29 @@ export const useAppStore = create(
       messages: [],
       chatLoading: false,
       sendMessage: async (text) => {
-        const history = get().messages.map((m) => ({ role: m.role, content: m.text }))
+        // 오류 말풍선은 할망에게 보내는 대화 기록에서 뺀다
+        const history = get().messages.filter((m) => !m.error).map((m) => ({ role: m.role, content: m.text }))
         set({ messages: [...get().messages, { role: 'user', text }], chatLoading: true })
         try {
           const { answer, steps, provider, fallback } = await askHalmang(text, history, get().profile)
           set({ messages: [...get().messages, { role: 'assistant', text: answer, steps, provider, fallback }] })
         } catch (e) {
-          get().toast(e.message, 'danger')
+          // 잠깐 뜨는 알림 대신 대화 안에 이유를 남기고, 다시 시도할 수 있게 한다
+          set({ messages: [...get().messages, { role: 'assistant', text: e.message, error: true, retryText: text }] })
         } finally {
           set({ chatLoading: false })
         }
       },
+      // 마지막에 실패한 질문을 다시 보낸다 (실패 말풍선과 그 질문을 지우고 새로 보냄)
+      retryMessage: async () => {
+        const list = get().messages
+        const last = list.at(-1)
+        if (!last?.error) return
+        const text = last.retryText
+        set({ messages: list.slice(0, list.length - (list.at(-2)?.role === 'user' ? 2 : 1)) })
+        await get().sendMessage(text)
+      },
+      clearChat: () => set({ messages: [] }),
 
       // ⑧ 아이 연령대 (새로고침해도 유지)
       ageBand: 'preschool',

@@ -12,7 +12,8 @@ import { useAppStore } from '../store/useAppStore'
 
 const dayIndex = Math.floor(Date.now() / 86400000) // 하루에 한 번 바뀌는 "오늘의 …" 고르기
 const skyIcon = (w) => (w.rain !== '없음' ? (w.rain.includes('눈') ? '❄️' : '🌧️') : w.sky === '맑음' ? '☀️' : w.sky === '구름많음' ? '⛅' : '☁️')
-const hourOf = (t) => `${Number(t.slice(9, 11))}시`
+const hourOf = (t) => { const h = Number(t.slice(9, 11)); return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}시` }
+const condOf = (w) => (w.rain !== '없음' ? 'rain' : w.sky === '맑음' ? 'sun' : 'cloud')
 
 // ── 오늘 날씨: 제주시·서귀포시 + 시간대별 예보 + 아이 동반 조언 ──
 function TodayWeather() {
@@ -25,13 +26,26 @@ function TodayWeather() {
   const sm = jeju.summary
   return (
     <div>
-      <div className="d-flex flex-wrap gap-3 align-items-center mb-2">
-        <div className="display-font" style={{ fontSize: '3rem', lineHeight: 1 }}>{skyIcon(jeju.rows[0])} {jeju.rows[0]?.temp}°</div>
-        <div style={{ fontSize: '1.05rem' }}><b>제주시</b> {jeju.rows[0]?.sky} · 강수확률 {sm.pop}%<br /><b>서귀포시</b> {seogwipo.rows[0]?.temp}° · 강수확률 {seogwipo.summary.pop}%</div>
+      {/* 지금 날씨 + 두 지역 */}
+      <div className="wx-now">
+        <div className="wx-big"><span className="wx-big-icon">{skyIcon(jeju.rows[0])}</span><span className="wx-big-temp">{jeju.rows[0]?.temp}°</span><span className="wx-big-sky">{jeju.rows[0]?.sky}</span></div>
+        <div className="wx-places">
+          <div><small>제주시</small><b>{jeju.rows[0]?.temp}°</b><span>비 {sm.pop}%</span></div>
+          <div><small>서귀포시</small><b>{seogwipo.rows[0]?.temp}°</b><span>비 {seogwipo.summary.pop}%</span></div>
+        </div>
       </div>
-      <div className={`fw-bold mb-2 ${sm.wet || sm.hot || sm.cold || sm.windy ? 'text-danger' : 'text-success'}`}><i className="bi bi-lightbulb me-1" />{sm.advice}</div>
-      <div className="hour-strip">
-        {jeju.rows.map((r) => <div key={r.time} className="hour-chip"><small>{hourOf(r.time)}</small><span>{skyIcon(r)}</span><b>{r.temp}°</b><small>{r.pop}%</small></div>)}
+      {/* 아이 동반 조언: 좋은 날은 초록, 조심할 날은 빨강 */}
+      <div className={`wx-advice ${sm.wet || sm.hot || sm.cold || sm.windy ? 'bad' : 'good'}`}><i className={`bi bi-${sm.wet || sm.hot || sm.cold || sm.windy ? 'exclamation-triangle-fill' : 'emoji-smile-fill'}`} />{sm.advice}</div>
+      {/* 시간별: 날씨 색 카드 */}
+      <div className="wx-strip" role="list" aria-label="시간별 날씨">
+        {jeju.rows.map((r, i) => (
+          <div key={r.time} role="listitem" className={`wx-cell ${condOf(r)} ${i === 0 ? 'now' : ''}`}>
+            <div className="wx-time">{i === 0 ? '지금' : hourOf(r.time)}</div>
+            <div className="wx-icon">{skyIcon(r)}</div>
+            <div className="wx-temp">{r.temp}°</div>
+            <div className="wx-rain" title={`강수확률 ${r.pop}%`}><span className="wx-bar"><i style={{ width: `${Math.min(100, r.pop)}%` }} /></span><em>{r.pop}%</em></div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -115,15 +129,15 @@ export default function Home() {
             <TodayWeather />
             <div className="quick-grid mt-3">
               <Tile to="/explore" icon="compass" title="길동무 찾기" sub="맞춤 추천" />
-              <Tile to="/basket" icon="basket2" title="여행 바구니" sub={`${basket.length}곳 담음`} />
-              <Tile to="/history" icon="hourglass-split" title="역사 도장" sub={`${histDone}/${courses.length}`} />
+              <Tile to="/basket" icon="calendar2-check" title="여행 일정" sub={`${basket.length}곳 담음`} />
+              <Tile to="/history" icon="hourglass-split" title="역사 배우기" sub={`도장 ${histDone}/${courses.length}`} />
               <Tile to="/halmang" icon="chat-heart" title="할망에게 묻기" sub="AI 가이드" />
             </div>
           </div>
         </Col>
         <Col lg={5}>
           <IslandScene spots={spots ?? []} hero height={330} />
-          <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />오늘의 추천 장소가 지도에 핀으로 보여요</div>
+          <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />아래 추천 장소 1~3번이 지도에 번호 핀으로 보여요</div>
         </Col>
       </Row>
 
@@ -137,12 +151,22 @@ export default function Home() {
         <Badge bg="primary">{AGE_BANDS.find((x) => x.key === familyAge)?.label}</Badge>
         {(profile?.needs ?? []).map((k) => <Badge key={k} bg="secondary">{NEEDS.find((n) => n.key === k)?.label}</Badge>)}
         <Badge bg="light" text="dark" className="border">예산 {BUDGETS.find((x) => x.key === (profile?.budget ?? 'any'))?.label}</Badge>
+        <Badge bg="success">70점 이상만</Badge>
         {!profile && <Link to="/profile" className="ms-1">가족 정보를 입력하면 더 잘 맞춰요</Link>}
       </div>
       <DataNotice degraded={pickNotice} />
       <Row xs={1} md={3} className="g-3 mb-4">
         {!spots && !spotErr && [0, 1, 2].map((i) => <Col key={i}><div className="soft-card p-3 text-muted small" style={{ minHeight: 170 }}><i className="bi bi-hourglass-split me-1" />추천을 고르는 중...</div></Col>)}
         {spotErr && <Col xs={12}><div className="soft-card p-3 small text-muted">추천을 불러오지 못했어요. <Link to="/explore">길동무 찾기</Link>에서 직접 찾아보세요.</div></Col>}
+        {spots && spots.length === 0 && (
+          <Col xs={12}>
+            <div className="soft-card p-3 d-flex flex-wrap align-items-center gap-3">
+              <i className="bi bi-emoji-neutral fs-3 text-muted" />
+              <div className="flex-grow-1">오늘은 <b>70점 이상</b>인 추천 장소를 찾지 못했어요. 날씨나 우리 가족 조건 때문에 점수가 낮은 날이에요.</div>
+              <Button as={Link} to="/explore" variant="outline-primary">길동무 찾기에서 직접 보기</Button>
+            </div>
+          </Col>
+        )}
         {spots?.map((s) => (
           <Col key={s.id}>
             <div className="soft-card spot-card h-100 overflow-hidden">
@@ -157,7 +181,7 @@ export default function Home() {
                 <div className="d-flex gap-2">
                   <Button as={Link} to={`/explore?q=${encodeURIComponent(s.title)}`} size="sm" variant="outline-primary" className="flex-fill">자세히</Button>
                   <Button size="sm" className="flex-fill" disabled={basket.some((b) => b.content_id === s.id)} onClick={() => addToBasket(s)}>
-                    <i className="bi bi-basket2 me-1" />{basket.some((b) => b.content_id === s.id) ? '담았어요' : '담기'}
+                    <i className="bi bi-calendar2-plus me-1" />{basket.some((b) => b.content_id === s.id) ? '담았어요' : '담기'}
                   </Button>
                 </div>
               </div>
@@ -170,7 +194,7 @@ export default function Home() {
       <Row className="g-3 mb-3">
         <Col md={6} lg={4}>
           <div className="soft-card p-3 h-100">
-            <h3 className="fs-5"><i className="bi bi-basket2 text-primary me-2" />내 여행 바구니</h3>
+            <h3 className="fs-5"><i className="bi bi-calendar2-check text-primary me-2" />내 여행 일정</h3>
             {basket.length === 0 ? (
               <div className="small text-muted">아직 담은 곳이 없어요. 위의 추천에서 마음에 드는 곳을 담아 보세요.</div>
             ) : (
@@ -187,7 +211,7 @@ export default function Home() {
         <Col md={6} lg={4}>
           <div className="soft-card p-3 h-100">
             <h3 className="fs-5"><i className="bi bi-stamp text-primary me-2" />도장 현황 <small className="text-muted fs-6">({age?.short})</small></h3>
-            <div className="small d-flex justify-content-between"><span>역사 스탬프 투어</span><b>{histDone}/{courses.length}</b></div>
+            <div className="small d-flex justify-content-between"><span>역사 배우기 (스탬프 투어)</span><b>{histDone}/{courses.length}</b></div>
             <ProgressBar now={(histDone / courses.length) * 100} className="mb-2" style={{ height: 8 }} />
             <div className="small d-flex justify-content-between"><span>미션 카드</span><b>{missionDone}/{missions.length}</b></div>
             <ProgressBar now={missions.length ? (missionDone / missions.length) * 100 : 0} className="mb-3" style={{ height: 8 }} />

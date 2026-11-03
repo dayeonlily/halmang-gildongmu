@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Badge, Button, Col, ProgressBar, Row, Tab, Tabs } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import LearnTabs from '../components/LearnTabs'
 import PageTitle from '../components/PageTitle'
 import Stamp from '../components/Stamp'
 import StampBook from '../components/StampBook'
@@ -106,7 +107,8 @@ export default function HistoryTour() {
 
   return (
     <>
-      <PageTitle icon="hourglass-split" title="제주 역사 스탬프 투어" sub="선사시대부터 오늘까지, 시간 여행을 하며 도장을 모아요">
+      <LearnTabs />
+      <PageTitle icon="hourglass-split" title="역사 배우기" sub="스탬프 투어로 선사시대부터 오늘까지, 시간 여행을 하며 도장을 모아요">
         <Button variant="outline-primary" className="rounded-pill" onClick={() => setBook(true)}>
           <i className="bi bi-journal-bookmark me-1" />내 도장첩 <Badge bg="primary" pill>{total}</Badge>
         </Button>

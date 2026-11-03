@@ -102,7 +102,7 @@ export default function Basket() {
 
   return (
     <>
-      <PageTitle icon="basket2" title="여행 바구니" sub="담은 곳을 끌어서(폰은 선택 메뉴로) 원하는 일차로 옮겨요">
+      <PageTitle icon="calendar2-check" title="여행 일정" sub="담은 곳을 끌어서(폰은 선택 메뉴로) 원하는 일차로 옮겨요">
         <div className="d-flex align-items-center gap-2">
           <ButtonGroup size="sm">
             <Button variant="outline-primary" onClick={() => removeDay(total)} disabled={total <= 1} aria-label="마지막 일차 삭제"><i className="bi bi-dash-lg" /></Button>
@@ -113,7 +113,7 @@ export default function Basket() {
       </PageTitle>
 
       {basket.length === 0 ? (
-        <Empty icon="basket2" text={<>아직 담은 곳이 없어요. <Link to="/explore">길동무 찾으러 가기</Link></>} />
+        <Empty icon="calendar2-check" text={<>아직 담은 곳이 없어요. <Link to="/explore">길동무 찾으러 가기</Link></>} />
       ) : (
         <>
           {/* 지도는 맨 위, 담은 곳(일차별)은 지도 아래에 가로로 나란히 */}
