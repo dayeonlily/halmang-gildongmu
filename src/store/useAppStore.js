@@ -46,7 +46,7 @@ export const useAppStore = create(
       },
       signUp: async (email, password) => {
         if (needSupabase(get)) return { ok: false }
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
         if (error) { get().toast(error.message, 'danger'); return { ok: false } }
         // 이메일 확인이 켜져 있으면 session 이 비어 있음
         return { ok: true, needsConfirm: !data.session }

@@ -29,7 +29,7 @@ export default function Login() {
     if (mode === 'in') await signIn(email, pw)
     else {
       const r = await signUp(email, pw)
-      if (r.ok && r.needsConfirm) setMsg('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.')
+      if (r.ok && r.needsConfirm) setMsg('가입 확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요. 메일이 안 보이면 스팸함도 확인해 주세요.')
     }
     setBusy(false)
   }
