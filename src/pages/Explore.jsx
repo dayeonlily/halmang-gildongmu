@@ -151,28 +151,7 @@ export default function Explore() {
         </InputGroup>
       </Form>
 
-      {/* ① 무엇을 찾나요? */}
-      <div className="cat-row mb-3" role="tablist" aria-label="장소 종류">
-        {CATEGORIES.map(([k, label, icon]) => (
-          <button type="button" key={k || 'all'} className={`cat-btn ${type === k ? 'on' : ''}`} onClick={() => pickType(k)} role="tab" aria-selected={type === k}>
-            <i className={`bi bi-${icon}`} /><span>{label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* ② 어떤 곳을 원하나요? (종류에 맞는 테마) — 종류를 고른 경우에만 */}
-      {type !== '' && <div className="mb-3">
-        <div className="fw-bold mb-2">어떤 곳을 원하세요? <span className="small text-muted fw-normal">눌러서 고르고, 다시 누르면 풀려요</span></div>
-        <div className="d-flex flex-wrap gap-2">
-          {themes.map(([label, kw, icon]) => (
-            <Button key={label} variant={q === kw ? 'primary' : 'outline-secondary'} className="rounded-pill theme-chip" onClick={() => pickTheme(kw)}>
-              <i className={`bi bi-${icon} me-1`} />{label}
-            </Button>
-          ))}
-        </div>
-      </div>}
-
-      {/* ③ 방문 조건: 가족 정보와 별개로 이번 검색에만 쓰는 것들 */}
+      {/* 방문 조건: 언제 · 어디서 머무는지 + 지금 날씨 (검색창 바로 아래) */}
       <div className="d-flex flex-wrap align-items-end gap-3 mb-3">
         <div>
           <div className="small text-muted mb-1">언제 가세요?</div>
@@ -221,6 +200,28 @@ export default function Explore() {
           )}
         </div>
       )}
+
+      {/* ① 무엇을 찾나요? */}
+      <div className="cat-row mb-3" role="tablist" aria-label="장소 종류">
+        {CATEGORIES.map(([k, label, icon]) => (
+          <button type="button" key={k || 'all'} className={`cat-btn ${type === k ? 'on' : ''}`} onClick={() => pickType(k)} role="tab" aria-selected={type === k}>
+            <i className={`bi bi-${icon}`} /><span>{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ② 어떤 곳을 원하나요? (종류에 맞는 테마) — 종류를 고른 경우에만 */}
+      {type !== '' && <div className="mb-3">
+        <div className="fw-bold mb-2">어떤 곳을 원하세요? <span className="small text-muted fw-normal">눌러서 고르고, 다시 누르면 풀려요</span></div>
+        <div className="d-flex flex-wrap gap-2">
+          {themes.map(([label, kw, icon]) => (
+            <Button key={label} variant={q === kw ? 'primary' : 'outline-secondary'} className="rounded-pill theme-chip" onClick={() => pickTheme(kw)}>
+              <i className={`bi bi-${icon} me-1`} />{label}
+            </Button>
+          ))}
+        </div>
+      </div>}
+
       <DataNotice degraded={data?.degraded} />
       <ErrorAlert error={err} />
 
