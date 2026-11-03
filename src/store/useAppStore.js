@@ -222,11 +222,13 @@ export const useAppStore = create(
 
       // ⑧ 아이 연령대 (새로고침해도 유지)
       ageBand: 'preschool',
+      avatar: 'hallabong', // 우리 가족 프로필 캐릭터 (이 기기에 기억)
+      setAvatar: (avatar) => set({ avatar }),
       setAgeBand: (ageBand) => set({ ageBand }),
     }),
     {
       name: 'halmang-gildongmu',
-      partialize: (s) => ({ ageBand: s.ageBand, localStamps: s.localStamps }),
+      partialize: (s) => ({ ageBand: s.ageBand, avatar: s.avatar, localStamps: s.localStamps }),
     },
   ),
 )

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import PageTitle from '../components/PageTitle'
-import HalmangMascot from '../components/art/Mascot'
+import Avatar, { AVATARS } from '../components/art/Avatars'
 import { youngestBand, AGE_BANDS, BUDGETS, NEEDS } from '../../shared/lore'
 import { useAppStore } from '../store/useAppStore'
 
@@ -26,7 +26,7 @@ const Step = ({ no, title, sub, children }) => (
 )
 
 export default function Profile() {
-  const { profile, saveProfile, user, setAgeBand } = useAppStore()
+  const { profile, saveProfile, user, setAgeBand, avatar, setAvatar } = useAppStore()
   const editing = Boolean(profile) // 이미 저장한 가족 정보가 있으면 '수정' 화면
   const nav = useNavigate()
   const [f, setF] = useState(() => fromProfile(profile))
@@ -59,6 +59,14 @@ export default function Profile() {
       <Form onSubmit={submit} className="fam-layout">
         <div>
           <Step no="1" title="우리 가족을 소개해 주세요">
+            <div className="fam-label">우리 가족 캐릭터 <small className="text-muted fw-normal">· 이 기기에 저장돼요</small></div>
+            <div className="fam-avatars" role="group" aria-label="우리 가족 캐릭터">
+              {AVATARS.map((a) => (
+                <button type="button" key={a.key} className={avatar === a.key ? 'on' : ''} aria-pressed={avatar === a.key} onClick={() => setAvatar(a.key)}>
+                  <Avatar kind={a.key} size={64} /><span>{a.label}</span>
+                </button>
+              ))}
+            </div>
             <Form.Label className="fam-label" htmlFor="fam-name">부르는 이름</Form.Label>
             <Form.Control id="fam-name" size="lg" maxLength={20} placeholder="예) 하윤이네" value={f.display_name} onChange={(e) => setF({ ...f, display_name: e.target.value })} />
             <div className="fam-label mt-3">보호자 연령대</div>
@@ -105,7 +113,7 @@ export default function Profile() {
         {/* 오른쪽: 고른 내용이 바로 보이는 가족 카드 + 저장 */}
         <aside className="fam-side">
           <div className="fam-card">
-            <HalmangMascot pose="wave" className="fam-mascot" label="설문대할망" />
+            <Avatar kind={avatar} size={110} className="fam-mascot" />
             <div className="fam-card-name">{f.display_name.trim() || '우리 가족'}<small>{editing ? '' : ' (입력 중)'}</small></div>
             <dl className="fam-summary">
               <div><dt>보호자</dt><dd>{GUARDIAN_AGES.find(([k]) => k === f.guardian_age)?.[1]}</dd></div>

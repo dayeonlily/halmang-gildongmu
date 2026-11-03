@@ -33,7 +33,7 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
   background: var(--hm-basalt); color: #f3ece4; display: none; flex-direction: column; z-index: 1030;
 }
 .rail .brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font-family: 'Jua', sans-serif; font-size: 1.35rem; margin-bottom: 1.4rem; }
-.rail .brand img { width: 38px; height: 38px; }
+.rail .brand-face { flex: none; width: 42px; height: 42px; border-radius: 50%; background: #fff3dc 50% 3% / 150% auto no-repeat; border: 2px solid #f0d9b4; }
 .rail .nav-link, .drawer .nav-link { color: #d9cfc4; border-radius: .8rem; padding: .55rem .8rem; display: flex; align-items: center; gap: .6rem; }
 .rail .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
 .rail .nav-link.active, .drawer .nav-link.active { background: var(--hm-orange); color: #fff; }
@@ -554,3 +554,12 @@ small, .small { font-size: .92rem; }
 .care-sos-card i { font-size: 1.1rem; } .care-sos-card b { font-size: 1.7rem; line-height: 1.1; } .care-sos-card span { grid-column: 1 / -1; font-size: .85rem; margin-top: .3rem; opacity: .95; }
 .care-sos-card:hover { color: #fff; filter: brightness(.94); }
 .care-sos-card.danger { background: #d23b3b; } .care-sos-card.warning { background: #d99a12; } .care-sos-card.primary { background: #d9772b; } .care-sos-card.dark { background: #4a3a2c; } .care-sos-card.secondary { background: #7a6a5a; }
+
+.rail-user { display: flex; align-items: center; gap: .4rem; }
+.rail-user-me { flex: 1; min-width: 0; display: flex; align-items: center; gap: .55rem; color: #fff; text-decoration: none; font-weight: 700; padding: .3rem .5rem .3rem .3rem; border-radius: 999px; background: rgba(255, 255, 255, .08); }
+.rail-user-me:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.rail-logout { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .08); color: #fff; display: grid; place-items: center; }
+.rail-logout:hover { background: rgba(255, 255, 255, .2); }
+.fam-avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: .6rem; margin: .4rem 0 1rem; }
+.fam-avatars button { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .5rem .3rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 16px; font-weight: 700; color: #4a3a2c; cursor: pointer; }
+.fam-avatars button.on { border-color: var(--hm-orange); background: #fff; box-shadow: 0 3px 10px rgba(232, 121, 26, .3); }

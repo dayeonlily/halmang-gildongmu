@@ -2,6 +2,8 @@ import { Fragment, useEffect, useState } from 'react'
 import { Badge, Button, Container, Offcanvas, Toast, ToastContainer } from 'react-bootstrap'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import NewVersionBanner from '../components/NewVersionBanner'
+import Avatar from '../components/art/Avatars'
+import halmangUrl from '../assets/halmang.webp'
 import { NAV_ITEMS } from '../router'
 import { useAppStore } from '../store/useAppStore'
 
@@ -29,12 +31,13 @@ function Account() {
   const user = useAppStore((s) => s.user)
   const profile = useAppStore((s) => s.profile)
   const signOut = useAppStore((s) => s.signOut)
+  const avatar = useAppStore((s) => s.avatar)
   const nav = useNavigate()
   if (!user) return <Button variant="primary" size="sm" className="w-100" onClick={() => nav('/login')}><i className="bi bi-box-arrow-in-right me-1" />로그인 · 회원가입</Button>
   return (
-    <div>
-      <div className="mb-1 text-truncate"><i className="bi bi-person-circle me-1" />{profile?.display_name || user.email}</div>
-      <Button variant="outline-light" size="sm" className="w-100" onClick={signOut}>로그아웃</Button>
+    <div className="rail-user">
+      <Link to="/profile" className="rail-user-me" title="우리 가족 정보"><Avatar kind={avatar} size={38} /><span className="text-truncate">{profile?.display_name || user.email}</span></Link>
+      <button type="button" className="rail-logout" onClick={signOut} title="로그아웃" aria-label="로그아웃"><i className="bi bi-box-arrow-right" /></button>
     </div>
   )
 }
@@ -70,7 +73,7 @@ export default function RootLayout() {
       <NewVersionBanner />
       {/* 데스크톱: 좌측 레일 */}
       <aside className="rail">
-        <Link to="/" className="brand"><img src="/favicon.svg" alt="" />할망 길동무</Link>
+        <Link to="/" className="brand"><span className="brand-face" style={{ backgroundImage: `url(${halmangUrl})` }} aria-hidden="true" />할망 길동무</Link>
         <NavList />
         <div className="rail-foot">
           <Account />
