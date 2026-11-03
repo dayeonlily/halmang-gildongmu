@@ -216,8 +216,9 @@ small, .small { font-size: .92rem; }
 .hour-chip { font-size: .95rem; }
 @media (max-width: 575.98px) {
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
-  .quick-tile { flex-direction: row; justify-content: flex-start; text-align: left; gap: .8rem; padding: .9rem 1rem; }
+  .quick-tile { padding: .9rem .4rem; gap: .1rem; }
   .quick-tile i { font-size: 1.9rem; }
+  .quick-tile b { font-size: 1rem; white-space: nowrap; }
 }
 
 /* ── 여행지 찾기: 종류 버튼 · 점수 설명 ── */
@@ -617,3 +618,39 @@ small, .small { font-size: .92rem; }
 .basket-order button { border: 0; background: #fdf0d9; color: #a85b1c; width: 28px; height: 22px; border-radius: 8px; display: grid; place-items: center; font-size: .8rem; padding: 0; }
 .basket-order button:hover:not(:disabled) { background: #f9e2bb; }
 .basket-order button:disabled { opacity: .3; cursor: default; }
+/* ── 모바일 보정 (뒤에 와야 위의 데스크톱 규칙을 덮는다) ── */
+@media (max-width: 767.98px) {
+  .ex-fields { grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .ex-field { min-width: 0; } .ex-field .form-control, .ex-field .form-select { width: 100%; min-width: 0; font-size: .95rem; padding: .5rem .55rem; }
+  .ex-toggle { grid-column: 1 / -1; }
+  .ex-map-bar { flex-wrap: wrap; }
+  .ex-map-seg button { padding: .2rem .65rem; font-size: .82rem; }
+  .ex-jump { display: none; }
+}
+.brand-face.sm { display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: #fff3dc 0% 0% / 112% auto no-repeat; border: 2px solid #f0d9b4; vertical-align: -9px; }
+@media (max-width: 575.98px) {
+  .scene-label { font-size: 12px; padding: 2px 8px; }
+  .scene-title { display: inline-block; max-width: 6.2em; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+  .scene-label.hot .scene-title { max-width: 11em; }
+}
+
+@media (max-width: 575.98px) {
+  .home-map { min-height: 280px; }
+  .home-section { font-size: 1.2rem; }
+  .home-hello { font-size: 1.7rem; }
+  .wx-strip { gap: .45rem; }
+}
+/* 제목 옆 도구(일수 조절·내 도장첩 등)는 좁은 화면에서 제목 아래 줄로 */
+@media (max-width: 575.98px) {
+  .page-title { flex-wrap: wrap; row-gap: .6rem; }
+  .page-title h1 { font-size: 1.45rem; }
+  .page-title > .flex-grow-1 { flex: 1 1 calc(100% - 60px); min-width: 0; }
+  .page-title > :nth-child(n+3) { margin-left: 56px; }
+  .page-title .btn-group .btn { white-space: nowrap; }
+  .soft-card .fw-bold .score-pill { margin-left: .2rem; }
+}
+@media (max-width: 575.98px) {
+  .kids-step-title { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: .6rem; row-gap: .2rem; font-size: 1.15rem; }
+  .kids-step-sub { grid-column: 2; font-size: .88rem; }
+}
+@media (max-width: 575.98px) { .home-section { font-size: 1.1rem; text-wrap: balance; } .home-hello { text-wrap: balance; } }

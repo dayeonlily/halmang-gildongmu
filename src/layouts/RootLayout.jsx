@@ -84,7 +84,7 @@ export default function RootLayout() {
 
       {/* 모바일: 상단바 + 서랍 + 하단 탭 */}
       <header className="topbar">
-        <Link to="/" className="text-white text-decoration-none display-font fs-5"><img src="/favicon.svg" alt="" width="28" className="me-2" />할망 길동무</Link>
+        <Link to="/" className="text-white text-decoration-none display-font fs-5"><span className="brand-face sm me-2" style={{ backgroundImage: `url(${halmangUrl})` }} aria-hidden="true" />할망 길동무</Link>
         <Button variant="link" className="text-white fs-4 p-0" onClick={() => setOpen(true)} aria-label="메뉴"><i className="bi bi-list" /></Button>
       </header>
       <Offcanvas show={open} onHide={() => setOpen(false)} placement="end" className="drawer" style={{ background: '#2f3a3f', color: '#fff' }}>

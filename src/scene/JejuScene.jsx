@@ -143,7 +143,7 @@ function Pin({ spot, selected, onSelect, rank = null }) {
         <mesh position={[0, 0.07, 0]} rotation={[Math.PI, 0, 0]} castShadow><coneGeometry args={[0.06, 0.2, 16]} /><meshStandardMaterial color={color} roughness={0.4} /></mesh>
         {(selected || hover || rank) && (
           <Html center position={[0, 0.95, 0]} zIndexRange={[30, 10]} style={{ pointerEvents: 'none' }}>
-            <div className={`scene-label ${selected || hover ? 'hot' : ''}`}>{rank && <i className="scene-rank">{rank}</i>}{spot.title} <b>{spot.scores?.total}</b></div>
+            <div className={`scene-label ${selected || hover ? 'hot' : ''}`}>{rank && <i className="scene-rank">{rank}</i>}<span className="scene-title">{spot.title}</span> <b>{spot.scores?.total}</b></div>
           </Html>
         )}
       </group>

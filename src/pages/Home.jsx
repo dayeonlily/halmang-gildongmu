@@ -150,9 +150,9 @@ export default function Home() {
       </div>
 
       {/* ② 오늘 가기 좋은 곳 TOP 3 */}
-      <div className="d-flex align-items-end justify-content-between mb-2">
+      <div className="d-flex align-items-end justify-content-between gap-2 mb-2">
         <h2 className="home-section">오늘 우리 가족이 가기 좋은 곳</h2>
-        <Link to="/explore" className="fw-bold">더 보기 <i className="bi bi-chevron-right" /></Link>
+        <Link to="/explore" className="fw-bold text-nowrap">더 보기 <i className="bi bi-chevron-right" /></Link>
       </div>
       <div className="d-flex flex-wrap align-items-center gap-1 mb-3 small">
         <span className="text-muted me-1"><i className="bi bi-people-fill text-primary me-1" />우리 가족 기준</span>
