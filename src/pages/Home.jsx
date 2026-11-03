@@ -156,7 +156,11 @@ export default function Home() {
       </div>
       <div className="d-flex flex-wrap align-items-center gap-1 mb-3 small">
         <span className="text-muted me-1"><i className="bi bi-people-fill text-primary me-1" />우리 가족 기준</span>
-        <Badge bg="primary">{AGE_BANDS.find((x) => x.key === familyAge)?.label}</Badge>
+        {(() => {
+          const kids = AGE_BANDS.filter((x) => (profile?.child_age_bands ?? []).includes(x.key))
+          const list = kids.length ? kids : AGE_BANDS.filter((x) => x.key === familyAge)
+          return list.map((x) => <Badge key={x.key} bg={x.key === familyAge ? 'primary' : 'info'}>{x.label}{x.key === familyAge && list.length > 1 ? ' · 추천 기준' : ''}</Badge>)
+        })()}
         {(profile?.needs ?? []).map((k) => <Badge key={k} bg="secondary">{NEEDS.find((n) => n.key === k)?.label}</Badge>)}
         <Badge bg="light" text="dark" className="border">예산 {BUDGETS.find((x) => x.key === (profile?.budget ?? 'any'))?.label}</Badge>
         {!profile && <Link to="/profile" className="ms-1">가족 정보를 입력하면 더 잘 맞춰요</Link>}
