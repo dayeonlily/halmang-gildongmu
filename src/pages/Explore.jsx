@@ -100,6 +100,7 @@ export default function Explore() {
   const [accessible, setAccessible] = useState(false) // 베리어프리 정보가 등록된 장소만
   const [more, setMore] = useState(false)
   const [open, setOpen] = useState(null) // 상세 창에 띄울 장소
+  const [mapSize, setMapSize] = useState('compact') // 지도 크기: off(접기) · compact(작게) · big(크게) — 카드가 너무 아래로 밀리지 않게 기본은 작게
   const [how, setHow] = useState(false)  // 점수 기준 설명 펼치기
   const [date, setDate] = useState('')      // 방문 날짜 ('' = 오늘): 집중률 예측과 휴무일에 쓴다
   const [base, setBase] = useState('')      // 머무는 곳 ('' = 상관없음, 'basket' = 내 여행 일정 중심)
@@ -238,8 +239,14 @@ export default function Explore() {
       <ErrorAlert error={err} />
 
       {/* 지도는 결과 위에 가로로 넓게: 핀을 누르면 아래 카드가 강조되고, 카드를 누르면 지도에서 핀이 강조된다 */}
-      <section className="ex-map mb-3">
-        <IslandScene spots={data?.items ?? []} selectedId={sel} onSelect={pickPin} height={340} />
+      <div className="ex-map-bar">
+        <span><i className="bi bi-map me-1" />제주 지도 <button type="button" className="ex-jump" onClick={() => document.getElementById('ex-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>장소 목록으로 ↓</button></span>
+        <div className="fam-seg ex-map-seg" role="group" aria-label="지도 크기">
+          {[['off', '접기'], ['compact', '작게'], ['big', '크게']].map(([k, l]) => <button type="button" key={k} className={mapSize === k ? 'on' : ''} aria-pressed={mapSize === k} onClick={() => setMapSize(k)}>{l}</button>)}
+        </div>
+      </div>
+      {mapSize !== 'off' && <section className="ex-map mb-3">
+        <IslandScene spots={data?.items ?? []} selectedId={sel} onSelect={pickPin} height={mapSize === 'big' ? 380 : 160} />
         {selected && (
           <div className="ex-map-pick">
             <ScorePill score={selected.scores.total} />
@@ -247,11 +254,11 @@ export default function Explore() {
             <Button size="sm" onClick={() => setOpen(selected)}>자세히 보기</Button>
           </div>
         )}
-      </section>
+      </section>}
 
       {loading ? <Loading text="우리 가족 점수를 계산하는 중..." /> : !data || data.items.length === 0 ? (!err && <Empty text="조건에 맞는 곳이 없어요. 테마를 바꿔 보세요" icon="search" />) : (
         <>
-          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <div id="ex-list" className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div className="small text-muted">조건에 맞는 곳 <b>{data.total.toLocaleString()}</b>곳 중 {data.items.length}곳을 맞춤 점수 높은 순으로 보여드려요</div>
             <Button variant="link" size="sm" className="p-0" onClick={() => setHow(!how)} aria-expanded={how}><i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?</Button>
           </div>
