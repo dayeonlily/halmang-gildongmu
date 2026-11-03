@@ -1,0 +1,15 @@
+{
+  "name": "할망 길동무 — 아이와 함께 걷는 제주",
+  "short_name": "할망 길동무",
+  "description": "아이 나이에 맞춰 장소·날씨·옛이야기를 추천하는 제주 가족여행 길잡이",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#f28c28",
+  "background_color": "#fff9ef",
+  "icons": [
+    { "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
