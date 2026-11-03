@@ -139,9 +139,13 @@ h1, h2, h3, .display-font { font-family: 'Jua', 'Pretendard', sans-serif; font-w
 
 /* ── 제주 역사 스탬프 투어 ── */
 .era-tag { display: inline-block; color: #fff; font-weight: 700; font-size: .78rem; border-radius: 999px; padding: .15rem .7rem; }
-.h-card { position: relative; height: 100%; overflow: hidden; padding: 1.1rem 1.1rem 1.1rem 1.35rem; border-left: 6px solid var(--era, var(--hm-orange)); transition: background .3s, box-shadow .2s; }
+.h-card { display: flex; flex-direction: column; position: relative; height: 100%; overflow: hidden; padding: 1.1rem 1.1rem 1.1rem 1.35rem; border-left: 6px solid var(--era, var(--hm-orange)); transition: background .3s, box-shadow .2s; }
 .h-card:hover { box-shadow: 0 6px 18px rgba(120, 80, 20, .14); }
 .h-card.stamped { background: #fbfff7; }
+.h-card > p { min-height: 3em; }
+.h-card > ul { min-height: 6.6em; }
+.h-card .h-mission { flex: 1 1 auto; display: flex; flex-direction: column; }
+.h-card .h-mission > :last-child { margin-top: auto; padding-top: .5rem; }
 .h-mission { background: var(--hm-orange-soft); border-radius: 1rem; padding: .7rem .9rem; }
 .stamp-mark { position: absolute; top: .5rem; right: .5rem; line-height: 0; transform: rotate(-12deg); animation: stampIn .5s cubic-bezier(.2, 1.7, .4, 1) both; pointer-events: none; }
 @keyframes stampIn { 0% { transform: rotate(-30deg) scale(2.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: rotate(-12deg) scale(1); opacity: 1; } }
