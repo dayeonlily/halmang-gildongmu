@@ -591,3 +591,8 @@ small, .small { font-size: .92rem; }
 .ex-wx-chip.main { background: #eef7ee; color: #2f6b45; } .ex-wx-chip.bad { background: #fdebeb; color: #b02a2a; }
 .ex-label { font-size: 1.05rem; font-weight: 800; color: #3d2a17; margin: 1.1rem 0 .6rem; }
 @media (max-width: 767.98px) { .ex-fields { grid-template-columns: 1fr 1fr; } .ex-toggle { grid-column: 1 / -1; } }
+
+.ex-map { position: relative; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 10px rgba(120, 80, 20, .1); }
+.ex-map .scene-wrap { border-radius: 20px; }
+.ex-map-pick { position: absolute; left: .8rem; right: .8rem; bottom: 3.2rem; display: flex; align-items: center; gap: .7rem; background: rgba(255, 255, 255, .96); border-radius: 14px; padding: .55rem .8rem; box-shadow: 0 4px 14px rgba(0, 0, 0, .2); }
+.min-w-0 { min-width: 0; }

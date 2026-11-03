@@ -57,7 +57,7 @@ const isoDay = (n) => new Date(Date.now() + 9 * 3600e3 + n * 86400e3).toISOStrin
 
 function SpotCard({ s, selected, onOpen, onAdd, inBasket }) {
   return (
-    <div className={`soft-card spot-card h-100 ${selected ? 'selected' : ''}`} onClick={() => onOpen(s)} role="button">
+    <div id={`spot-${s.id}`} className={`soft-card spot-card h-100 ${selected ? 'selected' : ''}`} onClick={() => onOpen(s)} role="button">
       {s.image ? <img className="spot-img" src={s.image} alt={s.title} loading="lazy" /> : <div className="spot-img"><i className="bi bi-image" /></div>}
       <div className="p-3">
         <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
@@ -147,6 +147,7 @@ export default function Explore() {
   useEffect(() => { search(q) /* eslint-disable-next-line */ }, [type, profile, accessible, ageBand, nearKey, date])
 
   const selected = data?.items.find((x) => x.id === sel)
+  const pickPin = (id) => { setSel(id); document.getElementById(`spot-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
   const pickType = (k) => { setType(k); setQ('') } // 종류를 바꾸면 이전 테마는 비운다
   const pickTheme = (kw) => { const next = q === kw ? '' : kw; setQ(next); search(next) } // 같은 테마를 다시 누르면 해제
   const themes = themesFor(type)
@@ -236,39 +237,38 @@ export default function Explore() {
       <DataNotice degraded={data?.degraded} />
       <ErrorAlert error={err} />
 
-      <div className="explore-grid">
-        <div>
-          {loading ? <Loading text="우리 가족 점수를 계산하는 중..." /> : !data || data.items.length === 0 ? (!err && <Empty text="조건에 맞는 곳이 없어요. 테마를 바꿔 보세요" icon="search" />) : (
-            <>
-              <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <div className="small text-muted">조건에 맞는 곳 <b>{data.total.toLocaleString()}</b>곳 중 {data.items.length}곳을 맞춤 점수 높은 순으로 보여드려요</div>
-                <Button variant="link" size="sm" className="p-0" onClick={() => setHow(!how)} aria-expanded={how}><i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?</Button>
-              </div>
-              <Row xs={1} md={2} className="g-3">
-                {data.items.map((s) => (
-                  <Col key={s.id}><SpotCard s={s} selected={s.id === sel} onOpen={(x) => { setSel(x.id); setOpen(x) }} onAdd={addToBasket} inBasket={basket.some((b) => b.content_id === s.id)} /></Col>
-                ))}
-              </Row>
-              {data.hasMore && (
-                <div className="text-center mt-3">
-                  <Button variant="outline-primary" onClick={loadMore} disabled={more}>
-                    {more ? '불러오는 중...' : <><i className="bi bi-plus-circle me-1" />더 보기</>}
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-        <div className="sticky-scene">
-          <IslandScene spots={data?.items ?? []} selectedId={sel} onSelect={setSel} height={440} />
-          {selected && (
-            <div className="soft-card p-3 mt-3 d-flex align-items-center gap-3">
-              <div className="flex-grow-1"><div className="fw-bold">{selected.title} <ScorePill score={selected.scores.total} /></div><div className="small text-muted text-truncate">{selected.addr}</div></div>
-              <Button size="sm" onClick={() => setOpen(selected)}>자세히 보기</Button>
+      {/* 지도는 결과 위에 가로로 넓게: 핀을 누르면 아래 카드가 강조되고, 카드를 누르면 지도에서 핀이 강조된다 */}
+      <section className="ex-map mb-3">
+        <IslandScene spots={data?.items ?? []} selectedId={sel} onSelect={pickPin} height={340} />
+        {selected && (
+          <div className="ex-map-pick">
+            <ScorePill score={selected.scores.total} />
+            <div className="flex-grow-1 min-w-0"><div className="fw-bold text-truncate">{selected.title}</div><div className="small text-muted text-truncate">{selected.addr}</div></div>
+            <Button size="sm" onClick={() => setOpen(selected)}>자세히 보기</Button>
+          </div>
+        )}
+      </section>
+
+      {loading ? <Loading text="우리 가족 점수를 계산하는 중..." /> : !data || data.items.length === 0 ? (!err && <Empty text="조건에 맞는 곳이 없어요. 테마를 바꿔 보세요" icon="search" />) : (
+        <>
+          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <div className="small text-muted">조건에 맞는 곳 <b>{data.total.toLocaleString()}</b>곳 중 {data.items.length}곳을 맞춤 점수 높은 순으로 보여드려요</div>
+            <Button variant="link" size="sm" className="p-0" onClick={() => setHow(!how)} aria-expanded={how}><i className="bi bi-question-circle me-1" />점수는 어떻게 매겨요?</Button>
+          </div>
+          <Row xs={1} md={2} xl={3} className="g-3">
+            {data.items.map((s) => (
+              <Col key={s.id}><SpotCard s={s} selected={s.id === sel} onOpen={(x) => { setSel(x.id); setOpen(x) }} onAdd={addToBasket} inBasket={basket.some((b) => b.content_id === s.id)} /></Col>
+            ))}
+          </Row>
+          {data.hasMore && (
+            <div className="text-center mt-3">
+              <Button variant="outline-primary" onClick={loadMore} disabled={more}>
+                {more ? '불러오는 중...' : <><i className="bi bi-plus-circle me-1" />더 보기</>}
+              </Button>
             </div>
           )}
-        </div>
-      </div>
+        </>
+      )}
       <SpotDetail spot={open} inBasket={!!open && basket.some((b) => b.content_id === open.id)} onAdd={addToBasket} onHide={() => setOpen(null)} />
     </>
   )
