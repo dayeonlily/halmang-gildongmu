@@ -92,7 +92,7 @@ export default function Explore() {
   const [params] = useSearchParams()
   const initQ = params.get('q') ?? '' // 역사 스탬프 투어 등에서 넘어온 검색어
   const [q, setQ] = useState(initQ)
-  const [type, setType] = useState(initQ ? '' : '12') // 첫 화면은 관광지부터 (전체는 음식점이 많아 식당 위주로 보임)
+  const [type, setType] = useState('') // 첫 화면은 '전체': 관광지·체험·문화시설을 모아 맞춤 점수가 높은 곳부터 보여준다
   const [data, setData] = useState(null)
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
@@ -113,20 +113,33 @@ export default function Explore() {
     : (() => { const b = BASES.find((x) => x.key === base); return b ? `${b.lat},${b.lng}` : '' })()
   const near = nearKey ? { lat: Number(nearKey.split(',')[0]), lng: Number(nearKey.split(',')[1]) } : null
 
+  // 전체(종류 미선택·검색어 없음): 음식점·숙박이 섞이면 식당만 보이니, 나들이 종류 3가지를 모아 점수 높은 순으로 합친다
+  const load = useCallback(async (keyword, page = 1) => {
+    const args = { needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 12, page }
+    if (type !== '' || keyword) return fetchSpots({ keyword, type, ...args })
+    const parts = await Promise.all(['12', '28', '14'].map((t) => fetchSpots({ keyword, type: t, ...args }).catch(() => null)))
+    const ok = parts.filter(Boolean)
+    if (!ok.length) throw new Error('불러오지 못했어요. 잠시 후 다시 시도해 주세요')
+    const seen = new Set()
+    const items = ok.flatMap((p) => p.items).filter((x) => !seen.has(x.id) && seen.add(x.id)).sort((a, b) => b.scores.total - a.scores.total)
+    return { ...ok[0], items, total: ok.reduce((n, p) => n + p.total, 0), page, hasMore: ok.some((p) => p.hasMore), hiddenAdult: ok.reduce((n, p) => n + (p.hiddenAdult ?? 0), 0) }
+  }, [type, effNeeds, effBudget, ageBand, nearKey, date, accessible])
+
   const search = useCallback(async (keyword) => {
     setLoading(true); setErr('')
-    try { setData(await fetchSpots({ keyword, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 12 })); setSel(null) }
+    try { setData(await load(keyword)); setSel(null) }
     catch (e) { setErr(e.message) }
     finally { setLoading(false) }
-  }, [type, effNeeds, effBudget, ageBand, nearKey, date, accessible])
+  }, [load])
 
   // 다음 페이지를 불러와 목록 뒤에 이어 붙인다
   async function loadMore() {
     setMore(true)
     try {
-      const next = await fetchSpots({ keyword: q, type, needs: effNeeds, budget: effBudget, age: ageBand, near, date: date.replaceAll('-', ''), accessible, limit: 12, page: data.page + 1 })
+      const next = await load(q, data.page + 1)
       const seen = new Set(data.items.map((x) => x.id))
-      setData({ ...next, items: [...data.items, ...next.items.filter((x) => !seen.has(x.id))] })
+      const merged = [...data.items, ...next.items.filter((x) => !seen.has(x.id))]
+      setData({ ...next, items: type === '' && !q ? merged.sort((a, b) => b.scores.total - a.scores.total) : merged })
     } catch (e) { setErr(e.message) }
     finally { setMore(false) }
   }

@@ -62,7 +62,7 @@ export default function Halmang() {
         {/* 왼쪽: 할망 소개 (좁은 화면에서는 위에 작게) */}
         <aside className="ask-side">
           <div className="ask-mascot"><HalmangMascot pose="wave" speaking={loading} className="ask-mascot-img" label="설문대할망" /></div>
-          <div className="ask-name">설문대할망 길동무</div>
+          <div className="ask-name">설문대할망</div>
           <div className={`ask-status ${loading ? 'busy' : ''}`}>{loading ? '공공데이터를 확인하는 중…' : '무엇이든 물어보라이'}</div>
           <div className="ask-knows">
             <div className="ask-knows-title">할망이 직접 확인해요</div>
