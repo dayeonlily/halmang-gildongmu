@@ -257,7 +257,7 @@ export default function Home() {
       <div className="hb-sos">
         <span className="hb-sos-t"><i className="bi bi-heart-pulse-fill" />급할 때</span>
         <div className="hb-sos-btns">
-          {EMERGENCY.slice(0, 3).map((e) => <a key={e.tel} href={`tel:${e.tel}`} className={`hb-sos-btn ${e.tone}`}><i className="bi bi-telephone-fill" /><b>{e.tel}</b><span>{e.name}</span></a>)}
+          {EMERGENCY.slice(0, 3).map((e) => <a key={e.tel} href={`tel:${e.tel}`} className={`hb-sos-btn ${e.tone}`}><i className="bi bi-telephone-fill" /><b>{e.tel}</b><span>{e.desc.split(' ')[0]}</span></a>)}
         </div>
         <Button as={Link} to="/care" variant="outline-secondary" className="ms-auto hb-ghost"><i className="bi bi-journal-heart me-1" />보호자 노트</Button>
       </div>
