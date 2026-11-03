@@ -210,7 +210,7 @@ small, .small { font-size: .92rem; }
   .quick-tile i { font-size: 1.9rem; }
 }
 
-/* ── 길동무 찾기: 종류 버튼 · 점수 설명 ── */
+/* ── 여행지 찾기: 종류 버튼 · 점수 설명 ── */
 .cat-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: .5rem; }
 .cat-btn { display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .8rem .2rem; text-align: center; line-height: 1.2; background: #fff; border: 2px solid #ead7b8; border-radius: 1.1rem; color: #4a3a2c; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .15s, box-shadow .15s; }
 .cat-btn i { font-size: 1.7rem; color: var(--hm-orange); }
@@ -348,7 +348,7 @@ small, .small { font-size: .92rem; }
 .ask-row.user { flex-direction: row-reverse; }
 .ask-col { min-width: 0; max-width: min(88%, 640px); display: flex; flex-direction: column; }
 .ask-row.user .ask-col { align-items: flex-end; }
-.ask-avatar { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: #fff3dc center 8% / 175% no-repeat; border: 2px solid #f0d9b4; }
+.ask-avatar { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: #fff3dc 50% 1% / 140% auto no-repeat; border: 2px solid #f0d9b4; }
 .ask-avatar.user { display: grid; place-items: center; background: #dbeafe; border-color: #b9d3f5; color: #3a6ea5; font-size: 1.4rem; }
 .ask-bubble { padding: .8rem 1.05rem; border-radius: 1.2rem; font-size: 1.1rem; line-height: 1.7; white-space: pre-wrap; word-break: keep-all; color: #3b2a22; }
 .ask-bubble.assistant { background: #fff1de; border-top-left-radius: .3rem; }
@@ -438,3 +438,48 @@ small, .small { font-size: .92rem; }
 .scene-hint { position: absolute; right: .6rem; top: .6rem; padding: .25rem .7rem; background: rgba(255, 255, 255, .85); border-radius: 999px; font-size: .85rem; font-weight: 700; color: #4a3a2c; pointer-events: none; }
 @media (max-width: 575.98px) { .scene-legend { font-size: .78rem; gap: .5rem; } .scene-hint { display: none; } .wx-big-temp { font-size: 2.6rem; } .wx-big-icon { font-size: 2.8rem; } }
 @media (max-width: 575.98px) { .ask-scroll { height: 42vh; min-height: 230px; } .ask-mascot-img { width: 96px; } .ask-side { padding: .6rem .8rem; } .ask-name { font-size: 1.1rem; } }
+
+/* 사이드바가 보이는 넓은 화면에서는 메뉴와 겹치는 배움 탭을 숨긴다 (태블릿·폰은 사이드바가 없어 그대로) */
+@media (min-width: 992px) { .learn-tabs { display: none; } }
+
+/* ── 우리 가족 정보: 번호 단계 + 큰 선택 타일 + 가족 카드 ── */
+.fam-layout { display: grid; gap: 1.2rem; align-items: start; }
+@media (min-width: 992px) { .fam-layout { grid-template-columns: minmax(0, 1fr) 340px; } .fam-side { position: sticky; top: 1.2rem; } }
+.fam-label { font-weight: 800; color: #3d2a17; font-size: 1.05rem; margin-bottom: .4rem; display: block; }
+.fam-seg { display: flex; flex-wrap: wrap; gap: .5rem; }
+.fam-seg button { padding: .55rem 1.2rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 999px; color: #4a3a2c; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: transform .15s; }
+.fam-seg button:hover { transform: translateY(-1px); }
+.fam-seg button.on { background: var(--hm-orange); border-color: var(--hm-orange); color: #fff; box-shadow: 0 3px 10px rgba(232, 121, 26, .3); }
+.fam-tiles { display: grid; gap: .6rem; }
+.fam-tiles.age { grid-template-columns: repeat(5, 1fr); }
+.fam-tiles.need { grid-template-columns: 1fr 1fr; }
+@media (max-width: 767.98px) { .fam-tiles.age { grid-template-columns: repeat(3, 1fr); } .fam-tiles.need { grid-template-columns: 1fr; } }
+.fam-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .8rem .4rem; background: #fff6e4; border: 2px solid #f6dcae; border-radius: 1rem; color: #4a3a2c; line-height: 1.25; cursor: pointer; transition: transform .15s; }
+.fam-tile:hover { transform: translateY(-2px); }
+.fam-tile > i { font-size: 1.7rem; color: var(--hm-orange); }
+.fam-tile b { font-size: 1.1rem; }
+.fam-tile small { font-size: .88rem; color: #65513d; }
+.fam-tile.wide { flex-direction: row; align-items: center; text-align: left; gap: .8rem; padding: .8rem 1rem; }
+.fam-tile.wide > span:not(.fam-check) { display: flex; flex-direction: column; }
+.fam-tile.on { background: #fff0dc; border-color: var(--hm-orange); box-shadow: 0 3px 12px rgba(232, 121, 26, .25); }
+.fam-check { position: absolute; top: .4rem; right: .5rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--hm-orange); color: #fff; display: grid; place-items: center; font-size: .95rem; }
+.fam-card { background: #fff; border: 1.5px solid #ead7b8; border-radius: 1.2rem; padding: 1rem 1.1rem; box-shadow: 0 3px 14px rgba(120, 80, 20, .08); text-align: center; }
+.fam-mascot { width: 110px; height: auto; display: block; margin: 0 auto; }
+.fam-card-name { font-size: 1.4rem; font-weight: 800; color: #3d2a17; margin: .3rem 0 .6rem; font-family: 'Jua', 'Pretendard', sans-serif; }
+.fam-card-name small { font-size: .85rem; font-weight: 600; color: #65513d; font-family: inherit; }
+.fam-summary { text-align: left; margin: 0; border-top: 1.5px dashed #ead7b8; padding-top: .7rem; }
+.fam-summary > div { display: flex; gap: .7rem; padding: .3rem 0; align-items: baseline; }
+.fam-summary dt { flex: 0 0 4.4rem; font-weight: 800; color: #65513d; font-size: .95rem; }
+.fam-summary dd { margin: 0; display: flex; flex-wrap: wrap; gap: .3rem; }
+.fam-chip { display: inline-block; padding: .15rem .7rem; background: var(--hm-orange-soft); color: #9a4c0b; border-radius: 999px; font-weight: 700; font-size: .95rem; }
+.fam-chip.base { background: var(--hm-orange); color: #fff; }
+.fam-empty { color: #8a7b6c; font-size: .95rem; }
+.fam-note { margin-top: .8rem; padding: .55rem .7rem; background: #eef8f0; color: #25643a; border-radius: .8rem; font-weight: 700; font-size: .95rem; text-align: left; }
+.fam-savebar { margin-top: .8rem; display: flex; flex-direction: column; gap: .4rem; }
+.fam-dirty { color: #b25c0b; font-weight: 800; font-size: .95rem; text-align: center; }
+.fam-save { width: 100%; border-radius: 1rem; font-weight: 800; }
+@media (max-width: 991.98px) { .fam-savebar { position: sticky; bottom: 4.6rem; z-index: 5; background: rgba(255, 253, 248, .95); padding: .5rem; border-radius: 1rem; box-shadow: 0 -2px 12px rgba(0, 0, 0, .12); } }
+
+/* 홈: 지도는 날씨 카드와 같은 높이 */
+.home-map { position: relative; flex: 1 1 auto; min-height: 380px; }
+.home-map .scene-wrap { position: absolute; inset: 0; height: auto !important; }

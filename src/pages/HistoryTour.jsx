@@ -34,7 +34,7 @@ function CourseCard({ c, done, onStamp, tab }) {
         <Button className="flex-fill" variant={done ? 'success' : 'primary'} onClick={onStamp}>
           {done ? <><i className="bi bi-check-circle-fill me-1" />도장 찍었어요</> : <><i className="bi bi-stamp me-1" />도장 찍기</>}
         </Button>
-        <Button as={Link} to={`/explore?q=${encodeURIComponent(c.q)}`} variant="outline-primary" aria-label={`${c.place} 근처 찾아보기`} title="길동무 찾기에서 보기"><i className="bi bi-search" /></Button>
+        <Button as={Link} to={`/explore?q=${encodeURIComponent(c.q)}`} variant="outline-primary" aria-label={`${c.place} 근처 찾아보기`} title="여행지 찾기에서 보기"><i className="bi bi-search" /></Button>
       </div>
 
       {/* 찍으면 쾅! 하고 나타나는 도장 */}

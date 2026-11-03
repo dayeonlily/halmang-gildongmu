@@ -16,7 +16,7 @@ import NotFound from './pages/NotFound'
 // 메뉴 목록 — 레일(데스크톱) · 서랍(모바일)에 모두 표시. tab: true 인 항목은 모바일 하단 탭에도 표시
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house-heart', tab: true },
-  { to: '/explore', group: '여행', label: '길동무 찾기', short: '찾기', icon: 'compass', tab: true },
+  { to: '/explore', group: '여행', label: '여행지 찾기', short: '찾기', icon: 'compass', tab: true },
   { to: '/basket', group: '여행', label: '여행 일정', short: '일정', icon: 'calendar2-check', tab: true },
   { to: '/reviews', group: '여행', label: '여행 후기', icon: 'journal-richtext' },
   // 배움(교육): 문화와 역사를 같은 말로 묶는다 — 놀멍 배우멍 걸으멍

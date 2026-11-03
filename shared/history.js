@@ -20,7 +20,7 @@ export const HISTORY_TABS = [
   { key: 'upper', label: '초등 고학년', short: '📚 초등 고학년', desc: '연도와 까닭을 따져 보는 제주 역사' },
 ]
 
-// 카드 구조: { id, era, place, area, title, text, points[], mission, theme{name,emoji}, q(길동무 찾기 검색어), note? }
+// 카드 구조: { id, era, place, area, title, text, points[], mission, theme{name,emoji}, q(여행지 찾기 검색어), note? }
 const YOUNG = [
   {
     id: 'y-samyang', era: 'prehistoric', place: '삼양동 선사유적지', area: '제주시 삼양동',

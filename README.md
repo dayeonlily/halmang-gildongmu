@@ -31,7 +31,7 @@ supabase/schema.sql       profiles · basket_items · mission_stamps (+RLS)
 - 코스 데이터: `shared/history.js` (카드 추가·수정은 여기만)
 - 화면: `src/pages/HistoryTour.jsx`, 스타일: `src/styles/theme.css` 맨 아래
 - 스탬프 저장: 로그인하면 Supabase `mission_stamps`, 아니면 이 기기(localStorage) — DB 변경 없음
-- 카드의 검색 버튼은 `/explore?q=장소명` 으로 길동무 찾기를 엽니다
+- 카드의 검색 버튼은 `/explore?q=장소명` 으로 여행지 찾기를 엽니다
 
 ## 공공데이터 API 3종
 | API | 역할 |

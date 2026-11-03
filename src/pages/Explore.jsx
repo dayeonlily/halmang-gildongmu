@@ -141,7 +141,7 @@ export default function Explore() {
 
   return (
     <>
-      <PageTitle icon="compass" title="길동무 찾기" sub="우리 가족 정보와 고른 종류·테마에 맞춰 점수를 매겨요" />
+      <PageTitle icon="compass" title="여행지 찾기" sub="우리 가족 정보와 고른 종류·테마에 맞춰 점수를 매겨요" />
 
       {/* 검색창: 가장 위 */}
       <Form onSubmit={(e) => { e.preventDefault(); search(q) }} className="mb-3">

@@ -127,19 +127,24 @@ export default function Home() {
             <div className="small text-muted">{today}</div>
             <h1 className="home-hello mb-3">{name}, <span className="text-primary">오늘 제주</span>는 이래요</h1>
             <TodayWeather />
-            <div className="quick-grid mt-3">
-              <Tile to="/explore" icon="compass" title="길동무 찾기" sub="맞춤 추천" />
+          </div>
+        </Col>
+        <Col lg={5} className="d-flex flex-column">
+          <div className="home-map"><IslandScene spots={spots ?? []} hero height="100%" /></div>
+          <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />아래 추천 장소 1~3번이 지도에 번호 핀으로 보여요</div>
+        </Col>
+      </Row>
+
+      {/* 바로가기: 날씨 카드와 따로 한 줄 */}
+      <div className="soft-card p-3 mb-4">
+        <div className="fw-bold mb-2" style={{ fontSize: '1.15rem', color: '#3d2a17' }}><i className="bi bi-lightning-charge-fill text-primary me-2" />어디로 갈까요?</div>
+            <div className="quick-grid">
+              <Tile to="/explore" icon="compass" title="여행지 찾기" sub="맞춤 추천" />
               <Tile to="/basket" icon="calendar2-check" title="여행 일정" sub={`${basket.length}곳 담음`} />
               <Tile to="/history" icon="hourglass-split" title="역사 배우기" sub={`도장 ${histDone}/${courses.length}`} />
               <Tile to="/halmang" icon="chat-heart" title="할망에게 묻기" sub="AI 가이드" />
             </div>
-          </div>
-        </Col>
-        <Col lg={5}>
-          <IslandScene spots={spots ?? []} hero height={330} />
-          <div className="text-center small text-muted mt-2"><i className="bi bi-geo-alt me-1" />아래 추천 장소 1~3번이 지도에 번호 핀으로 보여요</div>
-        </Col>
-      </Row>
+      </div>
 
       {/* ② 오늘 가기 좋은 곳 TOP 3 */}
       <div className="d-flex align-items-end justify-content-between mb-2">
@@ -151,19 +156,18 @@ export default function Home() {
         <Badge bg="primary">{AGE_BANDS.find((x) => x.key === familyAge)?.label}</Badge>
         {(profile?.needs ?? []).map((k) => <Badge key={k} bg="secondary">{NEEDS.find((n) => n.key === k)?.label}</Badge>)}
         <Badge bg="light" text="dark" className="border">예산 {BUDGETS.find((x) => x.key === (profile?.budget ?? 'any'))?.label}</Badge>
-        <Badge bg="success">70점 이상만</Badge>
         {!profile && <Link to="/profile" className="ms-1">가족 정보를 입력하면 더 잘 맞춰요</Link>}
       </div>
       <DataNotice degraded={pickNotice} />
       <Row xs={1} md={3} className="g-3 mb-4">
         {!spots && !spotErr && [0, 1, 2].map((i) => <Col key={i}><div className="soft-card p-3 text-muted small" style={{ minHeight: 170 }}><i className="bi bi-hourglass-split me-1" />추천을 고르는 중...</div></Col>)}
-        {spotErr && <Col xs={12}><div className="soft-card p-3 small text-muted">추천을 불러오지 못했어요. <Link to="/explore">길동무 찾기</Link>에서 직접 찾아보세요.</div></Col>}
+        {spotErr && <Col xs={12}><div className="soft-card p-3 small text-muted">추천을 불러오지 못했어요. <Link to="/explore">여행지 찾기</Link>에서 직접 찾아보세요.</div></Col>}
         {spots && spots.length === 0 && (
           <Col xs={12}>
             <div className="soft-card p-3 d-flex flex-wrap align-items-center gap-3">
               <i className="bi bi-emoji-neutral fs-3 text-muted" />
-              <div className="flex-grow-1">오늘은 <b>70점 이상</b>인 추천 장소를 찾지 못했어요. 날씨나 우리 가족 조건 때문에 점수가 낮은 날이에요.</div>
-              <Button as={Link} to="/explore" variant="outline-primary">길동무 찾기에서 직접 보기</Button>
+              <div className="flex-grow-1">오늘은 우리 가족에게 꼭 맞는 장소를 찾지 못했어요. 날씨나 우리 가족 조건 때문에 추천할 곳이 적은 날이에요.</div>
+              <Button as={Link} to="/explore" variant="outline-primary">여행지 찾기에서 직접 보기</Button>
             </div>
           </Col>
         )}

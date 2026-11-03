@@ -24,7 +24,7 @@ function BasketItem({ b, dayList, update, remove }) {
           <div className="fw-bold">{b.title} {b.score != null && <ScorePill score={b.score} />}</div>
           <div className="small text-muted text-truncate">{b.addr}</div>
         </div>
-        <Form.Select size="sm" style={{ width: 'auto' }} value={b.day} onChange={(e) => update(b.id, { day: Number(e.target.value) })} aria-label="일차 이동">
+        <Form.Select size="sm" className="d-lg-none" style={{ width: 'auto' }} value={b.day} onChange={(e) => update(b.id, { day: Number(e.target.value) })} aria-label="일차 이동">
           <option value={0}>미정</option>
           {dayList.map((x) => <option key={x} value={x}>{x}일차</option>)}
         </Form.Select>
@@ -102,7 +102,7 @@ export default function Basket() {
 
   return (
     <>
-      <PageTitle icon="calendar2-check" title="여행 일정" sub="담은 곳을 끌어서(폰은 선택 메뉴로) 원하는 일차로 옮겨요">
+      <PageTitle icon="calendar2-check" title="여행 일정" sub="담은 곳을 끌어서(터치 화면은 선택 메뉴로) 원하는 일차로 옮겨요">
         <div className="d-flex align-items-center gap-2">
           <ButtonGroup size="sm">
             <Button variant="outline-primary" onClick={() => removeDay(total)} disabled={total <= 1} aria-label="마지막 일차 삭제"><i className="bi bi-dash-lg" /></Button>
@@ -113,7 +113,7 @@ export default function Basket() {
       </PageTitle>
 
       {basket.length === 0 ? (
-        <Empty icon="calendar2-check" text={<>아직 담은 곳이 없어요. <Link to="/explore">길동무 찾으러 가기</Link></>} />
+        <Empty icon="calendar2-check" text={<>아직 담은 곳이 없어요. <Link to="/explore">여행지 찾으러 가기</Link></>} />
       ) : (
         <>
           {/* 지도는 맨 위, 담은 곳(일차별)은 지도 아래에 가로로 나란히 */}
